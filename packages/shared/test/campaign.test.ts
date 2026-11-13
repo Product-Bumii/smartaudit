@@ -4,7 +4,6 @@ import seedTable from '../../../seed/data/sampling-table-v1.json';
 import { deriveM1Campaign } from '../src/campaign';
 import { allowedSampleModes, allowedTransitions, canTransition, isCampaignEditable } from '../src/campaign-state';
 import { CAMPAIGN_STATUSES, isSuperadmin, ROLES } from '../src/enums';
-import { officialHolidays } from '../src/holidays';
 import { ACTIONS, can } from '../src/permissions';
 import type { Question } from '../src/questionnaire';
 import { retentionCutoffs, DEFAULT_RETENTION } from '../src/retention';
@@ -92,7 +91,6 @@ describe('deriveM1Campaign', () => {
     scopeSize: 120,
     visitDate: '2026-11-20',
     timeZone: 'America/Bogota',
-    holidays: new Set(officialHolidays('CO', 2026)),
     brackets: seedTable.brackets as SamplingBracket[],
     questions: seedQuestionnaire.questions as Question[],
     auditType: 'renovacion' as const,
@@ -104,7 +102,7 @@ describe('deriveM1Campaign', () => {
   it('computes minimum, window and question states', () => {
     const d = deriveM1Campaign(input);
     expect(d.minimum).toMatchObject({ ok: true, minimum: 20 });
-    expect(d.window?.openDate).toBe('2026-11-05');
+    expect(d.window?.openDate).toBe('2026-11-06');
     expect(d.windowError).toBeNull();
     expect(d.windowWarnings).toEqual(['OPENS_IN_PAST']);
     expect(d.questions.find((q) => q.code === 'P8')?.state).toBe('active');

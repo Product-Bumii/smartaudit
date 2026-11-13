@@ -110,7 +110,6 @@
     "title": "Configuració",
     "samplingTables": "Taula de mínims",
     "questionnaires": "Qüestionaris",
-    "holidays": "Festius",
     "settings": "Ajustos",
     "newVersion": "Nova versió",
     "status": {
@@ -125,7 +124,7 @@
     "eyebrow": "Plataforma"
   },
   "sampling": {
-    "help": "Mínim d'entrevistes completades segons les persones de l'abast. Les campanyes conserven la versió amb què es van crear.",
+    "help": "Mínim d'entrevistes completades segons la població total. Les campanyes conserven la versió amb què es van crear.",
     "from": "Des de (persones)",
     "to": "Fins a (persones)",
     "required": "Mínim de completades",
@@ -171,35 +170,12 @@
     "confirmApprove": "Vols aprovar la traducció al {{lang}}?",
     "approved": "Idioma aprovat"
   },
-  "holidays": {
-    "help": "Festius oficials (date-holidays) amb sobreescriptures manuals. S'utilitzen per calcular els dies feiners a la zona horària de cada organització.",
-    "year": "Any",
-    "generate": "Genera una nova versió",
-    "none": "No hi ha calendaris per a aquest país i any.",
-    "date": "Data",
-    "origin": "Origen",
-    "manual": "Afegit manualment",
-    "official": "Oficial",
-    "workingDay": "tractat com a feiner",
-    "restore": "Restaura",
-    "markWorking": "Marca com a feiner",
-    "addDate": "Afegeix festiu"
-  },
   "settings": {
     "general": "General",
     "mailFromName": "Nom visible del remitent",
     "mailFromAddress": "Adreça del remitent",
     "norms": "Normes disponibles",
-    "normsHint": "Separades per comes, p. ex. 1000-1, 1000-2",
-    "technical": "Ajustos tècnics",
-    "technicalOnlyBumii": "Només l'equip de Bumii pot canviar els ajustos tècnics.",
-    "confidenceThreshold": "Confiança mínima de la IA (0–1)",
-    "llmProvider": "Proveïdor d'IA",
-    "retention": "Conservació de dades",
-    "retentionHelp": "Per defecte la conservació és indefinida i la purga està desactivada.",
-    "retentionEnabled": "Activa la purga automàtica",
-    "deleteContactsAfterDays": "Esborra els contactes X dies després del tancament",
-    "anonymizeResponsesAfterYears": "Anonimitza les respostes després d'Y anys"
+    "normsHint": "Separades per comes, p. ex. 1000-1, 1000-2"
   },
   "campaigns": {
     "title": "Campanyes",
@@ -270,7 +246,7 @@
     "previewEmpty": "Completa la data, la mida i la norma per veure el mínim, la finestra i les preguntes.",
     "created": "Campanya creada",
     "howTitle": "el mínim i la finestra els calcula el sistema",
-    "howText": "S'apliquen la taula de mínims vigent i els festius del país de l'organització. La IA no intervé en aquests càlculs."
+    "howText": "S'apliquen la taula de mínims vigent i els dies feiners de dilluns a divendres, a la zona horària de l'organització. La IA no intervé en aquests càlculs."
   },
   "questionStates": {
     "active": "Es preguntarà",
@@ -295,7 +271,9 @@
     "smallGroups": "Grups amb menys de 3 persones (risc de reidentificació):",
     "downloadCodes": "Descarrega els codis d'accés",
     "codesHelp": "Per lliurar en paper a les persones sense correu. La fila correspon al teu fitxer.",
-    "loaded": "Mostra carregada"
+    "loaded": "Mostra carregada",
+    "chooseFile": "Tria un fitxer",
+    "fileHint": "Excel (.xlsx) o CSV, màxim 5 MB"
   },
   "sampleErrors": {
     "EMPTY_FILE": "El fitxer no té files de dades.",
@@ -339,14 +317,12 @@
     "INVALID_OR_EXPIRED_LINK": "L'enllaç no és vàlid, ja s'ha fet servir o ha caducat.",
     "SELECTION_EXPIRED": "La selecció ha caducat. Sol·licita un nou enllaç.",
     "USER_ALREADY_EXISTS": "Ja hi ha un usuari amb aquest correu en aquesta organització.",
-    "UNSUPPORTED_COUNTRY": "País no admès.",
     "PUBLISHED_VERSION_IS_IMMUTABLE": "Una versió publicada no es pot modificar: crea'n una de nova.",
     "DRAFT_ALREADY_EXISTS": "Ja hi ha un esborrany.",
     "INVALID_SAMPLING_TABLE": "La taula té errors.",
     "INVALID_QUESTIONNAIRE": "El qüestionari té errors.",
     "MISSING_TRANSLATIONS": "Falten textos en aquest idioma.",
     "NO_APPROVED_LANGUAGE": "Hi ha d'haver almenys un idioma aprovat.",
-    "DATE_OUTSIDE_YEAR": "La data no pertany a l'any del calendari.",
     "NO_PUBLISHED_SAMPLING_TABLE": "No hi ha cap taula de mínims publicada.",
     "NO_PUBLISHED_QUESTIONNAIRE": "No hi ha cap qüestionari publicat.",
     "INVALID_NORM": "Norma no disponible.",

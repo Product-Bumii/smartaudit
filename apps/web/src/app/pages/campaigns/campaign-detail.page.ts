@@ -103,7 +103,11 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
             @if (sampleMode(); as mode) {
               <div class="upload">
                 <label class="file-label" for="sample-file">{{ (mode === 'append' ? 'sample.uploadAppend' : (c.sampleSize ? 'sample.uploadReplace' : 'sample.upload')) | translate }}</label>
-                <input id="sample-file" type="file" accept=".xlsx,.csv" (change)="upload($event, mode)" data-testid="sample-file" [disabled]="uploading()" />
+                <div class="row-actions">
+                  <input #fileInput id="sample-file" class="file-input" type="file" accept=".xlsx,.csv" (change)="upload($event, mode)" data-testid="sample-file" [disabled]="uploading()" />
+                  <button mat-flat-button type="button" (click)="fileInput.click()" [disabled]="uploading()">{{ 'sample.chooseFile' | translate }}</button>
+                  <span class="muted">{{ 'sample.fileHint' | translate }}</span>
+                </div>
                 @if (uploading()) { <mat-progress-bar mode="indeterminate" /> }
               </div>
             }
@@ -203,6 +207,7 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
     .intro { margin: 0 0 20px; max-width: 680px; }
     .upload { margin: 28px 0; display: grid; gap: 10px; max-width: 520px; }
     .file-label { font-weight: 700; }
+    .file-input { position: absolute; width: 1px; height: 1px; opacity: 0; overflow: hidden; pointer-events: none; }
     .stats.inner { margin: 28px 0; }
     .codes { margin: 0 0 28px; display: flex; flex-direction: column; gap: 8px; }
     .codes p { margin: 0; }

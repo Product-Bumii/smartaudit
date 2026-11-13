@@ -110,7 +110,6 @@
     "title": "Configuration",
     "samplingTables": "Minimums table",
     "questionnaires": "Questionnaires",
-    "holidays": "Holidays",
     "settings": "Settings",
     "newVersion": "New version",
     "status": {
@@ -125,7 +124,7 @@
     "eyebrow": "Platform"
   },
   "sampling": {
-    "help": "Minimum completed interviews by people in scope. Campaigns keep the version they were created with.",
+    "help": "Minimum completed interviews by total population. Campaigns keep the version they were created with.",
     "from": "From (people)",
     "to": "To (people)",
     "required": "Minimum completed",
@@ -171,35 +170,12 @@
     "confirmApprove": "Approve the {{lang}} translation?",
     "approved": "Language approved"
   },
-  "holidays": {
-    "help": "Official holidays (date-holidays) with manual overrides. Used to compute business days in each organization's time zone.",
-    "year": "Year",
-    "generate": "Generate new version",
-    "none": "No calendars for this country and year.",
-    "date": "Date",
-    "origin": "Origin",
-    "manual": "Added manually",
-    "official": "Official",
-    "workingDay": "treated as working day",
-    "restore": "Restore",
-    "markWorking": "Mark as working day",
-    "addDate": "Add holiday"
-  },
   "settings": {
     "general": "General",
     "mailFromName": "Sender display name",
     "mailFromAddress": "Sender address",
     "norms": "Available norms",
-    "normsHint": "Comma separated, e.g. 1000-1, 1000-2",
-    "technical": "Technical settings",
-    "technicalOnlyBumii": "Only the Bumii team can change technical settings.",
-    "confidenceThreshold": "Minimum AI confidence (0–1)",
-    "llmProvider": "AI provider",
-    "retention": "Data retention",
-    "retentionHelp": "By default retention is indefinite and the purge is off.",
-    "retentionEnabled": "Enable automatic purge",
-    "deleteContactsAfterDays": "Delete contacts X days after closing",
-    "anonymizeResponsesAfterYears": "Anonymize responses after Y years"
+    "normsHint": "Comma separated, e.g. 1000-1, 1000-2"
   },
   "campaigns": {
     "title": "Campaigns",
@@ -270,7 +246,7 @@
     "previewEmpty": "Fill in the date, size and norm to see the minimum, window and questions.",
     "created": "Campaign created",
     "howTitle": "the minimum and the window are computed by the system",
-    "howText": "The current minimums table and the organization's country holidays are applied. AI is not involved in these calculations."
+    "howText": "The current minimums table and business days from Monday to Friday, in the organization's time zone, are applied. AI is not involved in these calculations."
   },
   "questionStates": {
     "active": "Will be asked",
@@ -295,7 +271,9 @@
     "smallGroups": "Groups with fewer than 3 people (re-identification risk):",
     "downloadCodes": "Download access codes",
     "codesHelp": "To hand out on paper to people without email. The row refers to your file.",
-    "loaded": "Sample loaded"
+    "loaded": "Sample loaded",
+    "chooseFile": "Choose file",
+    "fileHint": "Excel (.xlsx) or CSV, up to 5 MB"
   },
   "sampleErrors": {
     "EMPTY_FILE": "The file has no data rows.",
@@ -339,14 +317,12 @@
     "INVALID_OR_EXPIRED_LINK": "The link is invalid, already used or expired.",
     "SELECTION_EXPIRED": "The selection has expired. Request a new link.",
     "USER_ALREADY_EXISTS": "A user with this email already exists in this organization.",
-    "UNSUPPORTED_COUNTRY": "Country not supported.",
     "PUBLISHED_VERSION_IS_IMMUTABLE": "A published version cannot be changed: create a new one.",
     "DRAFT_ALREADY_EXISTS": "A draft already exists.",
     "INVALID_SAMPLING_TABLE": "The table has errors.",
     "INVALID_QUESTIONNAIRE": "The questionnaire has errors.",
     "MISSING_TRANSLATIONS": "Some texts are missing in that language.",
     "NO_APPROVED_LANGUAGE": "At least one language must be approved.",
-    "DATE_OUTSIDE_YEAR": "The date does not belong to the calendar year.",
     "NO_PUBLISHED_SAMPLING_TABLE": "No published minimums table.",
     "NO_PUBLISHED_QUESTIONNAIRE": "No published questionnaire.",
     "INVALID_NORM": "Norm not available.",

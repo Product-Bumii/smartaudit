@@ -26,7 +26,6 @@ export class ConfigPage {
   readonly tabs = [
     { path: 'sampling-tables', label: 'config.samplingTables' },
     { path: 'questionnaires', label: 'config.questionnaires' },
-    { path: 'holidays', label: 'config.holidays' },
     { path: 'settings', label: 'config.settings' },
   ];
 }

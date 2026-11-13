@@ -1,7 +1,6 @@
 export * from './enums';
 export * from './sampling';
 export * from './business-days';
-export * from './holidays';
 export * from './questionnaire';
 export * from './campaign-state';
 export * from './campaign';

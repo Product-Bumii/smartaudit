@@ -1,7 +1,7 @@
 import { FormBuilder, Validators } from '@angular/forms';
 import type { Language } from '../core/models';
 
-/** Countries offered in the organization form (holiday calendars available via date-holidays). */
+/** Countries offered in the organization form. */
 export const COUNTRIES = [
   { code: 'ES', tz: 'Europe/Madrid' },
   { code: 'CO', tz: 'America/Bogota' },

@@ -110,7 +110,6 @@
     "title": "Configuração",
     "samplingTables": "Tabela de mínimos",
     "questionnaires": "Questionários",
-    "holidays": "Feriados",
     "settings": "Definições",
     "newVersion": "Nova versão",
     "status": {
@@ -125,7 +124,7 @@
     "eyebrow": "Plataforma"
   },
   "sampling": {
-    "help": "Mínimo de entrevistas concluídas segundo a população abrangida. As campanhas guardam a versão com que foram criadas.",
+    "help": "Mínimo de entrevistas concluídas segundo a população total. As campanhas guardam a versão com que foram criadas.",
     "from": "De (pessoas)",
     "to": "Até (pessoas)",
     "required": "Mínimo de concluídas",
@@ -171,35 +170,12 @@
     "confirmApprove": "Aprovar a tradução para {{lang}}?",
     "approved": "Idioma aprovado"
   },
-  "holidays": {
-    "help": "Feriados oficiais (date-holidays) com alterações manuais. São usados para calcular dias úteis no fuso horário de cada organização.",
-    "year": "Ano",
-    "generate": "Gerar nova versão",
-    "none": "Não há calendários para este país e ano.",
-    "date": "Data",
-    "origin": "Origem",
-    "manual": "Adicionado manualmente",
-    "official": "Oficial",
-    "workingDay": "tratado como dia útil",
-    "restore": "Repor",
-    "markWorking": "Marcar como dia útil",
-    "addDate": "Adicionar feriado"
-  },
   "settings": {
     "general": "Geral",
     "mailFromName": "Nome visível do remetente",
     "mailFromAddress": "Endereço do remetente",
     "norms": "Normas disponíveis",
-    "normsHint": "Separadas por vírgulas, p. ex. 1000-1, 1000-2",
-    "technical": "Definições técnicas",
-    "technicalOnlyBumii": "Só a equipa da Bumii pode alterar as definições técnicas.",
-    "confidenceThreshold": "Confiança mínima da IA (0–1)",
-    "llmProvider": "Fornecedor de IA",
-    "retention": "Conservação de dados",
-    "retentionHelp": "Por predefinição a conservação é indefinida e a purga está desligada.",
-    "retentionEnabled": "Ativar purga automática",
-    "deleteContactsAfterDays": "Apagar contactos X dias após o fecho",
-    "anonymizeResponsesAfterYears": "Anonimizar respostas após Y anos"
+    "normsHint": "Separadas por vírgulas, p. ex. 1000-1, 1000-2"
   },
   "campaigns": {
     "title": "Campanhas",
@@ -270,7 +246,7 @@
     "previewEmpty": "Preencha a data, a dimensão e a norma para ver o mínimo, o período e as perguntas.",
     "created": "Campanha criada",
     "howTitle": "o mínimo e o período são calculados pelo sistema",
-    "howText": "Aplicam-se a tabela de mínimos em vigor e os feriados do país da organização. A IA não intervém nestes cálculos."
+    "howText": "Aplicam-se a tabela de mínimos em vigor e os dias úteis de segunda a sexta-feira, no fuso horário da organização. A IA não intervém nestes cálculos."
   },
   "questionStates": {
     "active": "Será perguntada",
@@ -295,7 +271,9 @@
     "smallGroups": "Grupos com menos de 3 pessoas (risco de reidentificação):",
     "downloadCodes": "Descarregar códigos de acesso",
     "codesHelp": "Para entregar em papel às pessoas sem e-mail. A linha corresponde ao seu ficheiro.",
-    "loaded": "Amostra carregada"
+    "loaded": "Amostra carregada",
+    "chooseFile": "Escolher ficheiro",
+    "fileHint": "Excel (.xlsx) ou CSV, máximo 5 MB"
   },
   "sampleErrors": {
     "EMPTY_FILE": "O ficheiro não tem linhas de dados.",
@@ -339,14 +317,12 @@
     "INVALID_OR_EXPIRED_LINK": "A ligação não é válida, já foi utilizada ou expirou.",
     "SELECTION_EXPIRED": "A seleção expirou. Peça uma nova ligação.",
     "USER_ALREADY_EXISTS": "Já existe um utilizador com esse e-mail nesta organização.",
-    "UNSUPPORTED_COUNTRY": "País não suportado.",
     "PUBLISHED_VERSION_IS_IMMUTABLE": "Uma versão publicada não pode ser alterada: crie uma nova.",
     "DRAFT_ALREADY_EXISTS": "Já existe um rascunho.",
     "INVALID_SAMPLING_TABLE": "A tabela tem erros.",
     "INVALID_QUESTIONNAIRE": "O questionário tem erros.",
     "MISSING_TRANSLATIONS": "Faltam textos nesse idioma.",
     "NO_APPROVED_LANGUAGE": "Tem de haver pelo menos um idioma aprovado.",
-    "DATE_OUTSIDE_YEAR": "A data não pertence ao ano do calendário.",
     "NO_PUBLISHED_SAMPLING_TABLE": "Não há tabela de mínimos publicada.",
     "NO_PUBLISHED_QUESTIONNAIRE": "Não há questionário publicado.",
     "INVALID_NORM": "Norma não disponível.",

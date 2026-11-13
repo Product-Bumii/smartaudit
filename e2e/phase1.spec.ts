@@ -68,13 +68,13 @@ test('phase 1 end-to-end flow', async ({ page }) => {
   expect(campaign.status).toBe('muestra_cargada');
   expect(campaign.sampling.minimum).toBe(20);
   expect(campaign.window).toMatchObject({
-    openDate: '2026-11-24',
-    closeDate: '2026-12-07',
-    opensAt: '2026-11-24T08:00:00.000Z', // 09:00 Europe/Madrid
-    closesAt: '2026-12-07T22:59:59.999Z', // 23:59 Europe/Madrid, business day before the visit
+    openDate: '2026-11-25',
+    closeDate: '2026-12-08',
+    opensAt: '2026-11-25T08:00:00.000Z', // 09:00 Europe/Madrid
+    closesAt: '2026-12-08T22:59:59.999Z', // 23:59 Europe/Madrid, business day before the visit
   });
-  await expect(page.getByTestId('campaign-opens')).toContainText('24 nov 2026');
-  await expect(page.getByTestId('campaign-closes')).toContainText('7 dic 2026');
+  await expect(page.getByTestId('campaign-opens')).toContainText('25 nov 2026');
+  await expect(page.getByTestId('campaign-closes')).toContainText('8 dic 2026');
 
   // 7. The ORG_ADMIN cannot read the campaign (isolation enforced by the API).
   await logout(page);
@@ -115,5 +115,5 @@ test('a person without email opens the link from the codes file and enters the a
   await page.getByTestId('access-code').fill(code.toLowerCase());
   await page.getByTestId('access-submit').click();
   await expect(page.getByTestId('code-ok')).toBeVisible();
-  await expect(page.getByTestId('not-open-yet')).toContainText('24 nov 2026');
+  await expect(page.getByTestId('not-open-yet')).toContainText('25 nov 2026');
 });

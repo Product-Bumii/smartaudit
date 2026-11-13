@@ -65,8 +65,8 @@ Existen tanto en local como en el servidor de pruebas.
 
 | Correo | Rol | Organización | Qué puede hacer |
 |---|---|---|---|
-| `superadmin.bumii@bumii.example` | `SUPERADMIN_BUMII` | — (plataforma) | Todo lo de superadmin + ajustes técnicos (proveedor de IA, umbrales, retención) |
-| `superadmin.fundacion@masfamilia.example` | `SUPERADMIN_FUNDACION` | — (plataforma) | Organizaciones y sus administradores, configuración (tabla de mínimos, cuestionarios, festivos), ver/suspender/cancelar campañas |
+| `superadmin.bumii@bumii.example` | `SUPERADMIN_BUMII` | — (plataforma) | Lo mismo que el superadmin de la Fundación |
+| `superadmin.fundacion@masfamilia.example` | `SUPERADMIN_FUNDACION` | — (plataforma) | Organizaciones y sus administradores, configuración (tabla de mínimos, cuestionarios, ajustes), ver/suspender/cancelar campañas |
 | `admin@andina.example` | `ORG_ADMIN` | Andina Servicios S.A.S. (sintética) · Colombia | Crear y desactivar auditores de su organización |
 | `admin@iberica.example` | `ORG_ADMIN` | Ibérica Logística S.L. (sintética) · España | Crear y desactivar auditores de su organización |
 | `auditor1@auditoria.example` | `AUDITOR` | **Ambas organizaciones** | Al entrar **elige organización**; crea campañas y sube muestras |
@@ -103,11 +103,11 @@ Se regeneran con `npx tsx seed/generate-samples.ts`.
 - **Acceso por enlace mágico** (sin contraseñas): un solo uso, caduca a los 15 minutos. Si un correo tiene cuentas en
   varias organizaciones, se elige a cuál entrar. En entornos de prueba el enlace aparece en pantalla.
 - **Superadmins:** gestión de organizaciones (país, zona horaria, idioma) y de sus administradores; configuración
-  versionada de la **tabla de mínimos**, el **cuestionario M1** (con aprobación por idioma) y los **festivos**; ajustes.
+  versionada de la **tabla de mínimos** y el **cuestionario M1** (con aprobación por idioma); ajustes generales.
 - **Administrador de organización:** gestión de los auditores de su organización. Nunca ve muestras ni respuestas.
 - **Auditor:**
   - Crea y edita campañas M1 con **cálculo automático** del mínimo de entrevistas completadas, la **ventana de
-    participación** (10 días hábiles con festivos del país) y las **preguntas activadas**.
+    participación** (10 días hábiles, de lunes a viernes) y las **preguntas activadas**.
   - Descarga la plantilla de muestra (Excel/CSV), la sube y ve **errores fila a fila** (si hay errores no se carga nada).
   - Ve el resumen de la muestra: valores distintos de centro y tipo de puesto, distribución por sexo y edad, avisos de
     muestra insuficiente y de grupos pequeños (riesgo de reidentificación).
@@ -129,8 +129,7 @@ el cálculo de resultados y la exportación del informe (Word/Excel/PDF). Ver [h
 |---|---|---|---|---|
 | Crear organizaciones y su ORG_ADMIN | ✅ | — | — | — |
 | Crear/desactivar auditores de la organización | ✅ | ✅ (solo la suya) | — | — |
-| Gestionar cuestionarios, tabla de mínimos, festivos | ✅ | — | — | — |
-| Ajustes técnicos (IA, umbrales, retención) | Solo `SUPERADMIN_BUMII` | — | — | — |
+| Gestionar cuestionarios, tabla de mínimos y ajustes | ✅ | — | — | — |
 | Crear y configurar campañas M1 | Ver, suspender y cancelar todas | — | ✅ (las suyas) | — |
 | Cargar y validar la muestra, descargar códigos | — | — | ✅ | — |
 | Ver respuestas, muestra o quién respondió | ✅ (Fase 3) | ❌ **nunca** | ✅ (Fase 3) | — |
@@ -164,17 +163,15 @@ Reglas transversales:
 
 ### 4.3 Superadmin: configuración
 
-En **Configuración** hay cuatro pestañas. Toda la configuración está **versionada**: una versión publicada no se edita,
+En **Configuración** hay tres pestañas. Toda la configuración está **versionada**: una versión publicada no se edita,
 se crea una nueva (solo puede haber un borrador a la vez). Las campañas guardan la versión con la que se crearon.
 
 - **Tabla de mínimos:** tramos «desde / hasta / mínimo de completadas / máximo elegible por el auditor». Se valida antes
   de publicar (contigüidad, último tramo sin límite…).
 - **Cuestionarios:** versiones del cuestionario M1, textos por idioma, reglas de activación legibles, **aprobación por
   idioma** (solo los idiomas aprobados se ofrecen a participantes) y edición avanzada de la estructura en JSON validado.
-- **Festivos:** calendario por país y año generado con `date-holidays`, con sobrescrituras manuales (añadir un festivo o
-  marcar un oficial como laborable).
-- **Ajustes:** remitente de correo, normas disponibles y, solo para Bumii, confianza mínima de la IA, proveedor de IA y
-  retención de datos (apagada por defecto).
+- **Ajustes:** remitente de correo y normas disponibles. Los ajustes técnicos (confianza mínima de la IA, proveedor de
+  IA y conservación de datos) no se muestran en la interfaz; mantienen sus valores por defecto en la base de datos.
 
 ### 4.4 Administrador de organización: crear auditores
 
@@ -240,7 +237,7 @@ navegador ──────▶│                                              
 **código determinista y testeado** en `packages/shared`. La IA solo formulará preguntas, pedirá una aclaración como
 máximo y clasificará respuestas (Fase 2).
 
-**Configuración, no código.** Cuestionarios, tabla de mínimos, festivos, textos de correo y umbrales viven en la base de
+**Configuración, no código.** Cuestionarios, tabla de mínimos, textos de correo y umbrales viven en la base de
 datos, versionados, y se cambian sin redesplegar.
 
 > Angular 21 en lugar de 22: el Node 25 del equipo de desarrollo no es compatible con Angular 22 (decisión 1).
@@ -252,7 +249,7 @@ datos, versionados, y se cambian sin redesplegar.
 ```
 apps/
   api/            Express: rutas, servicios, auth (enlace mágico), permisos, auditLogs
-    src/models/   Las 13 colecciones de MongoDB
+    src/models/   Las 12 colecciones de MongoDB
     src/routes/   auth, organizations, config, campaigns, participant
     src/services/ campaigns (cálculo y snapshot), sample (Excel/CSV, carga, códigos), users
     test/         Integración (MongoDB en memoria): auth, permisos, campañas, config, privacidad, participante
@@ -333,7 +330,7 @@ npm run check:i18n         # mismas claves en es/en/ca/pt/fr y claves usadas exi
 
 | Suite | Contenido | Resultado actual |
 |---|---|---|
-| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles y ventanas con festivos CO/ES, fin de año, cambio de hora, validación de muestra, activación de preguntas, estados de campaña, permisos, códigos, retención, disponibilidad del participante | 129 tests · **100 % de ramas** |
+| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles (lunes a viernes) y ventanas con fin de semana, fin de año y cambio de hora, validación de muestra, activación de preguntas, estados de campaña, permisos, códigos, retención, disponibilidad del participante | 129 tests · **100 % de ramas** |
 | `packages/mail` | Plantillas por idioma, marca, escape HTML, proveedores | 6 tests |
 | `apps/api` | Enlace mágico, selección de organización, límites de peticiones, aislamiento entre organizaciones, ORG_ADMIN sin acceso a muestras, campañas, carga de muestra, configuración versionada, **ningún correo en claro en la BD**, acceso con código | 53 tests |
 | `apps/worker` | Purga de retención (apagada / activada) | 2 tests |
@@ -457,9 +454,8 @@ una versión publicada no se edita.
 | `users` | Correo **cifrado** + hash, rol, organización (nula en superadmins), estado, idioma. Único por (correo, organización) |
 | `magicLinkTokens` | Hash del token, usuarios, caducidad, uso |
 | `samplingTables` | Versión, estado, tramos `{min, max, required, rangeMax}` |
-| `holidayCalendars` | País, año, versión, fechas oficiales, sobrescrituras, fechas efectivas |
 | `questionnaires` | Módulo, versión, estado, idiomas con estado de aprobación, preguntas |
-| `campaigns` | Módulo, organización, `slug` público, configuración M1, **instantánea** de cuestionario, tabla y festivos, mínimo, ventana, estado e historial |
+| `campaigns` | Módulo, organización, `slug` público, configuración M1, **instantánea** de cuestionario y tabla, mínimo, ventana, estado e historial |
 | `participantContacts` | **Colección separada**: correo cifrado, token de invitación y código de acceso (hash + copia cifrada), fila del archivo, envíos |
 | `respondents` | Demográficos y estado (`pending`, `invited`, `started`, `completed`), `completedAt`. **Sin correo ni identificadores** |
 | `interviews` | Entrevista: estado, mensajes, respuestas codificadas (Fase 2) |
@@ -493,7 +489,7 @@ Todas en `packages/shared`, deterministas y con tests.
 - Abre **10 días hábiles antes de la visita** (a las 09:00 hora local de la organización) y cierra a las **23:59 del día
   hábil anterior** a la visita.
 - Recordatorios en los días hábiles **4 y 8**, a las 09:00.
-- Día hábil = lunes a viernes menos festivos del país (calendario publicado o, si no existe, `date-holidays`).
+- Día hábil = **lunes a viernes**, en la zona horaria de la organización. Los festivos no se tienen en cuenta.
 
 ### Cuestionario M1 v1 y activación
 
@@ -546,8 +542,7 @@ Prefijo `/api`. Sesión por cookie `httpOnly` (`sa_session`). Errores: `{ "error
 | `GET/POST /organizations/:orgId/auditors` · `PATCH …/auditors/:userId` | Superadmins, ORG_ADMIN (la suya) | Auditores |
 | `/config/sampling-tables[/:id[/publish]]` | Superadmins | Tabla de mínimos versionada |
 | `/config/questionnaires[/:id[/new-version · /publish · /languages/:lang/approve]]` | Superadmins | Cuestionarios |
-| `/config/holidays[/:id[/publish]]` | Superadmins | Festivos |
-| `GET/PUT /config/settings` | Superadmins (técnicos solo Bumii) | Ajustes |
+| `GET/PUT /config/settings` | Superadmins (los ajustes técnicos solo Bumii, vía API) | Ajustes |
 | `GET /campaigns` · `GET /campaigns/:id` | Auditor (las suyas), superadmins | Listado y detalle |
 | `GET /campaigns/options` · `POST /campaigns/preview` · `POST /campaigns` · `PUT /campaigns/:id` | Auditor | Opciones, vista previa del cálculo, crear, editar |
 | `POST /campaigns/:id/status` | Auditor, superadmins | Suspender, reanudar, cancelar |
@@ -626,7 +621,6 @@ La semilla (`seed/seed-lib.ts`, idempotente) carga:
 - Cuestionario M1 **v1** publicado (español aprobado; inglés, catalán, portugués y francés pendientes). En bases de
   datos anteriores a portugués y francés, la semilla publica una versión nueva que los añade.
 - Tabla de mínimos **v1** publicada.
-- Festivos de Colombia y España 2026–2027 publicados.
 - Organizaciones **Andina Servicios S.A.S. (sintética)** (CO, America/Bogota) e **Ibérica Logística S.L. (sintética)**
   (ES, Europe/Madrid).
 - Los usuarios de la [tabla de la sección 1](#usuarios-de-prueba-semilla-sintética).

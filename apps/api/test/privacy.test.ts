@@ -34,7 +34,7 @@ describe('privacy', () => {
   it('stores no clear-text email in any collection', async () => {
     const db = mongoose.connection.db!;
     const collections = await db.listCollections().toArray();
-    expect(collections.length).toBeGreaterThanOrEqual(13);
+    expect(collections.length).toBeGreaterThanOrEqual(12);
     for (const { name } of collections) {
       const docs = await db.collection(name).find().toArray();
       for (const d of docs) {

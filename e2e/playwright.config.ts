@@ -9,6 +9,7 @@ const external = !!process.env.E2E_BASE_URL;
 
 export default defineConfig({
   testDir: '.',
+  testIgnore: ['presentation/**'],
   timeout: 120_000,
   expect: { timeout: 15_000 },
   fullyParallel: false,

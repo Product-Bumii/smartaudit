@@ -25,7 +25,8 @@
     "dev:local": "tsx scripts/dev-local.ts",
     "e2e": "playwright test -c e2e/playwright.config.ts",
     "check:i18n": "tsx scripts/check-i18n.ts",
-    "smoke:bundle": "npm run build -w apps/api && tsx scripts/smoke-bundle.ts"
+    "smoke:bundle": "npm run build -w apps/api && tsx scripts/smoke-bundle.ts",
+    "screenshots": "playwright test -c e2e/screenshots.config.ts"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.0",

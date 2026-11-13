@@ -1,4 +1,3 @@
-import { DatePipe, DecimalPipe } from '@angular/common';
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -6,6 +5,7 @@ import { TranslatePipe } from '@ngx-translate/core';
 import { ApiService, toApiFailure } from '../../core/api.service';
 import { I18nService } from '../../core/i18n.service';
 import { NotifyService } from '../../core/notify.service';
+import { TzDatePipe } from '../../shared/tz-date.pipe';
 
 interface Bracket {
   min: number;
@@ -24,7 +24,7 @@ interface SamplingTable {
 
 @Component({
   selector: 'app-sampling-tables',
-  imports: [FormsModule, DatePipe, DecimalPipe, MatButtonModule, TranslatePipe],
+  imports: [FormsModule, MatButtonModule, TranslatePipe, TzDatePipe],
   template: `
     <section class="card">
       <div class="page-header">
@@ -46,7 +46,7 @@ interface SamplingTable {
     @if (selected(); as t) {
       <section class="card">
         <h2>v{{ t.version }} · {{ 'config.status.' + t.status | translate }}
-          @if (t.publishedAt) { <span class="muted small">· {{ t.publishedAt | date: 'mediumDate' }}</span> }
+          @if (t.publishedAt) { <span class="muted small">· {{ t.publishedAt | tzDate: 'UTC' : 'date' }}</span> }
         </h2>
         @if (t.notes) { <p class="muted">{{ t.notes }}</p> }
         <div class="table-wrap">
@@ -70,8 +70,8 @@ interface SamplingTable {
                     <td><input type="number" min="1" [ngModel]="b.rangeMax" (ngModelChange)="b.rangeMax = $event === '' || $event === null ? null : +$event" [attr.aria-label]="'sampling.rangeMax' | translate" /></td>
                     <td><button mat-button (click)="removeRow(i)">{{ 'common.delete' | translate }}</button></td>
                   } @else {
-                    <td>{{ b.min | number }}</td>
-                    <td>{{ b.max === null ? ('sampling.openEnded' | translate) : (b.max | number) }}</td>
+                    <td>{{ fmt(b.min) }}</td>
+                    <td>{{ b.max === null ? ('sampling.openEnded' | translate) : fmt(b.max) }}</td>
                     <td>{{ b.required }}</td>
                     <td>{{ b.rangeMax ?? '—' }}</td>
                   }
@@ -106,6 +106,11 @@ export class SamplingTablesPage implements OnInit {
   private readonly api = inject(ApiService);
   private readonly notify = inject(NotifyService);
   private readonly i18n = inject(I18nService);
+
+  /** Thousands separator of the current UI language (1.000 in es, 1,000 in en…). */
+  fmt(n: number): string {
+    return new Intl.NumberFormat(this.i18n.lang()).format(n);
+  }
   readonly tables = signal<SamplingTable[]>([]);
   readonly selected = signal<SamplingTable | null>(null);
   readonly rows = signal<Bracket[]>([]);

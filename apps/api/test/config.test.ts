@@ -92,23 +92,3 @@ describe('questionnaires (versions and languages)', () => {
     expect(await Questionnaire.countDocuments({ status: 'published' })).toBe(2);
   });
 });
-
-describe('holiday calendars', () => {
-  it('generates a new version from date-holidays with overrides and publishes it', async () => {
-    const list = await request(env.app).get('/api/config/holidays?country=CO&year=2026').set('Cookie', admin).expect(200);
-    expect(list.body.items).toHaveLength(1);
-    const draft = await request(env.app).post('/api/config/holidays').set('Cookie', admin).send({ country: 'CO', year: 2026 }).expect(201);
-    expect(draft.body.item.version).toBe(2);
-    await request(env.app).put(`/api/config/holidays/${draft.body.item._id}`).set('Cookie', admin).send({ add: ['2027-01-02'], remove: [] }).expect(400);
-    const upd = await request(env.app).put(`/api/config/holidays/${draft.body.item._id}`).set('Cookie', admin).send({ add: ['2026-12-24'], remove: ['2026-04-05'] }).expect(200);
-    expect(upd.body.item.dates).toContain('2026-12-24');
-    expect(upd.body.item.dates).not.toContain('2026-04-05');
-    await request(env.app).post(`/api/config/holidays/${draft.body.item._id}/publish`).set('Cookie', admin).expect(200);
-
-    // New campaigns use the new calendar: 24-Dec is no longer a business day in CO.
-    const auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.orgs.CO);
-    const p = await request(env.app).post('/api/campaigns/preview').set('Cookie', auditor).send(campaignInput({ visitDate: '2026-12-28' })).expect(200);
-    expect(p.body.window.businessDays).not.toContain('2026-12-24');
-    await request(env.app).post('/api/config/holidays').set('Cookie', admin).send({ country: 'ZZ', year: 2026 }).expect(400);
-  });
-});

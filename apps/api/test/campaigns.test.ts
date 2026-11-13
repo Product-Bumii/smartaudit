@@ -25,19 +25,19 @@ const binaryParser = (res: request.Response, cb: (err: Error | null, body: Buffe
 };
 
 describe('campaign creation and derived values', () => {
-  it('computes minimum, window (CO holidays) and activated questions', async () => {
+  it('computes minimum, window (Monday to Friday, Bogotá time) and activated questions', async () => {
     const res = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput()).expect(201);
     const c = res.body.campaign;
     expect(c.status).toBe('borrador');
     expect(c.sampling).toMatchObject({ tableVersion: 1, scopeSize: 120, bracket: { min: 91, max: 150 }, minimum: 20 });
     expect(c.window).toMatchObject({
-      openDate: '2026-11-24',
-      closeDate: '2026-12-07',
-      opensAt: '2026-11-24T14:00:00.000Z',
-      closesAt: '2026-12-08T04:59:59.999Z',
+      openDate: '2026-11-25',
+      closeDate: '2026-12-08',
+      opensAt: '2026-11-25T14:00:00.000Z',
+      closesAt: '2026-12-09T04:59:59.999Z',
     });
-    expect(c.window.businessDays).not.toContain('2026-12-08');
-    expect(c.window.reminders.map((r: { date: string }) => r.date)).toEqual(['2026-11-27', '2026-12-03']);
+    expect(c.window.businessDays).toContain('2026-12-08'); // holidays are not taken into account
+    expect(c.window.reminders.map((r: { date: string }) => r.date)).toEqual(['2026-11-30', '2026-12-04']);
     const states = Object.fromEntries(c.activatedQuestions.map((q: { code: string; state: string }) => [q.code, q.state]));
     expect(states).toMatchObject({ P1: 'active', 'P7.1': 'conditional', P8: 'inactive', P9: 'inactive', P10: 'active' });
     // Only approved languages are offered to participants.

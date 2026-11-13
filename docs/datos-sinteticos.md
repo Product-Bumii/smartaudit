@@ -18,7 +18,6 @@ Los dominios `.example` están reservados (RFC 2606): ningún correo sale a pers
 
 - Cuestionario M1 **v1** publicado: español aprobado; inglés, catalán, portugués (de Portugal) y francés **pendientes de aprobación por la Fundación** (traducción de Bumii).
 - Tabla de mínimos **v1** publicada (fuente: *Tablas entrevistas.xlsx*).
-- Festivos CO y ES 2026–2027 publicados (generados con `date-holidays`, sin sobrescrituras).
 
 ## Archivos de muestra (`seed/samples`, regenerables con `npx tsx seed/generate-samples.ts`)
 

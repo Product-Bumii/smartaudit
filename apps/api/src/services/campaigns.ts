@@ -3,7 +3,6 @@ import {
   isSuperadmin,
   objectIdSchema,
   offeredLanguages,
-  officialHolidays,
   type CampaignDto,
   type CampaignM1Input,
   type CampaignStatus,
@@ -19,7 +18,6 @@ import type { AuthUser } from '../middleware/auth';
 import {
   Campaign,
   getSettings,
-  HolidayCalendar,
   Organization,
   Questionnaire,
   SamplingTable,
@@ -28,30 +26,14 @@ import {
 } from '../models';
 
 /** Current published configuration a new or editable campaign is computed with. */
-export async function currentConfiguration(country: string, visitDate: string) {
+export async function currentConfiguration() {
   const [table, questionnaire] = await Promise.all([
     SamplingTable.findOne({ status: 'published' }).sort({ version: -1 }).lean(),
     Questionnaire.findOne({ module: 'M1', status: 'published' }).sort({ version: -1 }).lean(),
   ]);
   if (!table) throw unprocessable('NO_PUBLISHED_SAMPLING_TABLE');
   if (!questionnaire) throw unprocessable('NO_PUBLISHED_QUESTIONNAIRE');
-
-  // The window (10 business days) can start in the previous year.
-  const visitYear = Number(visitDate.slice(0, 4)) || new Date().getUTCFullYear();
-  const calendars: { year: number; version: number | null; source: string }[] = [];
-  const dates: string[] = [];
-  for (const year of [visitYear - 1, visitYear]) {
-    const cal = await HolidayCalendar.findOne({ country, year, status: 'published' }).sort({ version: -1 }).lean();
-    if (cal) {
-      calendars.push({ year, version: cal.version, source: 'holidayCalendars' });
-      dates.push(...cal.dates);
-    } else {
-      // DECISIÓN POR DEFECTO: without a published calendar, fall back to the official list.
-      calendars.push({ year, version: null, source: 'date-holidays-fallback' });
-      dates.push(...officialHolidays(country, year));
-    }
-  }
-  return { table, questionnaire, holidays: { country, calendars, dates } };
+  return { table, questionnaire };
 }
 
 export interface CampaignProblems {
@@ -74,7 +56,7 @@ export async function computeCampaign(
   input: CampaignM1Input,
 ): Promise<ComputedCampaign> {
   const settings = await getSettings();
-  const conf = await currentConfiguration(org.country, input.visitDate);
+  const conf = await currentConfiguration();
   const problems: CampaignProblems[] = [];
 
   if (!settings.norms.includes(input.norm)) problems.push({ code: 'INVALID_NORM', details: { allowed: settings.norms } });
@@ -89,7 +71,6 @@ export async function computeCampaign(
     auditorMinimum: input.auditorMinimum ?? null,
     visitDate: input.visitDate,
     timeZone: org.timeZone,
-    holidays: new Set(conf.holidays.dates),
     brackets: conf.table.brackets as SamplingBracket[],
     questions,
     auditType: input.auditType,
@@ -133,7 +114,6 @@ export async function computeCampaign(
     questionnaireSnapshot: { questionnaireId: conf.questionnaire._id, version: conf.questionnaire.version, languages: qLanguages, questions },
     offeredLanguages: offered,
     activatedQuestions: derivation.questions,
-    holidaySnapshot: conf.holidays,
     window: derivation.window ? { ...derivation.window, extensions: [] } : null,
   };
   return { derivation, problems, offered, set };

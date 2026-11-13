@@ -56,14 +56,6 @@ export const samplingTableInputSchema = z.object({
   notes: z.string().max(1000).optional(),
 });
 
-export const holidayOverridesSchema = z.object({
-  add: z.array(isoDateSchema).max(100),
-  remove: z.array(isoDateSchema).max(100),
-});
-export const holidayCalendarCreateSchema = z.object({
-  country: countrySchema,
-  year: z.number().int().min(2020).max(2100),
-});
 
 const localizedTextSchema = z.partialRecord(languageSchema, z.string().max(2000));
 

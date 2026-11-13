@@ -25,7 +25,6 @@ export const routes: Routes = [
           { path: '', pathMatch: 'full', redirectTo: 'sampling-tables' },
           { path: 'sampling-tables', loadComponent: () => import('./pages/admin/sampling-tables.page').then((m) => m.SamplingTablesPage) },
           { path: 'questionnaires', loadComponent: () => import('./pages/admin/questionnaires.page').then((m) => m.QuestionnairesPage) },
-          { path: 'holidays', loadComponent: () => import('./pages/admin/holidays.page').then((m) => m.HolidaysPage) },
           { path: 'settings', loadComponent: () => import('./pages/admin/settings.page').then((m) => m.SettingsPage) },
         ],
       },

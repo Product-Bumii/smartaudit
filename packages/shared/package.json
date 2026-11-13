@@ -13,7 +13,6 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
-    "date-holidays": "^3.39.1",
     "luxon": "^3.7.2",
     "zod": "^4.6.7"
   },

@@ -1,5 +1,5 @@
 /**
- * Versioned configuration: samplingTables, holidayCalendars, questionnaires.
+ * Versioned configuration: samplingTables, questionnaires. (Holiday calendars were removed: decision 54.)
  * A published version is never edited: a new draft version is created instead.
  */
 import { Schema, model, type InferSchemaType, type Types } from 'mongoose';
@@ -32,27 +32,6 @@ const samplingTableSchema = new Schema(
 samplingTableSchema.index({ version: 1 }, { unique: true });
 export type SamplingTableDoc = InferSchemaType<typeof samplingTableSchema> & { _id: Types.ObjectId };
 export const SamplingTable = model('SamplingTable', samplingTableSchema);
-
-const holidayCalendarSchema = new Schema(
-  {
-    ...versioned,
-    country: { type: String, required: true },
-    year: { type: Number, required: true },
-    /** Dates from `date-holidays` at generation time. */
-    officialDates: { type: [String], default: [] },
-    overrides: {
-      add: { type: [String], default: [] },
-      remove: { type: [String], default: [] },
-    },
-    /** Effective list = official ± overrides. */
-    dates: { type: [String], default: [] },
-    source: { type: String, default: 'date-holidays' },
-  },
-  { timestamps: true, collection: 'holidayCalendars' },
-);
-holidayCalendarSchema.index({ country: 1, year: 1, version: 1 }, { unique: true });
-export type HolidayCalendarDoc = InferSchemaType<typeof holidayCalendarSchema> & { _id: Types.ObjectId };
-export const HolidayCalendar = model('HolidayCalendar', holidayCalendarSchema);
 
 const questionnaireSchema = new Schema(
   {

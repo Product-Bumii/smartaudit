@@ -1,6 +1,5 @@
 import { Router, type Request } from 'express';
 import {
-  isSupportedCountry,
   objectIdSchema,
   organizationCreateSchema,
   organizationUpdateSchema,
@@ -11,7 +10,7 @@ import {
 } from '@smartaudit/shared';
 import type { AppContext } from '../context';
 import { audit } from '../lib/audit';
-import { badRequest, notFound } from '../lib/errors';
+import { notFound } from '../lib/errors';
 import { requireAction, requireOrgParam } from '../middleware/auth';
 import { Organization, User, type OrganizationDoc, type UserDoc } from '../models';
 import { createUser, toUserDto } from '../services/users';
@@ -44,7 +43,6 @@ export function organizationsRouter(ctx: AppContext): Router {
 
   r.post('/', requireAction('organization.manage'), async (req, res) => {
     const input = organizationCreateSchema.parse(req.body);
-    if (!isSupportedCountry(input.country)) throw badRequest('UNSUPPORTED_COUNTRY');
     const org = await Organization.create({ ...input, adminEmail: undefined, createdBy: req.user!.id });
     await audit(req, { action: 'organization.create', resourceType: 'organization', resourceId: String(org._id), organizationId: String(org._id) });
     let admin = null;
@@ -68,7 +66,6 @@ export function organizationsRouter(ctx: AppContext): Router {
 
   r.patch('/:orgId', requireAction('organization.manage'), async (req, res) => {
     const input = organizationUpdateSchema.parse(req.body);
-    if (input.country && !isSupportedCountry(input.country)) throw badRequest('UNSUPPORTED_COUNTRY');
     const org = await findOrg(String(req.params.orgId));
     const updated = await Organization.findByIdAndUpdate(org._id, { $set: input }, { new: true }).lean();
     await audit(req, { action: 'organization.update', resourceType: 'organization', resourceId: String(org._id), organizationId: String(org._id), meta: { fields: Object.keys(input) } });

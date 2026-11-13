@@ -2,12 +2,11 @@
  * Idempotent seed with SYNTHETIC data only (see docs/datos-sinteticos.md).
  * Reuses the API models; every email is encrypted and hashed like in production.
  */
-import { applyHolidayOverrides, officialHolidays, type Language, type Question, type QuestionnaireLanguage, type Role } from '@smartaudit/shared';
+import { type Language, type Question, type QuestionnaireLanguage, type Role } from '@smartaudit/shared';
 import type { Types } from 'mongoose';
 import { FieldCrypto } from '../apps/api/src/lib/crypto';
 import {
   getSettings,
-  HolidayCalendar,
   Organization,
   Questionnaire,
   SamplingTable,
@@ -56,15 +55,6 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
 
   await addMissingQuestionnaireLanguages(log);
 
-  for (const country of ['CO', 'ES']) {
-    for (const year of [2026, 2027]) {
-      if (await HolidayCalendar.exists({ country, year })) continue;
-      const officialDates = officialHolidays(country, year);
-      const overrides = { add: [], remove: [] };
-      await HolidayCalendar.create({ country, year, version: 1, status: 'published', publishedAt: new Date(), officialDates, overrides, dates: applyHolidayOverrides(officialDates, overrides) });
-      log(`holidays ${country} ${year} published`);
-    }
-  }
 
   const upsertUser = async (email: string, role: Role, organizationId: Types.ObjectId | null) => {
     const emailHash = crypto.hash(email);

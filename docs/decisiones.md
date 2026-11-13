@@ -102,3 +102,10 @@ Aplicación del handoff `design_handoff_smartaudit_marca_efr` y del Manual de id
 | 51 | Se añaden **portugués de Portugal** (código `pt`, fechas pt-PT, registro formal «o seu») y **francés** (`fr`, «vous») en interfaz, página del participante, correos, etiquetas de rol y cuestionario M1 | Petición del usuario | Usuario |
 | 52 | Las traducciones del cuestionario en pt y fr son de Bumii y quedan **pendientes de aprobación por la Fundación** | Mismo criterio que inglés y catalán (pendiente #2 de CLAUDE.md) | DECISIÓN POR DEFECTO |
 | 53 | En bases de datos ya sembradas, la semilla **publica una versión nueva** del cuestionario con los idiomas que falten (la publicada no se edita; las campañas conservan su copia) | Inmutabilidad de la configuración publicada | DECISIÓN POR DEFECTO |
+
+## Sin festivos y sin ajustes técnicos en la interfaz · 13/11/2026
+
+| # | Decisión | Motivo | Quién |
+|---|---|---|---|
+| 54 | **Se elimina el cálculo de festivos.** Día hábil = lunes a viernes en la zona horaria de la organización. Se retiran la pestaña «festivos», la colección `holidayCalendars`, la instantánea de festivos de las campañas, la librería `date-holidays` y su semilla. El país de la organización queda como dato informativo (código ISO de 2 letras) | No es necesario. CLAUDE.md (5.4) aún habla de festivos | Usuario |
+| 55 | **Se retira la sección «Ajustes técnicos»** de la pantalla de ajustes (confianza mínima de la IA, proveedor de IA, conservación de datos). Los valores siguen en `settings` con sus valores por defecto (0,8, mock, purga apagada) y la API los mantiene para la Fase 2 | Petición del usuario | Usuario |

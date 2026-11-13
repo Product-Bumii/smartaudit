@@ -3,7 +3,7 @@ export * from './configuration';
 export * from './campaign';
 
 import { AuditLog, MagicLinkToken, Organization, Settings, User } from './core';
-import { HolidayCalendar, Questionnaire, SamplingTable } from './configuration';
+import { Questionnaire, SamplingTable } from './configuration';
 import { Campaign, Interview, ParticipantContact, Report, Respondent } from './campaign';
 
 export const ALL_MODELS = [
@@ -11,7 +11,6 @@ export const ALL_MODELS = [
   User,
   MagicLinkToken,
   SamplingTable,
-  HolidayCalendar,
   Questionnaire,
   Campaign,
   ParticipantContact,

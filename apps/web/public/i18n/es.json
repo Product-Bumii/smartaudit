@@ -110,7 +110,6 @@
     "title": "Configuración",
     "samplingTables": "Tabla de mínimos",
     "questionnaires": "Cuestionarios",
-    "holidays": "Festivos",
     "settings": "Ajustes",
     "newVersion": "Nueva versión",
     "status": {
@@ -125,7 +124,7 @@
     "eyebrow": "Plataforma"
   },
   "sampling": {
-    "help": "Mínimo de entrevistas completadas según las personas en el alcance. Las campañas guardan la versión con la que se crearon.",
+    "help": "Mínimo de entrevistas completadas según la población total. Las campañas guardan la versión con la que se crearon.",
     "from": "Desde (personas)",
     "to": "Hasta (personas)",
     "required": "Mínimo de completadas",
@@ -171,35 +170,12 @@
     "confirmApprove": "¿Aprobar la traducción al {{lang}}?",
     "approved": "Idioma aprobado"
   },
-  "holidays": {
-    "help": "Festivos oficiales (date-holidays) con sobrescrituras manuales. Se usan para calcular días hábiles en la zona horaria de cada organización.",
-    "year": "Año",
-    "generate": "Generar nueva versión",
-    "none": "No hay calendarios para este país y año.",
-    "date": "Fecha",
-    "origin": "Origen",
-    "manual": "Añadido manualmente",
-    "official": "Oficial",
-    "workingDay": "tratado como laborable",
-    "restore": "Restaurar",
-    "markWorking": "Marcar como laborable",
-    "addDate": "Añadir festivo"
-  },
   "settings": {
     "general": "General",
     "mailFromName": "Nombre visible del remitente",
     "mailFromAddress": "Dirección del remitente",
     "norms": "Normas disponibles",
-    "normsHint": "Separadas por comas, p. ej. 1000-1, 1000-2",
-    "technical": "Ajustes técnicos",
-    "technicalOnlyBumii": "Solo el equipo de Bumii puede cambiar los ajustes técnicos.",
-    "confidenceThreshold": "Confianza mínima de la IA (0–1)",
-    "llmProvider": "Proveedor de IA",
-    "retention": "Conservación de datos",
-    "retentionHelp": "Por defecto la conservación es indefinida y la purga está apagada.",
-    "retentionEnabled": "Activar purga automática",
-    "deleteContactsAfterDays": "Borrar contactos X días tras el cierre",
-    "anonymizeResponsesAfterYears": "Anonimizar respuestas tras Y años"
+    "normsHint": "Separadas por comas, p. ej. 1000-1, 1000-2"
   },
   "campaigns": {
     "title": "Campañas",
@@ -270,7 +246,7 @@
     "previewEmpty": "Completa la fecha, el tamaño y la norma para ver el mínimo, la ventana y las preguntas.",
     "created": "Campaña creada",
     "howTitle": "el mínimo y la ventana los calcula el sistema",
-    "howText": "Se aplican la tabla de mínimos vigente y los festivos del país de la organización. La IA no interviene en estos cálculos."
+    "howText": "Se aplican la tabla de mínimos vigente y los días hábiles de lunes a viernes, en la zona horaria de la organización. La IA no interviene en estos cálculos."
   },
   "questionStates": {
     "active": "Se preguntará",
@@ -295,7 +271,9 @@
     "smallGroups": "Grupos con menos de 3 personas (riesgo de reidentificación):",
     "downloadCodes": "Descargar códigos de acceso",
     "codesHelp": "Para entregar en papel a las personas sin correo. La fila corresponde a tu archivo.",
-    "loaded": "Muestra cargada"
+    "loaded": "Muestra cargada",
+    "chooseFile": "Elegir archivo",
+    "fileHint": "Excel (.xlsx) o CSV, máximo 5 MB"
   },
   "sampleErrors": {
     "EMPTY_FILE": "El archivo no tiene filas de datos.",
@@ -339,14 +317,12 @@
     "INVALID_OR_EXPIRED_LINK": "El enlace no es válido, ya se ha usado o ha caducado.",
     "SELECTION_EXPIRED": "La selección ha caducado. Solicita un nuevo enlace.",
     "USER_ALREADY_EXISTS": "Ya existe un usuario con ese correo en esta organización.",
-    "UNSUPPORTED_COUNTRY": "País no soportado.",
     "PUBLISHED_VERSION_IS_IMMUTABLE": "Una versión publicada no se puede modificar: crea una nueva.",
     "DRAFT_ALREADY_EXISTS": "Ya existe un borrador.",
     "INVALID_SAMPLING_TABLE": "La tabla tiene errores.",
     "INVALID_QUESTIONNAIRE": "El cuestionario tiene errores.",
     "MISSING_TRANSLATIONS": "Faltan textos en ese idioma.",
     "NO_APPROVED_LANGUAGE": "Debe haber al menos un idioma aprobado.",
-    "DATE_OUTSIDE_YEAR": "La fecha no pertenece al año del calendario.",
     "NO_PUBLISHED_SAMPLING_TABLE": "No hay tabla de mínimos publicada.",
     "NO_PUBLISHED_QUESTIONNAIRE": "No hay cuestionario publicado.",
     "INVALID_NORM": "Norma no disponible.",

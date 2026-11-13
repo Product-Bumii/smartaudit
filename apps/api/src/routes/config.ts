@@ -1,16 +1,11 @@
 import { Router, type Request } from 'express';
 import type { Model } from 'mongoose';
 import {
-  applyHolidayOverrides,
   can,
-  holidayCalendarCreateSchema,
-  holidayOverridesSchema,
-  isSupportedCountry,
   languageSchema,
   missingTranslations,
   MODULES,
   objectIdSchema,
-  officialHolidays,
   questionnaireDraftUpdateSchema,
   samplingTableInputSchema,
   settingsUpdateSchema,
@@ -23,9 +18,9 @@ import {
 import { z } from 'zod';
 import type { AppContext } from '../context';
 import { audit } from '../lib/audit';
-import { badRequest, conflict, forbidden, notFound, unprocessable } from '../lib/errors';
+import { conflict, forbidden, notFound, unprocessable } from '../lib/errors';
 import { requireAction } from '../middleware/auth';
-import { getSettings, HolidayCalendar, Questionnaire, SamplingTable, Settings } from '../models';
+import { getSettings, Questionnaire, SamplingTable, Settings } from '../models';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type AnyModel = Model<any>;
@@ -178,65 +173,6 @@ export function configRouter(_ctx: AppContext): Router {
     assertDraft(doc);
     await doc.deleteOne();
     await cfgAudit(req, 'config.questionnaire.delete', 'questionnaire', doc);
-    res.status(204).end();
-  });
-
-  // ---------------- Holiday calendars
-  r.get('/holidays', async (req, res) => {
-    const q = z
-      .object({ country: z.string().optional(), year: z.coerce.number().int().optional() })
-      .parse(req.query);
-    const filter: Record<string, unknown> = {};
-    if (q.country) filter.country = q.country;
-    if (q.year) filter.year = q.year;
-    res.json({ items: await HolidayCalendar.find(filter).sort({ country: 1, year: -1, version: -1 }).lean() });
-  });
-  r.get('/holidays/:id', async (req, res) => {
-    res.json({ item: await findById(HolidayCalendar, String(req.params.id)) });
-  });
-  r.post('/holidays', async (req, res) => {
-    const { country, year } = holidayCalendarCreateSchema.parse(req.body);
-    if (!isSupportedCountry(country)) throw badRequest('UNSUPPORTED_COUNTRY');
-    if (await HolidayCalendar.exists({ country, year, status: 'draft' })) throw conflict('DRAFT_ALREADY_EXISTS');
-    const previous = await HolidayCalendar.findOne({ country, year }).sort({ version: -1 }).lean();
-    const officialDates = officialHolidays(country, year);
-    const overrides = previous?.overrides ?? { add: [], remove: [] };
-    const doc = await HolidayCalendar.create({
-      country,
-      year,
-      version: (previous?.version ?? 0) + 1,
-      officialDates,
-      overrides,
-      dates: applyHolidayOverrides(officialDates, overrides),
-      createdBy: req.user!.id,
-    });
-    await cfgAudit(req, 'config.holidays.create', 'holidayCalendar', doc, { country, year });
-    res.status(201).json({ item: doc });
-  });
-  r.put('/holidays/:id', async (req, res) => {
-    const doc = await findById(HolidayCalendar, String(req.params.id));
-    assertDraft(doc);
-    const overrides = holidayOverridesSchema.parse(req.body);
-    const prefix = `${doc.year}-`;
-    if ([...overrides.add, ...overrides.remove].some((d) => !d.startsWith(prefix))) throw badRequest('DATE_OUTSIDE_YEAR');
-    doc.set({ overrides, dates: applyHolidayOverrides(doc.officialDates, overrides) });
-    await doc.save();
-    await cfgAudit(req, 'config.holidays.update', 'holidayCalendar', doc);
-    res.json({ item: doc });
-  });
-  r.post('/holidays/:id/publish', async (req, res) => {
-    const doc = await findById(HolidayCalendar, String(req.params.id));
-    assertDraft(doc);
-    doc.set({ status: 'published', publishedAt: new Date(), publishedBy: req.user!.id });
-    await doc.save();
-    await cfgAudit(req, 'config.holidays.publish', 'holidayCalendar', doc);
-    res.json({ item: doc });
-  });
-  r.delete('/holidays/:id', async (req, res) => {
-    const doc = await findById(HolidayCalendar, String(req.params.id));
-    assertDraft(doc);
-    await doc.deleteOne();
-    await cfgAudit(req, 'config.holidays.delete', 'holidayCalendar', doc);
     res.status(204).end();
   });
 

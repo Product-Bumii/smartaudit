@@ -1,11 +1,9 @@
 /**
  * Business days and campaign window (section 5.4).
- * Business day = Monday–Friday minus the organization's country holidays, in its IANA time zone.
- * Local dates are handled as `YYYY-MM-DD` strings; instants are returned as ISO-8601 UTC strings.
+ * Business day = Monday to Friday (holidays are not taken into account — decision 54), in the organization's
+ * IANA time zone. Local dates are handled as `YYYY-MM-DD` strings; instants are returned as ISO-8601 UTC strings.
  */
 import { DateTime } from 'luxon';
-
-export type HolidaySet = ReadonlySet<string>;
 
 export interface WindowRules {
   /** Number of business days the window lasts (opens N business days before the visit). */
@@ -51,39 +49,38 @@ export function isValidTimeZone(timeZone: string): boolean {
   return DateTime.now().setZone(timeZone).isValid;
 }
 
-export function isBusinessDay(date: string, holidays: HolidaySet): boolean {
-  const dt = parseLocalDate(date, 'UTC');
-  return dt.weekday <= 5 && !holidays.has(date);
+/** Monday to Friday. */
+export function isBusinessDay(date: string): boolean {
+  return parseLocalDate(date, 'UTC').weekday <= 5;
 }
 
 const toDate = (dt: DateTime): string => dt.toISODate() as string;
 
 /** Returns the `count` business days strictly before `date`, in ascending order. */
-export function businessDaysBefore(date: string, count: number, holidays: HolidaySet): string[] {
+export function businessDaysBefore(date: string, count: number): string[] {
   if (!Number.isInteger(count) || count < 1) throw new Error('INVALID_COUNT');
   const result: string[] = [];
   let cursor = parseLocalDate(date, 'UTC');
   while (result.length < count) {
     cursor = cursor.minus({ days: 1 });
     const d = toDate(cursor);
-    if (isBusinessDay(d, holidays)) result.unshift(d);
+    if (isBusinessDay(d)) result.unshift(d);
   }
   return result;
 }
 
-export function previousBusinessDay(date: string, holidays: HolidaySet): string {
-  return businessDaysBefore(date, 1, holidays)[0];
+export function previousBusinessDay(date: string): string {
+  return businessDaysBefore(date, 1)[0];
 }
 
 /** Computes the participation window for a campaign whose visit is on `visitDate` (local date). */
 export function computeCampaignWindow(
   visitDate: string,
   timeZone: string,
-  holidays: HolidaySet,
   rules: WindowRules = DEFAULT_WINDOW_RULES,
 ): CampaignWindow {
   parseLocalDate(visitDate, timeZone);
-  const businessDays = businessDaysBefore(visitDate, rules.openBusinessDays, holidays);
+  const businessDays = businessDaysBefore(visitDate, rules.openBusinessDays);
   const at = (date: string, hour: number, minute = 0, second = 0, millisecond = 0) =>
     parseLocalDate(date, timeZone).set({ hour, minute, second, millisecond }).toUTC().toISO() as string;
 

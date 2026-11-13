@@ -136,7 +136,7 @@ describe('Superadmins', () => {
     expect(res.body.admin).toMatchObject({ role: 'ORG_ADMIN', email: 'admin@nueva.example', preferredLanguage: 'ca' });
     expect(env.mail.outbox.at(-1)).toMatchObject({ to: 'admin@nueva.example' });
     await call(s.superFundacion, ['post', () => `/api/organizations/${res.body.organization.id}/admins`, { email: 'admin@nueva.example' }]).expect(409);
-    await call(s.superFundacion, ['post', () => '/api/organizations', { name: 'X', country: 'ZZ', timeZone: 'Europe/Madrid', defaultLanguage: 'es' }]).expect(400);
+    await call(s.superFundacion, ['post', () => '/api/organizations', { name: 'X', country: 'zz', timeZone: 'Europe/Madrid', defaultLanguage: 'es' }]).expect(400);
     const upd = await call(s.superBumii, ['patch', () => `/api/organizations/${res.body.organization.id}`, { status: 'inactive' }]).expect(200);
     expect(upd.body.organization.status).toBe('inactive');
   });

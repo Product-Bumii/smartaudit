@@ -75,11 +75,6 @@ const campaignSchema = new Schema(
     },
     offeredLanguages: [{ type: String, enum: LANGUAGES }],
     activatedQuestions: { type: [Schema.Types.Mixed], default: [] },
-    holidaySnapshot: {
-      country: String,
-      calendars: { type: [Schema.Types.Mixed], default: [] },
-      dates: { type: [String], default: [] },
-    },
     window: {
       timeZone: String,
       businessDays: [String],
