@@ -1,0 +1,18 @@
+[Unit]
+Description=MongoDB for SmartAudit efr (port 27018, replica set rs0)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+User=mongodb
+Group=mongodb
+ExecStart=/usr/bin/mongod --config /etc/mongod-smartaudit.conf
+Restart=always
+RestartSec=5
+# Keep the shared host safe: the instance is killed before it can starve other services.
+MemoryMax=450M
+LimitNOFILE=64000
+TimeoutStopSec=30
+
+[Install]
+WantedBy=multi-user.target

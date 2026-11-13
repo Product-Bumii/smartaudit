@@ -1,0 +1,311 @@
+{
+  "module": "M1",
+  "version": 1,
+  "title": "Cuestionario Oficial M1",
+  "source": "Hoja «Cuestionario Oficial M1» de SmartAudit_efr_M1_Plan_y_Preguntas (F+f) (2) 4 nov.xlsx",
+  "languages": [
+    { "lang": "es", "status": "approved" },
+    { "lang": "en", "status": "pending_approval" },
+    { "lang": "ca", "status": "pending_approval" }
+  ],
+  "questions": [
+    {
+      "code": "P1",
+      "block": "conocimiento",
+      "order": 10,
+      "type": "single",
+      "text": {
+        "es": "¿Conoce o ha oído hablar de la existencia del Modelo efr (Empresa Familiarmente Responsable) en la organización?",
+        "en": "Do you know about, or have you heard of, the efr Model (Family Responsible Company) in the organization?",
+        "ca": "Coneix o ha sentit parlar de l'existència del Model efr (Empresa Familiarment Responsable) a l'organització?"
+      },
+      "options": [
+        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
+        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } },
+        { "code": "NS_NC", "label": { "es": "No sabe / No contesta", "en": "Don't know / No answer", "ca": "No ho sap / No contesta" } }
+      ],
+      "activation": { "kind": "always" },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P1"
+    },
+    {
+      "code": "P2",
+      "block": "conocimiento",
+      "order": 20,
+      "type": "multi",
+      "text": {
+        "es": "¿A través de qué medio de comunicación se enteró o recibe información sobre el Modelo efr?",
+        "en": "Through which communication channel did you find out about, or do you receive information on, the efr Model?",
+        "ca": "A través de quin mitjà de comunicació se'n va assabentar o rep informació sobre el Model efr?"
+      },
+      "options": [
+        { "code": "INTRANET", "label": { "es": "Intranet", "en": "Intranet", "ca": "Intranet" } },
+        { "code": "MAIL", "label": { "es": "Correo electrónico", "en": "Email", "ca": "Correu electrònic" } },
+        { "code": "REUNIONES", "label": { "es": "Reuniones", "en": "Meetings", "ca": "Reunions" } },
+        { "code": "BOCA_A_BOCA", "label": { "es": "Boca a boca", "en": "Word of mouth", "ca": "Boca-orella" } },
+        {
+          "code": "OTROS",
+          "label": { "es": "Otros", "en": "Other", "ca": "Altres" },
+          "freeText": { "label": { "es": "¿Cuál?", "en": "Which one?", "ca": "Quin?" }, "required": true }
+        }
+      ],
+      "activation": { "kind": "always" },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P2"
+    },
+    {
+      "code": "P3.1",
+      "block": "conocimiento",
+      "order": 31,
+      "type": "single",
+      "text": {
+        "es": "¿Conoce quién es el Mánager efr de su entidad?",
+        "en": "Do you know who the efr Manager of your organization is?",
+        "ca": "Sap qui és el Mànager efr de la seva entitat?"
+      },
+      "options": [
+        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
+        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } },
+        { "code": "NS", "label": { "es": "No sabe", "en": "Don't know", "ca": "No ho sap" } }
+      ],
+      "activation": { "kind": "always" },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P3.1"
+    },
+    {
+      "code": "P3.2",
+      "block": "conocimiento",
+      "order": 32,
+      "type": "single",
+      "text": {
+        "es": "¿Conoce o sabe que existe un canal de comunicación directo con la Fundación Másfamilia?",
+        "en": "Do you know that there is a direct communication channel with the Fundación Másfamilia?",
+        "ca": "Coneix o sap que hi ha un canal de comunicació directe amb la Fundación Másfamilia?"
+      },
+      "options": [
+        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
+        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } },
+        { "code": "NS", "label": { "es": "No sabe", "en": "Don't know", "ca": "No ho sap" } }
+      ],
+      "activation": { "kind": "always" },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P3.2"
+    },
+    {
+      "code": "P3.3",
+      "block": "conocimiento",
+      "order": 33,
+      "type": "single",
+      "text": {
+        "es": "¿Conoce el catálogo o las medidas de conciliación efr que ofrece su entidad?",
+        "en": "Do you know the catalogue of efr work-life balance measures offered by your organization?",
+        "ca": "Coneix el catàleg o les mesures de conciliació efr que ofereix la seva entitat?"
+      },
+      "options": [
+        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
+        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } },
+        { "code": "NS", "label": { "es": "No sabe", "en": "Don't know", "ca": "No ho sap" } }
+      ],
+      "activation": { "kind": "always" },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P3.3"
+    },
+    {
+      "code": "P4",
+      "block": "valoracion",
+      "order": 40,
+      "type": "single",
+      "text": {
+        "es": "¿Cómo valora la conciliación en su entidad en comparación con lo que observa en otras empresas de su entorno?",
+        "en": "How do you rate work-life balance in your organization compared with what you see in other companies around you?",
+        "ca": "Com valora la conciliació a la seva entitat en comparació amb el que observa en altres empreses del seu entorn?"
+      },
+      "options": [
+        { "code": "POR_ENCIMA", "label": { "es": "Por encima", "en": "Above", "ca": "Per sobre" } },
+        { "code": "EN_LA_MEDIA", "label": { "es": "En la media", "en": "Average", "ca": "A la mitjana" } },
+        { "code": "POR_DEBAJO", "label": { "es": "Por debajo", "en": "Below", "ca": "Per sota" } },
+        { "code": "NS_NC", "label": { "es": "No sabe / No contesta", "en": "Don't know / No answer", "ca": "No ho sap / No contesta" } }
+      ],
+      "activation": { "kind": "always" },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P4"
+    },
+    {
+      "code": "P5",
+      "block": "valoracion",
+      "order": 50,
+      "type": "single",
+      "text": {
+        "es": "¿Su superior directo/a apoya la conciliación y el uso de las medidas efr?",
+        "en": "Does your direct manager support work-life balance and the use of efr measures?",
+        "ca": "El seu superior directe/a dona suport a la conciliació i a l'ús de les mesures efr?"
+      },
+      "options": [
+        { "code": "SIEMPRE", "label": { "es": "Siempre", "en": "Always", "ca": "Sempre" } },
+        { "code": "ALGUNAS_VECES", "label": { "es": "Algunas veces", "en": "Sometimes", "ca": "Algunes vegades" } },
+        { "code": "NUNCA", "label": { "es": "Nunca", "en": "Never", "ca": "Mai" } }
+      ],
+      "activation": { "kind": "always" },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P5"
+    },
+    {
+      "code": "P6",
+      "block": "valoracion",
+      "order": 60,
+      "type": "single",
+      "text": {
+        "es": "¿Cuál es la actitud de la empresa respecto a las personas que hacen uso activo de las medidas de conciliación?",
+        "en": "What is the company's attitude towards people who actively use work-life balance measures?",
+        "ca": "Quina és l'actitud de l'empresa respecte a les persones que fan ús actiu de les mesures de conciliació?"
+      },
+      "options": [
+        { "code": "POSITIVA", "label": { "es": "Positiva", "en": "Positive", "ca": "Positiva" } },
+        { "code": "NEUTRA", "label": { "es": "Neutra", "en": "Neutral", "ca": "Neutra" } },
+        { "code": "NEGATIVA", "label": { "es": "Negativa", "en": "Negative", "ca": "Negativa" } }
+      ],
+      "activation": { "kind": "always" },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P6"
+    },
+    {
+      "code": "P7",
+      "block": "jornada",
+      "order": 70,
+      "type": "single",
+      "text": {
+        "es": "¿Se excede la jornada laboral de manera reiterada?",
+        "en": "Is the working day exceeded repeatedly?",
+        "ca": "S'excedeix la jornada laboral de manera reiterada?"
+      },
+      "help": {
+        "es": "«Excede» significa más del 10 % de la duración de la jornada; «reiterada», en más del 10 % de las jornadas.",
+        "en": "\"Exceeded\" means more than 10% of the length of the working day; \"repeatedly\" means on more than 10% of working days.",
+        "ca": "«Excedeix» vol dir més del 10 % de la durada de la jornada; «reiterada», en més del 10 % de les jornades."
+      },
+      "options": [
+        { "code": "NUNCA", "label": { "es": "Nunca", "en": "Never", "ca": "Mai" } },
+        { "code": "ALGUNAS_VECES", "label": { "es": "Algunas veces", "en": "Sometimes", "ca": "Algunes vegades" } },
+        { "code": "SIEMPRE", "label": { "es": "Siempre", "en": "Always", "ca": "Sempre" } }
+      ],
+      "activation": { "kind": "always" },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P7"
+    },
+    {
+      "code": "P7.1",
+      "block": "jornada",
+      "order": 71,
+      "type": "single",
+      "text": {
+        "es": "En caso de realizar exceso de jornada, ¿se siente compensado/a por ese exceso en tiempo libre o económicamente?",
+        "en": "If you work beyond your working day, do you feel compensated for it with time off or financially?",
+        "ca": "En cas de fer excés de jornada, se sent compensat/ada per aquest excés en temps lliure o econòmicament?"
+      },
+      "options": [
+        {
+          "code": "SI_TIEMPO",
+          "label": { "es": "Sí, en tiempo libre", "en": "Yes, with time off", "ca": "Sí, en temps lliure" },
+          "freeText": { "label": { "es": "Comentario (opcional)", "en": "Comment (optional)", "ca": "Comentari (opcional)" }, "required": false }
+        },
+        {
+          "code": "SI_ECONOMICA",
+          "label": { "es": "Sí, económicamente", "en": "Yes, financially", "ca": "Sí, econòmicament" },
+          "freeText": { "label": { "es": "Comentario (opcional)", "en": "Comment (optional)", "ca": "Comentari (opcional)" }, "required": false }
+        },
+        {
+          "code": "SI_AMBAS",
+          "label": { "es": "Sí, de ambas formas", "en": "Yes, both ways", "ca": "Sí, de les dues maneres" },
+          "freeText": { "label": { "es": "Comentario (opcional)", "en": "Comment (optional)", "ca": "Comentari (opcional)" }, "required": false }
+        },
+        {
+          "code": "NO",
+          "label": { "es": "No", "en": "No", "ca": "No" },
+          "freeText": { "label": { "es": "Comentario (opcional)", "en": "Comment (optional)", "ca": "Comentari (opcional)" }, "required": false }
+        }
+      ],
+      "activation": { "kind": "answer_in", "question": "P7", "values": ["ALGUNAS_VECES", "SIEMPRE"] },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P7.1"
+    },
+    {
+      "code": "P8",
+      "block": "evolucion",
+      "order": 80,
+      "type": "single",
+      "text": {
+        "es": "¿En los últimos años se han mejorado las condiciones en materia de conciliación en su empresa?",
+        "en": "In recent years, have work-life balance conditions improved in your company?",
+        "ca": "En els darrers anys s'han millorat les condicions en matèria de conciliació a la seva empresa?"
+      },
+      "options": [
+        { "code": "GRAN_AVANCE", "label": { "es": "Gran avance", "en": "Great progress", "ca": "Gran avenç" } },
+        { "code": "MODERADO", "label": { "es": "Avance moderado", "en": "Moderate progress", "ca": "Avenç moderat" } },
+        { "code": "NULO", "label": { "es": "Ningún avance", "en": "No progress", "ca": "Cap avenç" } },
+        { "code": "NS_NC", "label": { "es": "No sabe / No contesta", "en": "Don't know / No answer", "ca": "No ho sap / No contesta" } }
+      ],
+      "activation": { "kind": "campaign_in", "field": "auditType", "values": ["renovacion"] },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P8"
+    },
+    {
+      "code": "P9",
+      "block": "excelencia",
+      "order": 90,
+      "type": "yes_no",
+      "text": {
+        "es": "¿Cree que su empresa es excelente en conciliación?",
+        "en": "Do you think your company is excellent at work-life balance?",
+        "ca": "Creu que la seva empresa és excel·lent en conciliació?"
+      },
+      "options": [
+        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
+        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } }
+      ],
+      "activation": { "kind": "campaign_in", "field": "excellence", "values": [true] },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P9"
+    },
+    {
+      "code": "P10",
+      "block": "comentarios",
+      "order": 100,
+      "type": "free_text",
+      "text": {
+        "es": "¿Quiere añadir algún comentario sobre la conciliación en su entidad?",
+        "en": "Would you like to add any comments about work-life balance in your organization?",
+        "ca": "Vol afegir algun comentari sobre la conciliació a la seva entitat?"
+      },
+      "options": [],
+      "activation": { "kind": "always" },
+      "mandatory": false,
+      "allowAbstain": true,
+      "maxClarifications": 0,
+      "reportMapping": "7.3.comentarios"
+    }
+  ]
+}

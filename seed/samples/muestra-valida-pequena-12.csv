@@ -1,0 +1,13 @@
+correo,sexo,tramo_edad,centro_trabajo,tipo_puesto,tramo_antiguedad,area,turnos,teletrabajo,hijos_o_dependientes,rlpt
+persona001@iberica.example,Mujer,<30,Sede central,Técnico/a,<2,Soporte,Sí,No,Sí,Sí
+persona002@iberica.example,Hombre,30-40,Planta norte,Administrativo/a,2-5,Operaciones,No,Sí,No,No
+persona003@iberica.example,Mujer,41-50,Oficina sur,Operario/a,6-10,Soporte,Sí,No,No,No
+SIN_CORREO,Hombre,51-60,Sede central,Mando intermedio,>10,Operaciones,No,Sí,Sí,No
+persona005@iberica.example,Otro,>60,Planta norte,Dirección,<2,Soporte,Sí,No,No,No
+persona006@iberica.example,No indica,<30,Oficina sur,Técnico/a,2-5,Operaciones,No,Sí,No,No
+persona007@iberica.example,Mujer,30-40,Sede central,Administrativo/a,6-10,Soporte,Sí,No,Sí,No
+SIN_CORREO,Hombre,41-50,Planta norte,Operario/a,>10,Operaciones,No,Sí,No,Sí
+persona009@iberica.example,Mujer,51-60,Oficina sur,Mando intermedio,<2,Soporte,Sí,No,No,No
+persona010@iberica.example,Hombre,>60,Sede central,Dirección,2-5,Operaciones,No,Sí,Sí,No
+persona011@iberica.example,Otro,<30,Planta norte,Técnico/a,6-10,Soporte,Sí,No,No,No
+SIN_CORREO,No indica,30-40,Oficina sur,Administrativo/a,>10,Operaciones,No,Sí,No,No

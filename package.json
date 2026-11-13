@@ -1,0 +1,42 @@
+{
+  "name": "smartaudit-efr",
+  "version": "0.1.0",
+  "private": true,
+  "description": "SmartAudit efr · powered by Bumii",
+  "workspaces": [
+    "packages/shared",
+    "packages/llm",
+    "packages/mail",
+    "apps/api",
+    "apps/worker",
+    "apps/web"
+  ],
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "build": "npm run build -w apps/api -w apps/worker -w apps/web",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "test": "npm run test:coverage -w packages/shared && npm run test -w packages/mail -w apps/api -w apps/worker && npm run check:i18n",
+    "test:shared": "npm run test:coverage -w packages/shared",
+    "seed": "tsx seed/seed.ts",
+    "dev:local": "tsx scripts/dev-local.ts",
+    "e2e": "playwright test -c e2e/playwright.config.ts",
+    "check:i18n": "tsx scripts/check-i18n.ts",
+    "smoke:bundle": "npm run build -w apps/api && tsx scripts/smoke-bundle.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.0",
+    "@playwright/test": "1.65.0",
+    "@types/node": "^24.10.0",
+    "eslint": "^9.39.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.23.15",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "^8.46.0",
+    "vitest": "^5.1.0",
+    "@vitest/coverage-v8": "^5.1.0"
+  }
+}

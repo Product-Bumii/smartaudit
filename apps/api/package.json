@@ -1,0 +1,46 @@
+{
+  "name": "@smartaudit/api",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/server.ts",
+    "dev:memory": "tsx src/dev-memory.ts",
+    "build": "node build.mjs",
+    "start": "node dist/server.cjs",
+    "migrate": "node dist/migrate.cjs",
+    "test": "vitest run",
+    "seed:prod": "node dist/seed.cjs"
+  },
+  "dependencies": {
+    "@smartaudit/llm": "*",
+    "@smartaudit/mail": "*",
+    "@smartaudit/shared": "*",
+    "cookie-parser": "^1.4.7",
+    "csv-parse": "^6.1.0",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "express-rate-limit": "^8.2.1",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.19.0",
+    "multer": "^2.0.2",
+    "pino": "^10.1.0",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.9",
+    "@types/express": "^5.0.3",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
+    "@types/supertest": "^6.0.3",
+    "esbuild": "^0.25.11",
+    "mongodb-memory-server": "^10.3.0",
+    "supertest": "^7.1.4"
+  },
+  "exports": {
+    "./models": "./src/models/index.ts",
+    "./lib/*": "./src/lib/*.ts",
+    "./config": "./src/config.ts"
+  }
+}

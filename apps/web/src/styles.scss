@@ -1,0 +1,210 @@
+@use '@angular/material' as mat;
+
+/*
+ * Marca efr aplicada al aplicativo SmartAudit (design_handoff_smartaudit_marca_efr + Manual de identidad
+ * corporativa efr 2025). Todos los colores de la interfaz salen de estos tokens: no usar HEX sueltos.
+ *
+ * Reglas: naranja 60 / gris oscuro 30 / gris medio 10 · Arial (Verdana para valores técnicos) ·
+ * títulos en negrita, naranja y minúsculas · radio 0 y sin sombras · bordes 1px #E6E6E6.
+ */
+:root {
+  /* Colores corporativos (manual, apartado 2) */
+  --efr-orange: #ff6600; /* Pantone 151 C · títulos, acentos, CTA primario */
+  --efr-gray-dark: #333333; /* Process Black 80 % · texto, CTA hover, fondos oscuros */
+  --efr-gray-mid: #999999; /* Pantone 877 · metadatos y numeración (no para texto de cuerpo) */
+  --efr-surface: #ffffff;
+  --efr-surface-alt: #f4f4f4;
+  --efr-border: #e6e6e6;
+  --efr-border-strong: #d0d0d0;
+  --efr-on-dark-muted: #e6e6e6;
+  /* Solo para estados funcionales de error (no es color de marca; necesario por accesibilidad). */
+  --efr-error: #b42318;
+
+  /* Tipografía corporativa (apartado 3) */
+  --efr-font: Arial, Helvetica, sans-serif;
+  --efr-font-tech: Verdana, Geneva, sans-serif;
+
+  --efr-transition: 150ms ease;
+}
+
+html {
+  color-scheme: light;
+  @include mat.theme(
+    (
+      color: (primary: mat.$orange-palette, tertiary: mat.$orange-palette, theme-type: light),
+      typography: (plain-family: 'Arial, Helvetica, sans-serif', brand-family: 'Arial, Helvetica, sans-serif', bold-weight: 700, medium-weight: 700, regular-weight: 400),
+      density: 0,
+    )
+  );
+
+  /* Ajuste exacto a los colores efr y a la estética plana (radio 0, sin elevación). */
+  --mat-sys-primary: var(--efr-orange);
+  --mat-sys-on-primary: #ffffff;
+  --mat-sys-primary-container: var(--efr-surface-alt);
+  --mat-sys-on-primary-container: var(--efr-gray-dark);
+  --mat-sys-secondary-container: var(--efr-surface-alt);
+  --mat-sys-on-secondary-container: var(--efr-gray-dark);
+  --mat-sys-surface: var(--efr-surface);
+  --mat-sys-surface-container: var(--efr-surface);
+  --mat-sys-surface-container-low: var(--efr-surface);
+  --mat-sys-surface-container-high: var(--efr-surface-alt);
+  --mat-sys-surface-container-highest: var(--efr-surface-alt);
+  --mat-sys-on-surface: var(--efr-gray-dark);
+  --mat-sys-on-surface-variant: var(--efr-gray-dark);
+  --mat-sys-outline: var(--efr-gray-mid);
+  --mat-sys-outline-variant: var(--efr-border);
+  --mat-sys-inverse-surface: var(--efr-gray-dark);
+  --mat-sys-inverse-on-surface: #ffffff;
+  --mat-sys-inverse-primary: var(--efr-orange);
+  --mat-sys-error: var(--efr-error);
+  --mat-sys-corner-extra-small: 0px;
+  --mat-sys-corner-small: 0px;
+  --mat-sys-corner-medium: 0px;
+  --mat-sys-corner-large: 0px;
+  --mat-sys-corner-extra-large: 0px;
+  --mat-sys-corner-full: 0px;
+  --mat-sys-level1: none;
+  --mat-sys-level2: none;
+  --mat-sys-level3: none;
+}
+
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--efr-surface);
+  color: var(--efr-gray-dark);
+  font-family: var(--efr-font);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Enlaces (naranja; hover gris oscuro subrayado) */
+a { color: var(--efr-orange); text-decoration: none; transition: color var(--efr-transition); }
+a:hover { color: var(--efr-gray-dark); text-decoration: underline; }
+
+/* ---------- Títulos: Arial Bold, naranja, SIEMPRE en minúsculas */
+h1, h2, h3, .efr-title { font-family: var(--efr-font); font-weight: 700; color: var(--efr-orange); text-transform: lowercase; margin: 0; }
+h1 { font-size: clamp(32px, 4vw, 48px); line-height: 1.08; letter-spacing: -1px; }
+h2 { font-size: 28px; line-height: 1.2; }
+h3 { font-size: 20px; line-height: 1.3; color: var(--efr-gray-dark); }
+/* Nombres propios y datos (organizaciones, campañas) conservan sus mayúsculas. */
+.keep-case { text-transform: none; }
+
+.eyebrow { font-size: 14px; color: var(--efr-gray-mid); letter-spacing: 2px; text-transform: uppercase; }
+.lead { font-size: 19px; line-height: 1.55; max-width: 640px; text-wrap: pretty; }
+.display { font-size: clamp(48px, 8vw, 112px); line-height: 0.95; letter-spacing: -3px; font-weight: 700; color: var(--efr-orange); margin: 0; }
+.claim { font-size: clamp(32px, 5vw, 56px); letter-spacing: -1px; font-weight: 700; color: var(--efr-orange); }
+.tech { font-family: var(--efr-font-tech); }
+.muted { color: var(--efr-gray-dark); font-size: 14px; line-height: 1.5; }
+.note { font-size: 12px; color: var(--efr-gray-mid); line-height: 1.5; }
+
+/* ---------- Accesibilidad */
+.skip-link { position: absolute; left: -9999px; top: 0; background: var(--efr-gray-dark); color: #fff; padding: 8px 12px; z-index: 100; }
+.skip-link:focus { left: 8px; top: 8px; color: #fff; }
+:focus-visible { outline: 3px solid var(--efr-gray-dark); outline-offset: 2px; }
+
+/* ---------- Estructura de página */
+.page-header { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px 24px; flex-wrap: wrap; margin-bottom: 40px; padding-bottom: 28px; border-bottom: 1px solid var(--efr-border); }
+.page-header .titles { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.back-link { font-size: 14px; }
+.card { box-sizing: border-box; background: var(--efr-surface); border: 1px solid var(--efr-border); padding: 32px; margin-bottom: 24px; }
+.card > h2, .card .card-title { margin-bottom: 20px; }
+.card.alt { background: var(--efr-surface-alt); border-color: var(--efr-surface-alt); }
+.grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px 24px; }
+.row-actions { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; }
+.full { width: 100%; }
+@media (max-width: 720px) { .card { padding: 20px; } }
+
+/* Secciones numeradas como en el manual («1. la marca»). */
+.numbered { counter-reset: efr-section; }
+.numbered .section-title::before { counter-increment: efr-section; content: counter(efr-section) '. '; }
+
+/* ---------- Dato destacado: borde superior 3px naranja, cifra 48px */
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 24px; margin-bottom: 40px; }
+.stat { border-top: 3px solid var(--efr-orange); padding-top: 16px; display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.stat .value { font-size: 48px; font-weight: 700; color: var(--efr-orange); line-height: 1; }
+.stat .value.small { font-size: 22px; line-height: 1.2; }
+.stat .label { font-size: 15px; line-height: 1.5; }
+.stat .meta { font-size: 13px; color: var(--efr-gray-mid); }
+
+/* ---------- Bloque de cierre (fondo gris oscuro) */
+.closing-block { box-sizing: border-box; background: var(--efr-gray-dark); color: #fff; padding: 32px; display: flex; flex-direction: column; gap: 12px; }
+.closing-block .title { font-size: 24px; font-weight: 700; line-height: 1.2; text-transform: lowercase; }
+.closing-block p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--efr-on-dark-muted); }
+
+/* ---------- Avisos: planos, sin acentos laterales (rojo solo para errores) */
+.alert { padding: 14px 16px; margin-bottom: 16px; background: var(--efr-surface-alt); border: 1px solid var(--efr-border); color: var(--efr-gray-dark); font-size: 15px; line-height: 1.5; }
+.alert.info { background: var(--efr-surface-alt); }
+.alert.warn { background: var(--efr-surface); border-color: var(--efr-border-strong); }
+.alert.error { background: #fdf3f2; border-color: #f3c4bf; }
+.alert.error strong { color: var(--efr-error); }
+
+/* ---------- Etiquetas de estado: sin bordes laterales; se distinguen por relleno y borde fino */
+.chip { display: inline-flex; align-items: center; padding: 2px 10px; font-size: 13px; line-height: 1.6; white-space: nowrap; background: var(--efr-surface-alt); color: var(--efr-gray-dark); }
+.chip.neutral { background: var(--efr-surface); color: var(--efr-gray-mid); box-shadow: inset 0 0 0 1px var(--efr-border); }
+.chip.warn { background: var(--efr-surface); outline: 1px dashed var(--efr-gray-dark); outline-offset: -1px; }
+.chip.error { background: #fdf3f2; color: var(--efr-error); }
+.chip.solid { background: var(--efr-gray-dark); color: #fff; }
+
+/* ---------- Selector segmentado */
+.segmented { display: inline-flex; gap: 4px; background: var(--efr-surface-alt); padding: 4px; }
+.segmented button { border: 0; cursor: pointer; padding: 8px 14px; font: inherit; font-size: 13px; background: transparent; color: var(--efr-gray-dark); transition: background var(--efr-transition), color var(--efr-transition); }
+.segmented button[aria-pressed='true'], .segmented button.active { background: var(--efr-gray-dark); color: #fff; }
+
+/* ---------- Tablas y listas clave/valor */
+.table-wrap { overflow-x: auto; }
+.simple-table { width: 100%; border-collapse: collapse; font-size: 15px; border-top: 1px solid var(--efr-border); }
+.simple-table th, .simple-table td { text-align: left; padding: 14px 12px 14px 0; border-bottom: 1px solid var(--efr-border); vertical-align: top; }
+.simple-table th { font-weight: 700; font-size: 13px; color: var(--efr-gray-dark); text-transform: lowercase; }
+.kv { display: flex; flex-direction: column; border-top: 1px solid var(--efr-border-strong); margin: 0; }
+.kv > div { display: flex; justify-content: space-between; gap: 16px; padding: 14px 0; border-bottom: 1px solid var(--efr-border-strong); font-size: 15px; }
+.kv dt { margin: 0; }
+.kv dd { margin: 0; text-align: right; }
+textarea.code { box-sizing: border-box; font-family: var(--efr-font-tech); font-size: 12px; border: 1px solid var(--efr-gray-mid); padding: 12px; }
+code { font-family: var(--efr-font-tech); font-size: 12px; }
+
+/* ---------- Botones (Material) con el estilo efr */
+.mat-mdc-button-base { font-family: var(--efr-font) !important; font-weight: 700 !important; font-size: 15px !important; letter-spacing: 0 !important; border-radius: 0 !important; text-transform: lowercase; transition: background-color var(--efr-transition), color var(--efr-transition), border-color var(--efr-transition) !important; }
+.mat-mdc-button-base .mdc-button__label { text-transform: lowercase; }
+.mat-mdc-button-base .mat-mdc-button-persistent-ripple, .mat-mdc-button-base .mat-ripple { display: none; }
+/* Primario: fondo naranja, texto blanco; hover gris oscuro */
+.mat-mdc-unelevated-button:not(:disabled) { background-color: var(--efr-orange) !important; color: #fff !important; padding: 0 24px !important; height: 48px !important; }
+.mat-mdc-unelevated-button:not(:disabled):hover, .mat-mdc-unelevated-button:not(:disabled):focus-visible { background-color: var(--efr-gray-dark) !important; text-decoration: none; }
+/* Secundario: borde 2px gris oscuro; hover borde y texto naranja */
+.mat-mdc-outlined-button:not(:disabled) { border: 2px solid var(--efr-gray-dark) !important; color: var(--efr-gray-dark) !important; background: #fff !important; padding: 0 22px !important; height: 48px !important; }
+.mat-mdc-outlined-button:not(:disabled):hover { border-color: var(--efr-orange) !important; color: var(--efr-orange) !important; text-decoration: none; }
+/* Terciario (texto): naranja, hover gris subrayado */
+.mat-mdc-button:not(:disabled) { color: var(--efr-orange) !important; padding: 0 8px !important; min-width: 0 !important; }
+.mat-mdc-button:not(:disabled):hover { color: var(--efr-gray-dark) !important; background: transparent !important; text-decoration: underline; }
+.mat-mdc-button-base:disabled { background: var(--efr-surface-alt) !important; color: var(--efr-gray-mid) !important; border-color: var(--efr-border) !important; }
+
+/* ---------- Formularios, menús y avisos emergentes */
+.mat-mdc-form-field { font-family: var(--efr-font); }
+.mat-mdc-snack-bar-container .mdc-snackbar__surface { background: var(--efr-gray-dark) !important; border-radius: 0 !important; }
+.mat-mdc-snack-bar-container .mat-mdc-button:not(:disabled) { color: #fff !important; }
+.mat-mdc-menu-panel { border-radius: 0 !important; border: 1px solid var(--efr-border); box-shadow: none !important; }
+.mat-mdc-select-panel { border-radius: 0 !important; box-shadow: none !important; border: 1px solid var(--efr-border); }
+.mat-mdc-tab-nav-bar, .mat-mdc-tab-header { border-bottom: 1px solid var(--efr-border); }
+.mat-mdc-tab-link .mdc-tab__text-label { font-weight: 700; text-transform: lowercase; font-size: 15px; }
+.mat-mdc-progress-bar { --mdc-linear-progress-active-indicator-color: var(--efr-orange); --mdc-linear-progress-track-color: var(--efr-border); }
+
+/* Interruptor y casillas en grises/naranja de marca */
+.mat-mdc-slide-toggle {
+  --mat-slide-toggle-unselected-track-color: var(--efr-surface-alt);
+  --mat-slide-toggle-unselected-hover-track-color: var(--efr-surface-alt);
+  --mat-slide-toggle-unselected-focus-track-color: var(--efr-surface-alt);
+  --mat-slide-toggle-unselected-pressed-track-color: var(--efr-surface-alt);
+  --mat-slide-toggle-unselected-handle-color: var(--efr-gray-mid);
+  --mat-slide-toggle-unselected-hover-handle-color: var(--efr-gray-dark);
+  --mat-slide-toggle-unselected-focus-handle-color: var(--efr-gray-dark);
+  --mat-slide-toggle-track-outline-color: var(--efr-gray-mid);
+  --mat-slide-toggle-unselected-icon-color: var(--efr-surface-alt);
+  --mat-slide-toggle-selected-track-color: var(--efr-orange);
+  --mat-slide-toggle-selected-hover-track-color: var(--efr-orange);
+  --mat-slide-toggle-selected-focus-track-color: var(--efr-orange);
+  --mat-slide-toggle-selected-handle-color: #ffffff;
+  --mat-slide-toggle-selected-hover-handle-color: #ffffff;
+  --mat-slide-toggle-selected-focus-handle-color: #ffffff;
+  --mat-slide-toggle-selected-icon-color: var(--efr-orange);
+}

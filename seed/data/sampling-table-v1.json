@@ -1,0 +1,16 @@
+{
+  "version": 1,
+  "source": "Tablas entrevistas.xlsx",
+  "brackets": [
+    { "min": 1, "max": 90, "required": 14 },
+    { "min": 91, "max": 150, "required": 20 },
+    { "min": 151, "max": 249, "required": 25 },
+    { "min": 250, "max": 500, "required": 26 },
+    { "min": 501, "max": 1000, "required": 52 },
+    { "min": 1001, "max": 2000, "required": 59 },
+    { "min": 2001, "max": 4000, "required": 66 },
+    { "min": 4001, "max": 8000, "required": 78 },
+    { "min": 8001, "max": 16000, "required": 91 },
+    { "min": 16001, "max": null, "required": 91, "rangeMax": 143 }
+  ]
+}

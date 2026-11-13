@@ -1,0 +1,4 @@
+correo,sexo,tramo_edad,centro_trabajo,tipo_puesto,tramo_antiguedad,area,turnos,teletrabajo,hijos_o_dependientes,rlpt,nombre,dni,salario
+persona001@andina.example,Mujer,<30,Sede central,Técnico/a,<2,Soporte,Sí,No,Sí,Sí,Persona Ficticia,00000000T,1000
+persona002@andina.example,Hombre,30-40,Planta norte,Administrativo/a,2-5,Operaciones,No,Sí,No,No,Persona Ficticia,00000000T,1000
+persona003@andina.example,Mujer,41-50,Oficina sur,Operario/a,6-10,Soporte,Sí,No,No,No,Persona Ficticia,00000000T,1000

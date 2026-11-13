@@ -1,0 +1,9 @@
+# Local development entry point: http://localhost:8080 → Angular dev server + API.
+:8080 {
+	handle /api/* {
+		reverse_proxy api:3000
+	}
+	handle {
+		reverse_proxy web:4200
+	}
+}

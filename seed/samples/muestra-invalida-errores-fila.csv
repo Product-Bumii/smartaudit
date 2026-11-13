@@ -1,0 +1,9 @@
+correo,sexo,tramo_edad,centro_trabajo,tipo_puesto,tramo_antiguedad,area,turnos,teletrabajo,hijos_o_dependientes,rlpt
+persona001@andina.example,Mujer,<30,Sede central,Técnico/a,<2,Soporte,Sí,No,Sí,Sí
+correo-malo@,Hombre,30-40,Planta norte,Administrativo/a,2-5,Operaciones,No,Sí,No,No
+PERSONA004@ANDINA.EXAMPLE,Mujer,41-50,Oficina sur,Operario/a,6-10,Soporte,Sí,No,No,No
+persona004@andina.example,Hombre,51-60,Sede central,Mando intermedio,>10,Operaciones,No,Sí,Sí,No
+persona005@andina.example,Femenino,>60,Planta norte,Dirección,<2,Soporte,Sí,No,No,No
+persona006@andina.example,No indica,25-35,Oficina sur,Técnico/a,2-5,Operaciones,No,Sí,No,No
+persona007@andina.example,Mujer,30-40,,Administrativo/a,6-10,Soporte,Sí,No,Sí,No
+persona008@andina.example,Hombre,41-50,Planta norte,Operario/a,>10,Operaciones,Quizá,Sí,No,Sí

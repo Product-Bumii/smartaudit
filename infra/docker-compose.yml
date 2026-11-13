@@ -1,0 +1,86 @@
+# Staging / production stack on the EU VPS. Deployed by infra/scripts/deploy.sh.
+# Requires infra/.env on the server (see .env.example) with DOMAIN, secrets and Mongo credentials.
+name: smartaudit
+
+x-app-env: &app-env
+  NODE_ENV: production
+  APP_VERSION: ${APP_VERSION:-unknown}
+  MONGO_URL: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/smartaudit?authSource=admin&replicaSet=rs0
+  APP_URL: https://${DOMAIN}
+  CORS_ORIGINS: https://${DOMAIN}
+  TRUST_PROXY: 'true'
+  COOKIE_SECURE: 'true'
+  JWT_SECRET: ${JWT_SECRET}
+  FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY}
+  EMAIL_HASH_KEY: ${EMAIL_HASH_KEY}
+  MAIL_PROVIDER: smtp
+  SMTP_HOST: ${SMTP_HOST:-smtp-relay.gmail.com}
+  SMTP_PORT: ${SMTP_PORT:-465}
+  SMTP_SECURE: ${SMTP_SECURE:-true}
+  SMTP_USER: ${SMTP_USER}
+  SMTP_PASS: ${SMTP_PASS}
+  MAIL_FROM_NAME: ${MAIL_FROM_NAME:-SmartAudit efr}
+  MAIL_FROM_ADDRESS: ${MAIL_FROM_ADDRESS:-no-reply@bumii.ai}
+  LOG_LEVEL: ${LOG_LEVEL:-info}
+
+services:
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports: ['80:80', '443:443']
+    environment:
+      DOMAIN: ${DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on: [api, web]
+
+  web:
+    image: smartaudit-web:${APP_VERSION:-latest}
+    restart: unless-stopped
+
+  api:
+    image: smartaudit-api:${APP_VERSION:-latest}
+    restart: unless-stopped
+    environment: *app-env
+    depends_on:
+      mongo: { condition: service_healthy }
+
+  worker:
+    image: smartaudit-worker:${APP_VERSION:-latest}
+    restart: unless-stopped
+    environment: *app-env
+    depends_on:
+      mongo: { condition: service_healthy }
+
+  mongo:
+    image: mongo:8.0
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+    # Auth + replica set need a keyfile; it is generated once inside the data volume.
+    entrypoint:
+      - bash
+      - -c
+      - |
+        if [ ! -f /data/db/keyfile ]; then openssl rand -base64 756 > /data/db/keyfile; fi
+        chmod 400 /data/db/keyfile && chown 999:999 /data/db/keyfile
+        exec docker-entrypoint.sh mongod --replSet rs0 --bind_ip_all --keyFile /data/db/keyfile
+    volumes: [mongo-data:/data/db]
+    # Not published: only reachable inside the Docker network.
+    healthcheck:
+      test: >
+        mongosh --quiet -u "$${MONGO_INITDB_ROOT_USERNAME}" -p "$${MONGO_INITDB_ROOT_PASSWORD}" --authenticationDatabase admin
+        --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }"
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 20s
+
+volumes:
+  mongo-data:
+  caddy-data:
+  caddy-config:

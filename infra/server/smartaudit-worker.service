@@ -1,0 +1,31 @@
+[Unit]
+Description=SmartAudit efr worker (Agenda) · powered by Bumii
+After=network-online.target mongod-smartaudit.service
+Wants=network-online.target mongod-smartaudit.service
+
+[Service]
+Type=simple
+User=smartaudit
+Group=smartaudit
+WorkingDirectory=/opt/smartaudit/current/worker
+EnvironmentFile=/opt/smartaudit/shared/.env
+ExecStart=/usr/bin/node --max-old-space-size=96 main.cjs
+Restart=always
+RestartSec=5
+MemoryMax=220M
+TimeoutStopSec=15
+
+# Hardening
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+
+[Install]
+WantedBy=multi-user.target

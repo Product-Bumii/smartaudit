@@ -1,0 +1,31 @@
+correo,sexo,tramo_edad,centro_trabajo,tipo_puesto,tramo_antiguedad,area,turnos,teletrabajo,hijos_o_dependientes,rlpt
+persona001@andina.example,Mujer,<30,Sede central,Técnico/a,<2,Soporte,Sí,No,Sí,Sí
+persona002@andina.example,Hombre,30-40,Planta norte,Administrativo/a,2-5,Operaciones,No,Sí,No,No
+persona003@andina.example,Mujer,41-50,Oficina sur,Operario/a,6-10,Soporte,Sí,No,No,No
+persona004@andina.example,Hombre,51-60,Sede central,Mando intermedio,>10,Operaciones,No,Sí,Sí,No
+persona005@andina.example,Otro,>60,Planta norte,Dirección,<2,Soporte,Sí,No,No,No
+SIN_CORREO,No indica,<30,Oficina sur,Técnico/a,2-5,Operaciones,No,Sí,No,No
+persona007@andina.example,Mujer,30-40,Sede central,Administrativo/a,6-10,Soporte,Sí,No,Sí,No
+persona008@andina.example,Hombre,41-50,Planta norte,Operario/a,>10,Operaciones,No,Sí,No,Sí
+persona009@andina.example,Mujer,51-60,Oficina sur,Mando intermedio,<2,Soporte,Sí,No,No,No
+persona010@andina.example,Hombre,>60,Sede central,Dirección,2-5,Operaciones,No,Sí,Sí,No
+persona011@andina.example,Otro,<30,Planta norte,Técnico/a,6-10,Soporte,Sí,No,No,No
+SIN_CORREO,No indica,30-40,Oficina sur,Administrativo/a,>10,Operaciones,No,Sí,No,No
+persona013@andina.example,Mujer,41-50,Sede central,Operario/a,<2,Soporte,Sí,No,Sí,No
+persona014@andina.example,Hombre,51-60,Planta norte,Mando intermedio,2-5,Operaciones,No,Sí,No,No
+persona015@andina.example,Mujer,>60,Oficina sur,Dirección,6-10,Soporte,Sí,No,No,Sí
+persona016@andina.example,Hombre,<30,Sede central,Técnico/a,>10,Operaciones,No,Sí,Sí,No
+persona017@andina.example,Otro,30-40,Planta norte,Administrativo/a,<2,Soporte,Sí,No,No,No
+SIN_CORREO,No indica,41-50,Oficina sur,Operario/a,2-5,Operaciones,No,Sí,No,No
+persona019@andina.example,Mujer,51-60,Sede central,Mando intermedio,6-10,Soporte,Sí,No,Sí,No
+persona020@andina.example,Hombre,>60,Planta norte,Dirección,>10,Operaciones,No,Sí,No,No
+persona021@andina.example,Mujer,<30,Oficina sur,Técnico/a,<2,Soporte,Sí,No,No,No
+persona022@andina.example,Hombre,30-40,Sede central,Administrativo/a,2-5,Operaciones,No,Sí,Sí,Sí
+persona023@andina.example,Otro,41-50,Planta norte,Operario/a,6-10,Soporte,Sí,No,No,No
+SIN_CORREO,No indica,51-60,Oficina sur,Mando intermedio,>10,Operaciones,No,Sí,No,No
+persona025@andina.example,Mujer,>60,Sede central,Dirección,<2,Soporte,Sí,No,Sí,No
+persona026@andina.example,Hombre,<30,Planta norte,Técnico/a,2-5,Operaciones,No,Sí,No,No
+persona027@andina.example,Mujer,30-40,Oficina sur,Administrativo/a,6-10,Soporte,Sí,No,No,No
+persona028@andina.example,Hombre,41-50,Sede central,Operario/a,>10,Operaciones,No,Sí,Sí,No
+persona029@andina.example,Otro,51-60,Planta norte,Mando intermedio,<2,Soporte,Sí,No,No,Sí
+SIN_CORREO,No indica,>60,Oficina sur,Dirección,2-5,Operaciones,No,Sí,No,No

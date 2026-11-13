@@ -1,0 +1,101 @@
+# Local development stack: `docker compose -f infra/docker-compose.dev.yml up`
+#   App:     http://localhost:8080   (Caddy → Angular dev server + API)
+#   Mailpit: http://localhost:8025   (all emails, including magic links)
+#   MongoDB: localhost:27017 (replica set rs0, no auth: development only)
+name: smartaudit-dev
+
+x-node: &node
+  build:
+    context: ..
+    dockerfile: infra/docker/dev.Dockerfile
+  image: smartaudit-dev:latest
+  working_dir: /app
+  env_file:
+    - path: ../.env
+      required: false
+  environment: &env
+    NODE_ENV: development
+    MONGO_URL: mongodb://mongo:27017/smartaudit?replicaSet=rs0
+    APP_URL: http://localhost:8080
+    CORS_ORIGINS: http://localhost:8080
+    MAIL_PROVIDER: smtp
+    SMTP_HOST: mailpit
+    SMTP_PORT: '1025'
+    SMTP_SECURE: 'false'
+    # Development-only keys (override in ../.env). Never reuse in staging/production.
+    JWT_SECRET: ${JWT_SECRET:-dev-jwt-secret-change-me-0000000000000000}
+    FIELD_ENCRYPTION_KEY: ${FIELD_ENCRYPTION_KEY:-ZGV2LWZpZWxkLWVuY3J5cHRpb24ta2V5LTMyYnl0ZXM=}
+    EMAIL_HASH_KEY: ${EMAIL_HASH_KEY:-dev-email-hash-key-change-me-00000000000}
+    LOG_LEVEL: info
+    # Test environment without email integration: show the magic link on screen.
+    DEV_SHOW_MAGIC_LINK: 'true'
+  volumes:
+    - ..:/app
+    # Keep the Linux node_modules from the image (not the host's).
+    - /app/node_modules
+    - /app/apps/api/node_modules
+    - /app/apps/web/node_modules
+    - /app/apps/worker/node_modules
+    - /app/packages/mail/node_modules
+    - /app/packages/shared/node_modules
+
+services:
+  mongo:
+    image: mongo:8.0
+    command: ['mongod', '--replSet', 'rs0', '--bind_ip_all']
+    ports: ['27017:27017']
+    volumes: [mongo-data:/data/db]
+    healthcheck:
+      # Initiates the single-node replica set on first start (needed for transactions).
+      test: >
+        mongosh --quiet --eval "try { rs.status().ok } catch (e) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo:27017'}]}).ok }"
+      interval: 5s
+      timeout: 10s
+      retries: 30
+      start_period: 5s
+
+  mailpit:
+    image: axllent/mailpit:v1.27
+    ports: ['8025:8025', '1025:1025']
+
+  seed:
+    <<: *node
+    command: ['npx', 'tsx', 'seed/seed.ts']
+    depends_on:
+      mongo: { condition: service_healthy }
+    restart: 'no'
+
+  api:
+    <<: *node
+    command: ['npx', 'tsx', 'watch', 'apps/api/src/server.ts']
+    ports: ['3000:3000']
+    depends_on:
+      mongo: { condition: service_healthy }
+      seed: { condition: service_completed_successfully }
+      mailpit: { condition: service_started }
+
+  worker:
+    <<: *node
+    command: ['npx', 'tsx', 'watch', 'apps/worker/src/main.ts']
+    depends_on:
+      mongo: { condition: service_healthy }
+      seed: { condition: service_completed_successfully }
+
+  web:
+    <<: *node
+    working_dir: /app/apps/web
+    command: ['npx', 'ng', 'serve', '--host', '0.0.0.0', '--port', '4200', '--allowed-hosts', 'localhost,web']
+    environment:
+      <<: *env
+      API_PROXY_TARGET: http://api:3000
+    ports: ['4200:4200']
+    depends_on: [api]
+
+  caddy:
+    image: caddy:2-alpine
+    volumes: ['./Caddyfile.dev:/etc/caddy/Caddyfile:ro']
+    ports: ['8080:8080']
+    depends_on: [api, web]
+
+volumes:
+  mongo-data:

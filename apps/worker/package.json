@@ -1,0 +1,23 @@
+{
+  "name": "@smartaudit/worker",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file-if-exists=../../.env src/main.ts",
+    "build": "node build.mjs",
+    "start": "node dist/main.cjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@smartaudit/api": "*",
+    "@smartaudit/shared": "*",
+    "agenda": "^5.0.0",
+    "mongoose": "^8.19.0",
+    "pino": "^10.1.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.25.11",
+    "mongodb-memory-server": "^10.3.0"
+  }
+}
