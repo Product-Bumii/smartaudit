@@ -39,6 +39,18 @@ export const DEFAULT_TEMPLATES: Record<TemplateKey, Record<Language, TemplateTex
       body: ["Hola:", "Prem el botó per entrar a SmartAudit efr. L'enllaç és d'un sol ús i caduca en {{minutes}} minuts.", '{{button}}', "Si no has sol·licitat aquest accés, ignora aquest correu."],
       button: 'Entrar a SmartAudit efr',
     },
+    pt: {
+      subject: 'A sua ligação de acesso ao SmartAudit efr',
+      heading: 'a sua ligação de acesso',
+      body: ['Olá,', 'Clique no botão para entrar no SmartAudit efr. A ligação é de utilização única e expira em {{minutes}} minutos.', '{{button}}', 'Se não pediu este acesso, ignore este e-mail.'],
+      button: 'Entrar no SmartAudit efr',
+    },
+    fr: {
+      subject: "Votre lien d'accès à SmartAudit efr",
+      heading: "votre lien d'accès",
+      body: ['Bonjour,', 'Cliquez sur le bouton pour accéder à SmartAudit efr. Le lien est à usage unique et expire dans {{minutes}} minutes.', '{{button}}', "Si vous n'avez pas demandé cet accès, ignorez cet e-mail."],
+      button: 'Accéder à SmartAudit efr',
+    },
   },
   account_created: {
     es: {
@@ -58,6 +70,18 @@ export const DEFAULT_TEMPLATES: Record<TemplateKey, Record<Language, TemplateTex
       heading: 'el teu compte està a punt',
       body: ['Hola:', "S'ha creat un compte de {{role}} per a tu a SmartAudit efr ({{organization}}).", "Per entrar, obre la plataforma i introdueix el teu correu: rebràs un enllaç d'accés.", '{{button}}'],
       button: 'Obrir SmartAudit efr',
+    },
+    pt: {
+      subject: 'A sua conta no SmartAudit efr foi criada',
+      heading: 'a sua conta está pronta',
+      body: ['Olá,', 'Foi criada para si uma conta de {{role}} no SmartAudit efr ({{organization}}).', 'Para entrar, abra a plataforma e introduza o seu e-mail: receberá uma ligação de acesso.', '{{button}}'],
+      button: 'Abrir o SmartAudit efr',
+    },
+    fr: {
+      subject: 'Votre compte SmartAudit efr a été créé',
+      heading: 'votre compte est prêt',
+      body: ['Bonjour,', 'Un compte {{role}} a été créé pour vous dans SmartAudit efr ({{organization}}).', "Pour vous connecter, ouvrez la plateforme et saisissez votre adresse e-mail : vous recevrez un lien d'accès.", '{{button}}'],
+      button: 'Ouvrir SmartAudit efr',
     },
   },
 };

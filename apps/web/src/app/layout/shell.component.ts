@@ -71,6 +71,8 @@ interface NavItem {
     .links a.active { color: var(--efr-gray-dark); font-weight: 700; }
     .num { color: var(--efr-gray-mid); font-weight: 400; margin-right: 4px; }
     .account { display: flex; flex-direction: column; gap: 12px; margin-top: auto; padding-top: 20px; border-top: 1px solid var(--efr-border); font-size: 13px; }
+    .account .segmented { align-self: flex-start; flex-wrap: wrap; }
+    .account .segmented button { padding: 6px 9px; }
     .who { display: flex; flex-direction: column; gap: 2px; line-height: 1.4; }
     .email { font-weight: 700; word-break: break-all; }
     .logout { align-self: flex-start; background: none; border: 0; padding: 0; color: var(--efr-orange); font: inherit; font-size: 14px; cursor: pointer; }

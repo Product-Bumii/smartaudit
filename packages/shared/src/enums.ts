@@ -5,7 +5,8 @@ export type Role = (typeof ROLES)[number];
 export const SUPERADMIN_ROLES: readonly Role[] = ['SUPERADMIN_BUMII', 'SUPERADMIN_FUNDACION'];
 export const isSuperadmin = (role: Role): boolean => SUPERADMIN_ROLES.includes(role);
 
-export const LANGUAGES = ['es', 'en', 'ca'] as const;
+/** `pt` = Portuguese of Portugal (pt-PT). */
+export const LANGUAGES = ['es', 'en', 'ca', 'pt', 'fr'] as const;
 export type Language = (typeof LANGUAGES)[number];
 export const DEFAULT_LANGUAGE: Language = 'es';
 

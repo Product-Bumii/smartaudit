@@ -16,7 +16,8 @@ export type {
 
 import type { CampaignDto } from '@smartaudit/shared';
 
-export const LANGS = ['es', 'en', 'ca'] as const;
+/** `pt` = portugués de Portugal (pt-PT). */
+export const LANGS = ['es', 'en', 'ca', 'pt', 'fr'] as const;
 export const AUDIT_TYPE_VALUES = ['inicial', 'mantenimiento', 'renovacion'] as const;
 export const SUPERADMIN_ROLE_VALUES = ['SUPERADMIN_BUMII', 'SUPERADMIN_FUNDACION'] as const;
 

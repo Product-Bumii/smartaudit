@@ -9,6 +9,8 @@ const ROLE_LABELS: Record<Language, Record<Role, string>> = {
   es: { SUPERADMIN_BUMII: 'superadministración (Bumii)', SUPERADMIN_FUNDACION: 'superadministración (Fundación)', ORG_ADMIN: 'administración de la organización', AUDITOR: 'auditoría' },
   en: { SUPERADMIN_BUMII: 'superadmin (Bumii)', SUPERADMIN_FUNDACION: 'superadmin (Fundación)', ORG_ADMIN: 'organization admin', AUDITOR: 'auditor' },
   ca: { SUPERADMIN_BUMII: 'superadministració (Bumii)', SUPERADMIN_FUNDACION: 'superadministració (Fundació)', ORG_ADMIN: "administració de l'organització", AUDITOR: 'auditoria' },
+  pt: { SUPERADMIN_BUMII: 'superadministração (Bumii)', SUPERADMIN_FUNDACION: 'superadministração (Fundação)', ORG_ADMIN: 'administração da organização', AUDITOR: 'auditoria' },
+  fr: { SUPERADMIN_BUMII: 'superadministration (Bumii)', SUPERADMIN_FUNDACION: 'superadministration (Fondation)', ORG_ADMIN: "administration de l'organisation", AUDITOR: 'audit' },
 };
 
 export function toUserDto(ctx: AppContext, u: UserDoc): UserDto {

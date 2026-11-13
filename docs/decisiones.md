@@ -94,3 +94,11 @@ Aplicación del handoff `design_handoff_smartaudit_marca_efr` y del Manual de id
 | 48 | **MongoDB propio** para SmartAudit (puerto 27018, replica set, auth, caché 256 MB, límite 450 MB) | El MongoDB del host es standalone y lo usan otras apps; convertirlo exigía reiniciarlo | Usuario |
 | 49 | Nuevo entorno `NODE_ENV=staging` y proveedor de correo `disabled`: como producción, pero permite el enlace en pantalla; producción sigue rechazándolo | Sin integración de correo en el servidor de pruebas | Usuario |
 | 50 | Límites de memoria: API 320 MB (heap 160), worker 220 MB (heap 96), sin `--enable-source-maps` | Host compartido con poca RAM | DECISIÓN POR DEFECTO |
+
+## Portugués de Portugal y francés · 13/11/2026
+
+| # | Decisión | Motivo | Quién |
+|---|---|---|---|
+| 51 | Se añaden **portugués de Portugal** (código `pt`, fechas pt-PT, registro formal «o seu») y **francés** (`fr`, «vous») en interfaz, página del participante, correos, etiquetas de rol y cuestionario M1 | Petición del usuario | Usuario |
+| 52 | Las traducciones del cuestionario en pt y fr son de Bumii y quedan **pendientes de aprobación por la Fundación** | Mismo criterio que inglés y catalán (pendiente #2 de CLAUDE.md) | DECISIÓN POR DEFECTO |
+| 53 | En bases de datos ya sembradas, la semilla **publica una versión nueva** del cuestionario con los idiomas que falten (la publicada no se edita; las campañas conservan su copia) | Inmutabilidad de la configuración publicada | DECISIÓN POR DEFECTO |

@@ -23,10 +23,8 @@ describe('seed questionnaire M1 v1', () => {
     questions.forEach((q) => expect(questionSchema.safeParse(q).success).toBe(true));
   });
 
-  it('has complete es/en/ca texts', () => {
-    expect(missingTranslations(questions, 'es')).toEqual([]);
-    expect(missingTranslations(questions, 'en')).toEqual([]);
-    expect(missingTranslations(questions, 'ca')).toEqual([]);
+  it.each(['es', 'en', 'ca', 'pt', 'fr'] as const)('has complete %s texts', (lang) => {
+    expect(missingTranslations(questions, lang)).toEqual([]);
   });
 
   it('P8 is only active in renewal audits', () => {

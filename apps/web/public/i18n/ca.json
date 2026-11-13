@@ -26,7 +26,9 @@
   "lang": {
     "es": "Castellà",
     "en": "Anglès",
-    "ca": "Català"
+    "ca": "Català",
+    "pt": "Portuguès",
+    "fr": "Francès"
   },
   "roles": {
     "SUPERADMIN_BUMII": "Superadmin Bumii",

@@ -4,9 +4,26 @@
   "title": "Cuestionario Oficial M1",
   "source": "Hoja «Cuestionario Oficial M1» de SmartAudit_efr_M1_Plan_y_Preguntas (F+f) (2) 4 nov.xlsx",
   "languages": [
-    { "lang": "es", "status": "approved" },
-    { "lang": "en", "status": "pending_approval" },
-    { "lang": "ca", "status": "pending_approval" }
+    {
+      "lang": "es",
+      "status": "approved"
+    },
+    {
+      "lang": "en",
+      "status": "pending_approval"
+    },
+    {
+      "lang": "ca",
+      "status": "pending_approval"
+    },
+    {
+      "lang": "pt",
+      "status": "pending_approval"
+    },
+    {
+      "lang": "fr",
+      "status": "pending_approval"
+    }
   ],
   "questions": [
     {
@@ -17,14 +34,45 @@
       "text": {
         "es": "¿Conoce o ha oído hablar de la existencia del Modelo efr (Empresa Familiarmente Responsable) en la organización?",
         "en": "Do you know about, or have you heard of, the efr Model (Family Responsible Company) in the organization?",
-        "ca": "Coneix o ha sentit parlar de l'existència del Model efr (Empresa Familiarment Responsable) a l'organització?"
+        "ca": "Coneix o ha sentit parlar de l'existència del Model efr (Empresa Familiarment Responsable) a l'organització?",
+        "pt": "Conhece ou já ouviu falar da existência do Modelo efr (Empresa Familiarmente Responsável) na organização?",
+        "fr": "Connaissez-vous ou avez-vous entendu parler de l'existence du Modèle efr (Entreprise Familialement Responsable) dans l'organisation ?"
       },
       "options": [
-        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
-        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } },
-        { "code": "NS_NC", "label": { "es": "No sabe / No contesta", "en": "Don't know / No answer", "ca": "No ho sap / No contesta" } }
+        {
+          "code": "SI",
+          "label": {
+            "es": "Sí",
+            "en": "Yes",
+            "ca": "Sí",
+            "pt": "Sim",
+            "fr": "Oui"
+          }
+        },
+        {
+          "code": "NO",
+          "label": {
+            "es": "No",
+            "en": "No",
+            "ca": "No",
+            "pt": "Não",
+            "fr": "Non"
+          }
+        },
+        {
+          "code": "NS_NC",
+          "label": {
+            "es": "No sabe / No contesta",
+            "en": "Don't know / No answer",
+            "ca": "No ho sap / No contesta",
+            "pt": "Não sabe / Não responde",
+            "fr": "Ne sait pas / Sans réponse"
+          }
+        }
       ],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -38,20 +86,75 @@
       "text": {
         "es": "¿A través de qué medio de comunicación se enteró o recibe información sobre el Modelo efr?",
         "en": "Through which communication channel did you find out about, or do you receive information on, the efr Model?",
-        "ca": "A través de quin mitjà de comunicació se'n va assabentar o rep informació sobre el Model efr?"
+        "ca": "A través de quin mitjà de comunicació se'n va assabentar o rep informació sobre el Model efr?",
+        "pt": "Através de que meio de comunicação tomou conhecimento ou recebe informação sobre o Modelo efr?",
+        "fr": "Par quel moyen de communication avez-vous appris l'existence du Modèle efr ou recevez-vous des informations à son sujet ?"
       },
       "options": [
-        { "code": "INTRANET", "label": { "es": "Intranet", "en": "Intranet", "ca": "Intranet" } },
-        { "code": "MAIL", "label": { "es": "Correo electrónico", "en": "Email", "ca": "Correu electrònic" } },
-        { "code": "REUNIONES", "label": { "es": "Reuniones", "en": "Meetings", "ca": "Reunions" } },
-        { "code": "BOCA_A_BOCA", "label": { "es": "Boca a boca", "en": "Word of mouth", "ca": "Boca-orella" } },
+        {
+          "code": "INTRANET",
+          "label": {
+            "es": "Intranet",
+            "en": "Intranet",
+            "ca": "Intranet",
+            "pt": "Intranet",
+            "fr": "Intranet"
+          }
+        },
+        {
+          "code": "MAIL",
+          "label": {
+            "es": "Correo electrónico",
+            "en": "Email",
+            "ca": "Correu electrònic",
+            "pt": "E-mail",
+            "fr": "E-mail"
+          }
+        },
+        {
+          "code": "REUNIONES",
+          "label": {
+            "es": "Reuniones",
+            "en": "Meetings",
+            "ca": "Reunions",
+            "pt": "Reuniões",
+            "fr": "Réunions"
+          }
+        },
+        {
+          "code": "BOCA_A_BOCA",
+          "label": {
+            "es": "Boca a boca",
+            "en": "Word of mouth",
+            "ca": "Boca-orella",
+            "pt": "Boca a boca",
+            "fr": "Bouche-à-oreille"
+          }
+        },
         {
           "code": "OTROS",
-          "label": { "es": "Otros", "en": "Other", "ca": "Altres" },
-          "freeText": { "label": { "es": "¿Cuál?", "en": "Which one?", "ca": "Quin?" }, "required": true }
+          "label": {
+            "es": "Otros",
+            "en": "Other",
+            "ca": "Altres",
+            "pt": "Outros",
+            "fr": "Autres"
+          },
+          "freeText": {
+            "label": {
+              "es": "¿Cuál?",
+              "en": "Which one?",
+              "ca": "Quin?",
+              "pt": "Qual?",
+              "fr": "Lequel ?"
+            },
+            "required": true
+          }
         }
       ],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -65,14 +168,45 @@
       "text": {
         "es": "¿Conoce quién es el Mánager efr de su entidad?",
         "en": "Do you know who the efr Manager of your organization is?",
-        "ca": "Sap qui és el Mànager efr de la seva entitat?"
+        "ca": "Sap qui és el Mànager efr de la seva entitat?",
+        "pt": "Sabe quem é o Gestor efr da sua entidade?",
+        "fr": "Savez-vous qui est le Manager efr de votre entité ?"
       },
       "options": [
-        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
-        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } },
-        { "code": "NS", "label": { "es": "No sabe", "en": "Don't know", "ca": "No ho sap" } }
+        {
+          "code": "SI",
+          "label": {
+            "es": "Sí",
+            "en": "Yes",
+            "ca": "Sí",
+            "pt": "Sim",
+            "fr": "Oui"
+          }
+        },
+        {
+          "code": "NO",
+          "label": {
+            "es": "No",
+            "en": "No",
+            "ca": "No",
+            "pt": "Não",
+            "fr": "Non"
+          }
+        },
+        {
+          "code": "NS",
+          "label": {
+            "es": "No sabe",
+            "en": "Don't know",
+            "ca": "No ho sap",
+            "pt": "Não sabe",
+            "fr": "Ne sait pas"
+          }
+        }
       ],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -86,14 +220,45 @@
       "text": {
         "es": "¿Conoce o sabe que existe un canal de comunicación directo con la Fundación Másfamilia?",
         "en": "Do you know that there is a direct communication channel with the Fundación Másfamilia?",
-        "ca": "Coneix o sap que hi ha un canal de comunicació directe amb la Fundación Másfamilia?"
+        "ca": "Coneix o sap que hi ha un canal de comunicació directe amb la Fundación Másfamilia?",
+        "pt": "Conhece ou sabe que existe um canal de comunicação direto com a Fundación Másfamilia?",
+        "fr": "Connaissez-vous ou savez-vous qu'il existe un canal de communication direct avec la Fundación Másfamilia ?"
       },
       "options": [
-        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
-        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } },
-        { "code": "NS", "label": { "es": "No sabe", "en": "Don't know", "ca": "No ho sap" } }
+        {
+          "code": "SI",
+          "label": {
+            "es": "Sí",
+            "en": "Yes",
+            "ca": "Sí",
+            "pt": "Sim",
+            "fr": "Oui"
+          }
+        },
+        {
+          "code": "NO",
+          "label": {
+            "es": "No",
+            "en": "No",
+            "ca": "No",
+            "pt": "Não",
+            "fr": "Non"
+          }
+        },
+        {
+          "code": "NS",
+          "label": {
+            "es": "No sabe",
+            "en": "Don't know",
+            "ca": "No ho sap",
+            "pt": "Não sabe",
+            "fr": "Ne sait pas"
+          }
+        }
       ],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -107,14 +272,45 @@
       "text": {
         "es": "¿Conoce el catálogo o las medidas de conciliación efr que ofrece su entidad?",
         "en": "Do you know the catalogue of efr work-life balance measures offered by your organization?",
-        "ca": "Coneix el catàleg o les mesures de conciliació efr que ofereix la seva entitat?"
+        "ca": "Coneix el catàleg o les mesures de conciliació efr que ofereix la seva entitat?",
+        "pt": "Conhece o catálogo ou as medidas de conciliação efr que a sua entidade oferece?",
+        "fr": "Connaissez-vous le catalogue ou les mesures de conciliation efr proposées par votre entité ?"
       },
       "options": [
-        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
-        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } },
-        { "code": "NS", "label": { "es": "No sabe", "en": "Don't know", "ca": "No ho sap" } }
+        {
+          "code": "SI",
+          "label": {
+            "es": "Sí",
+            "en": "Yes",
+            "ca": "Sí",
+            "pt": "Sim",
+            "fr": "Oui"
+          }
+        },
+        {
+          "code": "NO",
+          "label": {
+            "es": "No",
+            "en": "No",
+            "ca": "No",
+            "pt": "Não",
+            "fr": "Non"
+          }
+        },
+        {
+          "code": "NS",
+          "label": {
+            "es": "No sabe",
+            "en": "Don't know",
+            "ca": "No ho sap",
+            "pt": "Não sabe",
+            "fr": "Ne sait pas"
+          }
+        }
       ],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -128,15 +324,55 @@
       "text": {
         "es": "¿Cómo valora la conciliación en su entidad en comparación con lo que observa en otras empresas de su entorno?",
         "en": "How do you rate work-life balance in your organization compared with what you see in other companies around you?",
-        "ca": "Com valora la conciliació a la seva entitat en comparació amb el que observa en altres empreses del seu entorn?"
+        "ca": "Com valora la conciliació a la seva entitat en comparació amb el que observa en altres empreses del seu entorn?",
+        "pt": "Como avalia a conciliação na sua entidade em comparação com o que observa noutras empresas do seu meio?",
+        "fr": "Comment évaluez-vous la conciliation dans votre entité par rapport à ce que vous observez dans d'autres entreprises de votre environnement ?"
       },
       "options": [
-        { "code": "POR_ENCIMA", "label": { "es": "Por encima", "en": "Above", "ca": "Per sobre" } },
-        { "code": "EN_LA_MEDIA", "label": { "es": "En la media", "en": "Average", "ca": "A la mitjana" } },
-        { "code": "POR_DEBAJO", "label": { "es": "Por debajo", "en": "Below", "ca": "Per sota" } },
-        { "code": "NS_NC", "label": { "es": "No sabe / No contesta", "en": "Don't know / No answer", "ca": "No ho sap / No contesta" } }
+        {
+          "code": "POR_ENCIMA",
+          "label": {
+            "es": "Por encima",
+            "en": "Above",
+            "ca": "Per sobre",
+            "pt": "Acima",
+            "fr": "Au-dessus"
+          }
+        },
+        {
+          "code": "EN_LA_MEDIA",
+          "label": {
+            "es": "En la media",
+            "en": "Average",
+            "ca": "A la mitjana",
+            "pt": "Na média",
+            "fr": "Dans la moyenne"
+          }
+        },
+        {
+          "code": "POR_DEBAJO",
+          "label": {
+            "es": "Por debajo",
+            "en": "Below",
+            "ca": "Per sota",
+            "pt": "Abaixo",
+            "fr": "En dessous"
+          }
+        },
+        {
+          "code": "NS_NC",
+          "label": {
+            "es": "No sabe / No contesta",
+            "en": "Don't know / No answer",
+            "ca": "No ho sap / No contesta",
+            "pt": "Não sabe / Não responde",
+            "fr": "Ne sait pas / Sans réponse"
+          }
+        }
       ],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -150,14 +386,45 @@
       "text": {
         "es": "¿Su superior directo/a apoya la conciliación y el uso de las medidas efr?",
         "en": "Does your direct manager support work-life balance and the use of efr measures?",
-        "ca": "El seu superior directe/a dona suport a la conciliació i a l'ús de les mesures efr?"
+        "ca": "El seu superior directe/a dona suport a la conciliació i a l'ús de les mesures efr?",
+        "pt": "O seu superior direto apoia a conciliação e a utilização das medidas efr?",
+        "fr": "Votre supérieur(e) direct(e) soutient-il/elle la conciliation et l'utilisation des mesures efr ?"
       },
       "options": [
-        { "code": "SIEMPRE", "label": { "es": "Siempre", "en": "Always", "ca": "Sempre" } },
-        { "code": "ALGUNAS_VECES", "label": { "es": "Algunas veces", "en": "Sometimes", "ca": "Algunes vegades" } },
-        { "code": "NUNCA", "label": { "es": "Nunca", "en": "Never", "ca": "Mai" } }
+        {
+          "code": "SIEMPRE",
+          "label": {
+            "es": "Siempre",
+            "en": "Always",
+            "ca": "Sempre",
+            "pt": "Sempre",
+            "fr": "Toujours"
+          }
+        },
+        {
+          "code": "ALGUNAS_VECES",
+          "label": {
+            "es": "Algunas veces",
+            "en": "Sometimes",
+            "ca": "Algunes vegades",
+            "pt": "Algumas vezes",
+            "fr": "Parfois"
+          }
+        },
+        {
+          "code": "NUNCA",
+          "label": {
+            "es": "Nunca",
+            "en": "Never",
+            "ca": "Mai",
+            "pt": "Nunca",
+            "fr": "Jamais"
+          }
+        }
       ],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -171,14 +438,45 @@
       "text": {
         "es": "¿Cuál es la actitud de la empresa respecto a las personas que hacen uso activo de las medidas de conciliación?",
         "en": "What is the company's attitude towards people who actively use work-life balance measures?",
-        "ca": "Quina és l'actitud de l'empresa respecte a les persones que fan ús actiu de les mesures de conciliació?"
+        "ca": "Quina és l'actitud de l'empresa respecte a les persones que fan ús actiu de les mesures de conciliació?",
+        "pt": "Qual é a atitude da empresa em relação às pessoas que utilizam ativamente as medidas de conciliação?",
+        "fr": "Quelle est l'attitude de l'entreprise envers les personnes qui utilisent activement les mesures de conciliation ?"
       },
       "options": [
-        { "code": "POSITIVA", "label": { "es": "Positiva", "en": "Positive", "ca": "Positiva" } },
-        { "code": "NEUTRA", "label": { "es": "Neutra", "en": "Neutral", "ca": "Neutra" } },
-        { "code": "NEGATIVA", "label": { "es": "Negativa", "en": "Negative", "ca": "Negativa" } }
+        {
+          "code": "POSITIVA",
+          "label": {
+            "es": "Positiva",
+            "en": "Positive",
+            "ca": "Positiva",
+            "pt": "Positiva",
+            "fr": "Positive"
+          }
+        },
+        {
+          "code": "NEUTRA",
+          "label": {
+            "es": "Neutra",
+            "en": "Neutral",
+            "ca": "Neutra",
+            "pt": "Neutra",
+            "fr": "Neutre"
+          }
+        },
+        {
+          "code": "NEGATIVA",
+          "label": {
+            "es": "Negativa",
+            "en": "Negative",
+            "ca": "Negativa",
+            "pt": "Negativa",
+            "fr": "Négative"
+          }
+        }
       ],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -192,19 +490,52 @@
       "text": {
         "es": "¿Se excede la jornada laboral de manera reiterada?",
         "en": "Is the working day exceeded repeatedly?",
-        "ca": "S'excedeix la jornada laboral de manera reiterada?"
+        "ca": "S'excedeix la jornada laboral de manera reiterada?",
+        "pt": "O horário de trabalho é excedido de forma reiterada?",
+        "fr": "La durée de travail est-elle dépassée de manière répétée ?"
       },
       "help": {
         "es": "«Excede» significa más del 10 % de la duración de la jornada; «reiterada», en más del 10 % de las jornadas.",
         "en": "\"Exceeded\" means more than 10% of the length of the working day; \"repeatedly\" means on more than 10% of working days.",
-        "ca": "«Excedeix» vol dir més del 10 % de la durada de la jornada; «reiterada», en més del 10 % de les jornades."
+        "ca": "«Excedeix» vol dir més del 10 % de la durada de la jornada; «reiterada», en més del 10 % de les jornades.",
+        "pt": "«Exceder» significa mais de 10 % da duração do horário de trabalho; «reiterada», em mais de 10 % dos dias de trabalho.",
+        "fr": "« Dépasser » signifie plus de 10 % de la durée de la journée de travail ; « de manière répétée », plus de 10 % des journées."
       },
       "options": [
-        { "code": "NUNCA", "label": { "es": "Nunca", "en": "Never", "ca": "Mai" } },
-        { "code": "ALGUNAS_VECES", "label": { "es": "Algunas veces", "en": "Sometimes", "ca": "Algunes vegades" } },
-        { "code": "SIEMPRE", "label": { "es": "Siempre", "en": "Always", "ca": "Sempre" } }
+        {
+          "code": "NUNCA",
+          "label": {
+            "es": "Nunca",
+            "en": "Never",
+            "ca": "Mai",
+            "pt": "Nunca",
+            "fr": "Jamais"
+          }
+        },
+        {
+          "code": "ALGUNAS_VECES",
+          "label": {
+            "es": "Algunas veces",
+            "en": "Sometimes",
+            "ca": "Algunes vegades",
+            "pt": "Algumas vezes",
+            "fr": "Parfois"
+          }
+        },
+        {
+          "code": "SIEMPRE",
+          "label": {
+            "es": "Siempre",
+            "en": "Always",
+            "ca": "Sempre",
+            "pt": "Sempre",
+            "fr": "Toujours"
+          }
+        }
       ],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -218,31 +549,100 @@
       "text": {
         "es": "En caso de realizar exceso de jornada, ¿se siente compensado/a por ese exceso en tiempo libre o económicamente?",
         "en": "If you work beyond your working day, do you feel compensated for it with time off or financially?",
-        "ca": "En cas de fer excés de jornada, se sent compensat/ada per aquest excés en temps lliure o econòmicament?"
+        "ca": "En cas de fer excés de jornada, se sent compensat/ada per aquest excés en temps lliure o econòmicament?",
+        "pt": "Caso faça horas para além do horário, sente-se compensado/a por esse excesso em tempo livre ou financeiramente?",
+        "fr": "Si vous dépassez votre durée de travail, vous sentez-vous compensé(e) pour ce dépassement en temps libre ou financièrement ?"
       },
       "options": [
         {
           "code": "SI_TIEMPO",
-          "label": { "es": "Sí, en tiempo libre", "en": "Yes, with time off", "ca": "Sí, en temps lliure" },
-          "freeText": { "label": { "es": "Comentario (opcional)", "en": "Comment (optional)", "ca": "Comentari (opcional)" }, "required": false }
+          "label": {
+            "es": "Sí, en tiempo libre",
+            "en": "Yes, with time off",
+            "ca": "Sí, en temps lliure",
+            "pt": "Sim, em tempo livre",
+            "fr": "Oui, en temps libre"
+          },
+          "freeText": {
+            "label": {
+              "es": "Comentario (opcional)",
+              "en": "Comment (optional)",
+              "ca": "Comentari (opcional)",
+              "pt": "Comentário (opcional)",
+              "fr": "Commentaire (facultatif)"
+            },
+            "required": false
+          }
         },
         {
           "code": "SI_ECONOMICA",
-          "label": { "es": "Sí, económicamente", "en": "Yes, financially", "ca": "Sí, econòmicament" },
-          "freeText": { "label": { "es": "Comentario (opcional)", "en": "Comment (optional)", "ca": "Comentari (opcional)" }, "required": false }
+          "label": {
+            "es": "Sí, económicamente",
+            "en": "Yes, financially",
+            "ca": "Sí, econòmicament",
+            "pt": "Sim, financeiramente",
+            "fr": "Oui, financièrement"
+          },
+          "freeText": {
+            "label": {
+              "es": "Comentario (opcional)",
+              "en": "Comment (optional)",
+              "ca": "Comentari (opcional)",
+              "pt": "Comentário (opcional)",
+              "fr": "Commentaire (facultatif)"
+            },
+            "required": false
+          }
         },
         {
           "code": "SI_AMBAS",
-          "label": { "es": "Sí, de ambas formas", "en": "Yes, both ways", "ca": "Sí, de les dues maneres" },
-          "freeText": { "label": { "es": "Comentario (opcional)", "en": "Comment (optional)", "ca": "Comentari (opcional)" }, "required": false }
+          "label": {
+            "es": "Sí, de ambas formas",
+            "en": "Yes, both ways",
+            "ca": "Sí, de les dues maneres",
+            "pt": "Sim, de ambas as formas",
+            "fr": "Oui, des deux façons"
+          },
+          "freeText": {
+            "label": {
+              "es": "Comentario (opcional)",
+              "en": "Comment (optional)",
+              "ca": "Comentari (opcional)",
+              "pt": "Comentário (opcional)",
+              "fr": "Commentaire (facultatif)"
+            },
+            "required": false
+          }
         },
         {
           "code": "NO",
-          "label": { "es": "No", "en": "No", "ca": "No" },
-          "freeText": { "label": { "es": "Comentario (opcional)", "en": "Comment (optional)", "ca": "Comentari (opcional)" }, "required": false }
+          "label": {
+            "es": "No",
+            "en": "No",
+            "ca": "No",
+            "pt": "Não",
+            "fr": "Non"
+          },
+          "freeText": {
+            "label": {
+              "es": "Comentario (opcional)",
+              "en": "Comment (optional)",
+              "ca": "Comentari (opcional)",
+              "pt": "Comentário (opcional)",
+              "fr": "Commentaire (facultatif)"
+            },
+            "required": false
+          }
         }
       ],
-      "activation": { "kind": "answer_in", "question": "P7", "values": ["ALGUNAS_VECES", "SIEMPRE"] },
+      "activation": {
+        "kind": "answer_in",
+        "question": "P7",
+        "values": [
+          "ALGUNAS_VECES",
+          "SIEMPRE"
+        ]
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -256,15 +656,59 @@
       "text": {
         "es": "¿En los últimos años se han mejorado las condiciones en materia de conciliación en su empresa?",
         "en": "In recent years, have work-life balance conditions improved in your company?",
-        "ca": "En els darrers anys s'han millorat les condicions en matèria de conciliació a la seva empresa?"
+        "ca": "En els darrers anys s'han millorat les condicions en matèria de conciliació a la seva empresa?",
+        "pt": "Nos últimos anos, melhoraram as condições em matéria de conciliação na sua empresa?",
+        "fr": "Ces dernières années, les conditions en matière de conciliation se sont-elles améliorées dans votre entreprise ?"
       },
       "options": [
-        { "code": "GRAN_AVANCE", "label": { "es": "Gran avance", "en": "Great progress", "ca": "Gran avenç" } },
-        { "code": "MODERADO", "label": { "es": "Avance moderado", "en": "Moderate progress", "ca": "Avenç moderat" } },
-        { "code": "NULO", "label": { "es": "Ningún avance", "en": "No progress", "ca": "Cap avenç" } },
-        { "code": "NS_NC", "label": { "es": "No sabe / No contesta", "en": "Don't know / No answer", "ca": "No ho sap / No contesta" } }
+        {
+          "code": "GRAN_AVANCE",
+          "label": {
+            "es": "Gran avance",
+            "en": "Great progress",
+            "ca": "Gran avenç",
+            "pt": "Grande avanço",
+            "fr": "Grand progrès"
+          }
+        },
+        {
+          "code": "MODERADO",
+          "label": {
+            "es": "Avance moderado",
+            "en": "Moderate progress",
+            "ca": "Avenç moderat",
+            "pt": "Avanço moderado",
+            "fr": "Progrès modéré"
+          }
+        },
+        {
+          "code": "NULO",
+          "label": {
+            "es": "Ningún avance",
+            "en": "No progress",
+            "ca": "Cap avenç",
+            "pt": "Nenhum avanço",
+            "fr": "Aucun progrès"
+          }
+        },
+        {
+          "code": "NS_NC",
+          "label": {
+            "es": "No sabe / No contesta",
+            "en": "Don't know / No answer",
+            "ca": "No ho sap / No contesta",
+            "pt": "Não sabe / Não responde",
+            "fr": "Ne sait pas / Sans réponse"
+          }
+        }
       ],
-      "activation": { "kind": "campaign_in", "field": "auditType", "values": ["renovacion"] },
+      "activation": {
+        "kind": "campaign_in",
+        "field": "auditType",
+        "values": [
+          "renovacion"
+        ]
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -278,13 +722,39 @@
       "text": {
         "es": "¿Cree que su empresa es excelente en conciliación?",
         "en": "Do you think your company is excellent at work-life balance?",
-        "ca": "Creu que la seva empresa és excel·lent en conciliació?"
+        "ca": "Creu que la seva empresa és excel·lent en conciliació?",
+        "pt": "Considera que a sua empresa é excelente em conciliação?",
+        "fr": "Pensez-vous que votre entreprise est excellente en matière de conciliation ?"
       },
       "options": [
-        { "code": "SI", "label": { "es": "Sí", "en": "Yes", "ca": "Sí" } },
-        { "code": "NO", "label": { "es": "No", "en": "No", "ca": "No" } }
+        {
+          "code": "SI",
+          "label": {
+            "es": "Sí",
+            "en": "Yes",
+            "ca": "Sí",
+            "pt": "Sim",
+            "fr": "Oui"
+          }
+        },
+        {
+          "code": "NO",
+          "label": {
+            "es": "No",
+            "en": "No",
+            "ca": "No",
+            "pt": "Não",
+            "fr": "Non"
+          }
+        }
       ],
-      "activation": { "kind": "campaign_in", "field": "excellence", "values": [true] },
+      "activation": {
+        "kind": "campaign_in",
+        "field": "excellence",
+        "values": [
+          true
+        ]
+      },
       "mandatory": true,
       "allowAbstain": true,
       "maxClarifications": 1,
@@ -298,10 +768,14 @@
       "text": {
         "es": "¿Quiere añadir algún comentario sobre la conciliación en su entidad?",
         "en": "Would you like to add any comments about work-life balance in your organization?",
-        "ca": "Vol afegir algun comentari sobre la conciliació a la seva entitat?"
+        "ca": "Vol afegir algun comentari sobre la conciliació a la seva entitat?",
+        "pt": "Quer acrescentar algum comentário sobre a conciliação na sua entidade?",
+        "fr": "Souhaitez-vous ajouter un commentaire sur la conciliation dans votre entité ?"
       },
       "options": [],
-      "activation": { "kind": "always" },
+      "activation": {
+        "kind": "always"
+      },
       "mandatory": false,
       "allowAbstain": true,
       "maxClarifications": 0,

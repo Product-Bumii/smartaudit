@@ -228,7 +228,7 @@ navegador ──────▶│                                              
 |---|---|
 | Base de datos | MongoDB 8 (replica set de un nodo, necesario para transacciones) + Mongoose 8 |
 | API | Node.js 24 + Express 5, TypeScript estricto, validación Zod 4 |
-| Frontend | Angular 21 (standalone, signals, zoneless), Angular Material, ngx-translate (es/en/ca) |
+| Frontend | Angular 21 (standalone, signals, zoneless), Angular Material, ngx-translate (es/en/ca/pt/fr) |
 | Tareas en segundo plano | Agenda 5 (cola persistida en MongoDB), proceso `worker` separado |
 | Correo | Nodemailer (SMTP) tras la interfaz `MailProvider` (adaptadores `smtp`, `memory`, `disabled`) |
 | IA | Interfaz `LlmProvider` (implementación en Fase 2) |
@@ -328,17 +328,17 @@ npm run e2e                # Playwright (arranca dev:local y Angular si no está
 npm run smoke:bundle       # build de producción de la API y prueba de humo del bundle
 npm run lint               # ESLint
 npm run typecheck          # TypeScript estricto
-npm run check:i18n         # mismas claves en es/en/ca y claves usadas existentes
+npm run check:i18n         # mismas claves en es/en/ca/pt/fr y claves usadas existentes
 ```
 
 | Suite | Contenido | Resultado actual |
 |---|---|---|
-| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles y ventanas con festivos CO/ES, fin de año, cambio de hora, validación de muestra, activación de preguntas, estados de campaña, permisos, códigos, retención, disponibilidad del participante | 125 tests · **100 % de ramas** |
+| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles y ventanas con festivos CO/ES, fin de año, cambio de hora, validación de muestra, activación de preguntas, estados de campaña, permisos, códigos, retención, disponibilidad del participante | 129 tests · **100 % de ramas** |
 | `packages/mail` | Plantillas por idioma, marca, escape HTML, proveedores | 6 tests |
-| `apps/api` | Enlace mágico, selección de organización, límites de peticiones, aislamiento entre organizaciones, ORG_ADMIN sin acceso a muestras, campañas, carga de muestra, configuración versionada, **ningún correo en claro en la BD**, acceso con código | 51 tests |
+| `apps/api` | Enlace mágico, selección de organización, límites de peticiones, aislamiento entre organizaciones, ORG_ADMIN sin acceso a muestras, campañas, carga de muestra, configuración versionada, **ningún correo en claro en la BD**, acceso con código | 53 tests |
 | `apps/worker` | Purga de retención (apagada / activada) | 2 tests |
 | E2E (Playwright) | Superadmin crea organización y admin → admin crea auditor → auditor crea campaña, sube muestra con errores, la corrige → `muestra_cargada` con mínimo y ventana correctos; selección de organización; acceso con código | 3 tests (local y servidor de pruebas) |
-| i18n | 331 claves × 3 idiomas | OK |
+| i18n | 333 claves × 5 idiomas | OK |
 
 E2E contra el servidor de pruebas:
 
@@ -597,10 +597,25 @@ La interfaz, los correos y los Excel siguen el **Manual de identidad corporativa
 
 ## 17. Internacionalización
 
-Español, inglés y catalán en la interfaz interna, la página del participante y los correos. La interfaz detecta el
-idioma del navegador y permite cambiarlo; los usuarios guardan su idioma preferido. **Ningún texto visible está escrito
-directamente en el código.** El cuestionario tiene textos en los tres idiomas; inglés y catalán están **pendientes de
-aprobación por la Fundación** y no se ofrecen a participantes hasta entonces.
+Cinco idiomas en la interfaz interna, la página del participante y los correos:
+
+| Código | Idioma | Formato de fechas |
+|---|---|---|
+| `es` | Español | es-ES |
+| `en` | Inglés | en-GB |
+| `ca` | Catalán | ca-ES |
+| `pt` | **Portugués de Portugal** | pt-PT |
+| `fr` | Francés | fr-FR |
+
+La interfaz detecta el idioma del navegador y permite cambiarlo; los usuarios guardan su idioma preferido. **Ningún
+texto visible está escrito directamente en el código** (`apps/web/public/i18n/<idioma>.json`). El cuestionario tiene
+textos en los cinco idiomas; solo el español está aprobado y el resto está **pendiente de aprobación por la Fundación**
+(no se ofrecen a participantes hasta entonces).
+
+Para añadir otro idioma: código en `LANGUAGES` (`packages/shared/src/enums.ts`) y `LANGS` (`apps/web/src/app/core/models.ts`),
+fichero `public/i18n/<código>.json`, plantillas de correo (`packages/mail/src/templates.ts`), etiquetas de rol
+(`apps/api/src/services/users.ts`), locale de fechas (`tz-date.pipe.ts`), textos del cuestionario en la semilla y
+`npm run check:i18n`.
 
 ---
 
@@ -608,7 +623,8 @@ aprobación por la Fundación** y no se ofrecen a participantes hasta entonces.
 
 La semilla (`seed/seed-lib.ts`, idempotente) carga:
 
-- Cuestionario M1 **v1** publicado (español aprobado; inglés y catalán pendientes).
+- Cuestionario M1 **v1** publicado (español aprobado; inglés, catalán, portugués y francés pendientes). En bases de
+  datos anteriores a portugués y francés, la semilla publica una versión nueva que los añade.
 - Tabla de mínimos **v1** publicada.
 - Festivos de Colombia y España 2026–2027 publicados.
 - Organizaciones **Andina Servicios S.A.S. (sintética)** (CO, America/Bogota) e **Ibérica Logística S.L. (sintética)**

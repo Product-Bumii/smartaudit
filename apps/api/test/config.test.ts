@@ -64,7 +64,7 @@ describe('questionnaires (versions and languages)', () => {
     const list = await request(env.app).get('/api/config/questionnaires?module=M1').set('Cookie', admin).expect(200);
     expect(list.body.items).toHaveLength(1);
     const v1 = await request(env.app).get(`/api/config/questionnaires/${list.body.items[0]._id}`).set('Cookie', admin).expect(200);
-    expect(v1.body.item.languages.map((l: { lang: string; status: string }) => `${l.lang}:${l.status}`)).toEqual(['es:approved', 'en:pending_approval', 'ca:pending_approval']);
+    expect(v1.body.item.languages.map((l: { lang: string; status: string }) => `${l.lang}:${l.status}`)).toEqual(['es:approved', 'en:pending_approval', 'ca:pending_approval', 'pt:pending_approval', 'fr:pending_approval']);
 
     await request(env.app).put(`/api/config/questionnaires/${v1.body.item._id}`).set('Cookie', admin).send({ questions: v1.body.item.questions }).expect(409);
 
@@ -78,7 +78,7 @@ describe('questionnaires (versions and languages)', () => {
     questions[0].text.es = 'Texto revisado P1';
     delete questions[0].text.ca;
     const upd = await request(env.app).put(`/api/config/questionnaires/${v2.body.item._id}`).set('Cookie', admin).send({ questions }).expect(200);
-    expect(upd.body.item.languages.map((l: { lang: string; status: string }) => `${l.lang}:${l.status}`)).toEqual(['es:pending_approval', 'en:approved', 'ca:pending_approval']);
+    expect(upd.body.item.languages.map((l: { lang: string; status: string }) => `${l.lang}:${l.status}`)).toEqual(['es:pending_approval', 'en:approved', 'ca:pending_approval', 'pt:pending_approval', 'fr:pending_approval']);
 
     const missing = await request(env.app).post(`/api/config/questionnaires/${v2.body.item._id}/languages/ca/approve`).set('Cookie', admin).expect(422);
     expect(missing.body.error.details.issues[0]).toMatchObject({ question: 'P1', lang: 'ca', field: 'text' });

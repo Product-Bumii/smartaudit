@@ -2,7 +2,7 @@
  * Idempotent seed with SYNTHETIC data only (see docs/datos-sinteticos.md).
  * Reuses the API models; every email is encrypted and hashed like in production.
  */
-import { applyHolidayOverrides, officialHolidays, type Role } from '@smartaudit/shared';
+import { applyHolidayOverrides, officialHolidays, type Language, type Question, type QuestionnaireLanguage, type Role } from '@smartaudit/shared';
 import type { Types } from 'mongoose';
 import { FieldCrypto } from '../apps/api/src/lib/crypto';
 import {
@@ -54,6 +54,8 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
     log('questionnaire M1 v1 published (es approved; en, ca pending approval)');
   }
 
+  await addMissingQuestionnaireLanguages(log);
+
   for (const country of ['CO', 'ES']) {
     for (const year of [2026, 2027]) {
       if (await HolidayCalendar.exists({ country, year })) continue;
@@ -83,4 +85,51 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
   await upsertUser(SEED_USERS.auditorMulti, 'AUDITOR', co._id);
   await upsertUser(SEED_USERS.auditorMulti, 'AUDITOR', es._id);
   await upsertUser(SEED_USERS.auditorES, 'AUDITOR', es._id);
+}
+
+/**
+ * Existing databases: if the latest published M1 questionnaire lacks languages present in the seed file
+ * (e.g. pt, fr added later), publish a NEW version with those texts merged by question/option code and the
+ * new languages pending approval. Published versions are never edited; campaigns keep their own snapshot.
+ */
+async function addMissingQuestionnaireLanguages(log: (m: string) => void): Promise<void> {
+  const latest = await Questionnaire.findOne({ module: 'M1', status: 'published' }).sort({ version: -1 }).lean();
+  if (!latest) return;
+  const present = new Set((latest.languages as QuestionnaireLanguage[]).map((l) => l.lang));
+  const missing = (questionnaire.languages as QuestionnaireLanguage[]).map((l) => l.lang).filter((l) => !present.has(l));
+  if (missing.length === 0) return;
+  if (await Questionnaire.exists({ module: 'M1', status: 'draft' })) {
+    log(`questionnaire: languages ${missing.join(', ')} not added (a draft exists)`);
+    return;
+  }
+  const seedByCode = new Map((questionnaire.questions as Question[]).map((q) => [q.code, q]));
+  const merge = (target: Record<string, string> | null | undefined, source: Record<string, string> | null | undefined) => {
+    if (!target || !source) return target;
+    for (const lang of missing) if (source[lang] && !target[lang]) target[lang] = source[lang];
+    return target;
+  };
+  const questions = structuredClone(latest.questions as Question[]).map((q) => {
+    const src = seedByCode.get(q.code);
+    if (!src) return q;
+    merge(q.text as Record<string, string>, src.text as Record<string, string>);
+    merge(q.help as Record<string, string> | null, src.help as Record<string, string> | null);
+    for (const o of q.options) {
+      const so = src.options.find((x) => x.code === o.code);
+      merge(o.label as Record<string, string>, so?.label as Record<string, string>);
+      if (o.freeText && so?.freeText) merge(o.freeText.label as Record<string, string>, so.freeText.label as Record<string, string>);
+    }
+    return q;
+  });
+  const version = latest.version + 1;
+  await Questionnaire.create({
+    module: 'M1',
+    version,
+    title: latest.title,
+    status: 'published',
+    publishedAt: new Date(),
+    notes: `Copia de la versión ${latest.version} con idiomas añadidos: ${missing.join(', ')}`,
+    languages: [...(latest.languages as QuestionnaireLanguage[]), ...missing.map((lang: Language) => ({ lang, status: 'pending_approval' }))],
+    questions,
+  });
+  log(`questionnaire M1 v${version} published with new languages ${missing.join(', ')} (pending approval)`);
 }

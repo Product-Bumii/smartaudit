@@ -75,6 +75,8 @@ describe('campaign creation and derived values', () => {
       { lang: 'es', approved: true },
       { lang: 'en', approved: false },
       { lang: 'ca', approved: false },
+      { lang: 'pt', approved: false },
+      { lang: 'fr', approved: false },
     ]);
   });
 });

@@ -1,5 +1,5 @@
 /**
- * Verifies that es/en/ca translation files have exactly the same keys and that every literal key
+ * Verifies that es/en/ca/pt/fr translation files have exactly the same keys and that every literal key
  * used in the Angular templates (`'a.b' | translate`, `t('a.b')`, notify.ok('a.b')) exists.
  * Run: `npm run check:i18n`
  */
@@ -7,7 +7,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 
 const root = join(__dirname, '../apps/web');
-const langs = ['es', 'en', 'ca'];
+const langs = ['es', 'en', 'ca', 'pt', 'fr'];
 
 const flatten = (obj: Record<string, unknown>, prefix = ''): string[] =>
   Object.entries(obj).flatMap(([k, v]) =>
