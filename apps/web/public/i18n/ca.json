@@ -19,7 +19,7 @@
     "language": "Idioma",
     "logout": "Tanca la sessió",
     "auditors": "Auditors",
-    "campaigns": "Campanyes",
+    "campaigns": "Auditories",
     "organizations": "Organitzacions",
     "config": "Configuració",
     "auditEntities": "Entitats d'auditoria"
@@ -88,7 +88,8 @@
     "deactivate": "Desactiva l'organització",
     "activate": "Activa l'organització",
     "eyebrow": "Plataforma",
-    "assignmentHint": "Opcional: es pot assignar després des de la fitxa de l'organització"
+    "assignmentHint": "Opcional: es pot assignar després des de la fitxa de l'organització",
+    "noResults": "Cap organització coincideix amb la cerca."
   },
   "countries": {
     "ES": "Espanya",
@@ -118,7 +119,7 @@
     "eyebrow": "Plataforma"
   },
   "sampling": {
-    "help": "Mínim d'entrevistes completades segons la població total. Les campanyes conserven la versió amb què es van crear.",
+    "help": "Mínim d'entrevistes completades segons la població total. Les auditories conserven la versió amb què es van crear.",
     "from": "Des de (persones)",
     "to": "Fins a (persones)",
     "required": "Mínim de completades",
@@ -172,31 +173,31 @@
     "normsHint": "Separades per comes, p. ex. 1000-1, 1000-2"
   },
   "campaigns": {
-    "title": "Campanyes",
-    "new": "Nova campanya",
+    "title": "Auditories",
+    "new": "Nova auditoria",
     "reference": "Referència",
     "organization": "Organització",
-    "visitDate": "Data de la visita",
     "auditType": "Tipus d'auditoria",
     "minimum": "Mínim de completades",
     "sampleSize": "Persones a la mostra",
     "status": "Estat",
-    "empty": "Encara no hi ha campanyes.",
+    "empty": "Encara no hi ha auditories.",
     "window": "Finestra de participació",
     "opens": "S'obre",
     "closes": "Es tanca",
     "reminders": "Recordatoris",
     "reminderDay": "Dia feiner {{n}}",
     "warnings": {
-      "OPENS_IN_PAST": "La finestra comença en el passat: revisa la data de la visita.",
-      "CLOSES_IN_PAST": "La finestra ja ha acabat."
+      "OPENS_IN_PAST": "La finestra comença en el passat: revisa la data d'inici de les entrevistes.",
+      "CLOSES_IN_PAST": "La finestra ja ha acabat.",
+      "START_NOT_BUSINESS_DAY": "La data d'inici no és un dia feiner: la finestra s'obre el dia feiner següent."
     },
     "questions": "Preguntes activades",
     "offeredLanguages": "Idiomes per als participants",
     "changeStatus": "Canvia l'estat",
     "suspend": "Suspèn",
     "resume": "Reprèn",
-    "cancel": "Cancel·la la campanya",
+    "cancel": "Cancel·la l'auditoria",
     "tableVersion": "taula v{{v}}",
     "questionnaireVersion": "qüestionari v{{v}}",
     "businessDays": "Dies feiners",
@@ -205,7 +206,12 @@
     "eyebrow": "M1 · auditoria",
     "questionnaire": "Qüestionari",
     "aggregateOnly": "només avanç",
-    "aggregateHint": "Com a coordinació veus l'estat i l'avanç agregat. La mostra, els codis i les respostes són només de l'auditor/a responsable."
+    "aggregateHint": "Com a coordinació veus l'estat i l'avanç agregat. La mostra, els codis i les respostes són només de l'auditor/a responsable.",
+    "noResults": "Cap auditoria coincideix amb la cerca.",
+    "interviewStartDate": "Inici de les entrevistes",
+    "maximum": "Màxim de completades",
+    "maximumHint": "En arribar a aquesta xifra d'entrevistes completades, l'auditoria es tanca automàticament.",
+    "maximumAboveSample": "El màxim ({{max}}) supera les persones de la mostra ({{n}}): l'auditoria no es podrà tancar pel màxim i es tancarà en acabar la finestra."
   },
   "auditTypes": {
     "inicial": "Inicial",
@@ -223,10 +229,10 @@
     "cancelada": "Cancel·lada"
   },
   "campaignForm": {
-    "newTitle": "Nova campanya M1",
-    "editTitle": "Edita la campanya",
+    "newTitle": "Nova auditoria M1",
+    "editTitle": "Edita l'auditoria",
     "data": "Dades de l'auditoria",
-    "referenceHint": "Opcional, per identificar la campanya",
+    "referenceHint": "Opcional, per identificar l'auditoria",
     "norm": "Norma",
     "scopeSize": "Població total",
     "auditorMinimum": "Mínim fixat per l'auditor",
@@ -240,11 +246,14 @@
     "preview": "Càlcul automàtic",
     "bracket": "Tram {{min}}–{{max}} persones",
     "previewEmpty": "Completa la data, la mida i la norma per veure el mínim, la finestra i les preguntes.",
-    "created": "Campanya creada",
+    "created": "Auditoria creada",
     "howTitle": "el mínim i la finestra els calcula el sistema",
-    "howText": "S'apliquen la taula de mínims vigent i els dies feiners de dilluns a divendres, a la zona horària de l'organització. La IA no intervé en aquests càlculs.",
+    "howText": "S'apliquen la taula de mínims vigent i els dies feiners de dilluns a divendres, en la zona horària de l'organització. La finestra s'obre el dia d'inici de les entrevistes i dura 10 dies feiners. La IA no intervé en aquests càlculs.",
     "organizationHint": "Només les organitzacions que tens assignades com a auditor/a",
-    "noOrganizations": "No tens organitzacions assignades. El teu coordinador/a d'auditories te n'ha d'assignar una abans de crear la campanya."
+    "noOrganizations": "No tens organitzacions assignades. El teu coordinador/a d'auditories te n'ha d'assignar una abans de crear l'auditoria.",
+    "interviewStartDateHint": "La finestra s'obre aquell dia i dura 10 dies feiners",
+    "maxCompleted": "Màxim d'entrevistes completades",
+    "maxCompletedHint": "Buit = el mínim. En arribar-hi, l'auditoria es tanca automàticament."
   },
   "questionStates": {
     "active": "Es preguntarà",
@@ -283,7 +292,7 @@
     "REQUIRED": "Camp obligatori buit.",
     "INVALID_EMAIL": "Correu no vàlid (fes servir SIN_CORREO si la persona no en té).",
     "DUPLICATE_EMAIL": "Correu repetit (ja apareix a la fila {{firstRow}}).",
-    "EMAIL_ALREADY_IN_CAMPAIGN": "Aquest correu ja és a la campanya.",
+    "EMAIL_ALREADY_IN_CAMPAIGN": "Aquest correu ja és a l'auditoria.",
     "INVALID_VALUE": "Valor no permès. Valors vàlids: {{allowed}}.",
     "TOO_LONG": "Text massa llarg (màxim {{limit}} caràcters)."
   },
@@ -299,7 +308,8 @@
   },
   "historyReasons": {
     "created": "creada",
-    "sample_loaded": "mostra carregada"
+    "sample_loaded": "mostra carregada",
+    "maximum_reached": "s'ha arribat al màxim de completades"
   },
   "errors": {
     "GENERIC": "S'ha produït un error ({{code}}).",
@@ -329,9 +339,8 @@
     "NO_BRACKET": "La taula de mínims no cobreix aquesta mida.",
     "CHOICE_OUT_OF_RANGE": "El mínim fixat és fora del rang permès.",
     "AUDITOR_MINIMUM_REQUIRED": "Amb més de 16.000 persones has de fixar el mínim entre {{min}} i {{max}}.",
-    "INVALID_VISIT_DATE": "La data de la visita no és vàlida.",
-    "INVALID_CAMPAIGN": "Revisa les dades de la campanya.",
-    "CAMPAIGN_NOT_EDITABLE": "La campanya ja no es pot editar.",
+    "INVALID_CAMPAIGN": "Revisa les dades de l'auditoria.",
+    "CAMPAIGN_NOT_EDITABLE": "L'auditoria ja no es pot editar.",
     "TRANSITION_NOT_ALLOWED": "Aquest canvi d'estat no està permès.",
     "SAMPLE_MODE_NOT_ALLOWED": "En aquest estat no es pot carregar la mostra d'aquesta manera.",
     "SAMPLE_INVALID": "La mostra té errors.",
@@ -342,12 +351,16 @@
     "INVALID_ACCESS_CODE": "El codi no és vàlid. Revisa'l i torna-ho a provar.",
     "TOO_MANY_ATTEMPTS": "Massa intents fallits. Espera 15 minuts abans de tornar-ho a provar.",
     "CAMPAIGN_NOT_FOUND": "Aquest enllaç no correspon a cap entrevista.",
-    "ORG_HAS_OPEN_CAMPAIGNS": "L'organització té campanyes obertes: no pot canviar d'entitat d'auditoria ni quedar-se sense auditor/a.",
+    "ORG_HAS_OPEN_CAMPAIGNS": "L'organització té auditories obertes: no pot canviar d'entitat d'auditoria ni quedar-se sense auditor/a.",
     "INVALID_COORDINATOR": "El coordinador/a ha d'estar actiu i pertànyer a l'entitat d'auditoria triada.",
     "INVALID_AUDITOR": "L'auditor/a ha d'estar actiu i pertànyer a l'entitat d'auditoria de l'organització.",
     "INVALID_AUDIT_ENTITY": "L'entitat d'auditoria no existeix o està inactiva.",
     "COORDINATOR_REQUIRES_AUDIT_ENTITY": "Per assignar un coordinador/a primer tria l'entitat d'auditoria.",
-    "AUDITOR_REQUIRES_AUDIT_ENTITY": "Per assignar un auditor/a l'organització ha de tenir entitat d'auditoria."
+    "AUDITOR_REQUIRES_AUDIT_ENTITY": "Per assignar un auditor/a l'organització ha de tenir entitat d'auditoria.",
+    "INVALID_START_DATE": "La data d'inici de les entrevistes no és vàlida.",
+    "MAXIMUM_BELOW_MINIMUM": "El màxim no pot ser inferior al mínim de completades.",
+    "MAXIMUM_ABOVE_SCOPE": "El màxim no pot superar la població total.",
+    "MAXIMUM_ABOVE_SAMPLE": "El màxim no pot superar les persones de la mostra carregada."
   },
   "brand": {
     "sideNote": "Per a organitzacions amb certificat efr vigent."
@@ -403,13 +416,13 @@
   "myOrgs": {
     "title": "Les meves organitzacions",
     "introCoordinator": "Organitzacions que la Fundación Másfamilia t'ha assignat. Designa l'auditor/a responsable de cadascuna; et pots assignar a tu mateix/a.",
-    "introAuditor": "Organitzacions que tens assignades. Des d'aquí pots crear la campanya de cadascuna.",
+    "introAuditor": "Organitzacions que tens assignades. Des d'aquí pots crear l'auditoria de cadascuna.",
     "auditor": "Auditor/a responsable",
     "coordinator": "Coordinació",
     "noAuditor": "Sense assignar",
     "me": "jo",
     "empty": "No tens organitzacions assignades.",
-    "reassignHint": "En canviar l'auditor/a, les campanyes obertes passen al nou auditor/a i el canvi queda registrat.",
+    "reassignHint": "En canviar l'auditor/a, les auditories obertes passen al nou auditor/a i el canvi queda registrat.",
     "assigned": "Auditor/a assignat"
   },
   "assignment": {
@@ -421,5 +434,23 @@
     "none": "Sense assignar",
     "auditorHint": "Normalment el designa el coordinador/a",
     "saved": "Assignació desada"
+  },
+  "list": {
+    "search": "Cerca",
+    "searchOrgs": "Cerca per nom",
+    "searchCampaigns": "Cerca per referència o organització",
+    "status": "Estat",
+    "all": "Tots",
+    "open": "Obertes",
+    "closed": "Tancades (informe generat o cancel·lades)",
+    "auditEntity": "Entitat d'auditoria",
+    "noEntity": "Sense entitat assignada",
+    "clear": "Neteja els filtres",
+    "itemsPerPage": "Files per pàgina",
+    "nextPage": "Pàgina següent",
+    "previousPage": "Pàgina anterior",
+    "firstPage": "Primera pàgina",
+    "lastPage": "Última pàgina",
+    "range": "{{start}}–{{end}} de {{total}}"
   }
 }

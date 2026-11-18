@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import table from '../../../seed/data/sampling-table-v1.json';
-import { resolveMinimum, validateSamplingTable, type SamplingBracket } from '../src/sampling';
+import { maximumReached, resolveMaximum, resolveMinimum, validateSamplingTable, type SamplingBracket } from '../src/sampling';
 
 const brackets = table.brackets as SamplingBracket[];
 
@@ -87,5 +87,33 @@ describe('validateSamplingTable', () => {
 
   it('accepts a valid ranged last bracket', () => {
     expect(validateSamplingTable([{ min: 1, max: null, required: 5, rangeMax: 10 }])).toEqual([]);
+  });
+});
+
+describe('resolveMaximum (closes the campaign when reached)', () => {
+  const base = { minimum: 20, scopeSize: 120 };
+  it('defaults to the minimum', () => {
+    expect(resolveMaximum(base)).toEqual({ ok: true, maximum: 20, auditorChosen: false });
+    expect(resolveMaximum({ ...base, requested: null, sampleSize: 5 })).toEqual({ ok: true, maximum: 20, auditorChosen: false });
+  });
+  it('accepts a figure between the minimum and the scope / sample size (boundaries included)', () => {
+    expect(resolveMaximum({ ...base, requested: 20 })).toEqual({ ok: true, maximum: 20, auditorChosen: true });
+    expect(resolveMaximum({ ...base, requested: 120 })).toEqual({ ok: true, maximum: 120, auditorChosen: true });
+    expect(resolveMaximum({ ...base, requested: 30, sampleSize: 30 })).toEqual({ ok: true, maximum: 30, auditorChosen: true });
+  });
+  it('rejects a figure below the minimum or above the scope or the loaded sample', () => {
+    expect(resolveMaximum({ ...base, requested: 19 })).toEqual({ ok: false, error: 'MAXIMUM_BELOW_MINIMUM' });
+    expect(resolveMaximum({ ...base, requested: 121 })).toEqual({ ok: false, error: 'MAXIMUM_ABOVE_SCOPE' });
+    expect(resolveMaximum({ ...base, requested: 31, sampleSize: 30 })).toEqual({ ok: false, error: 'MAXIMUM_ABOVE_SAMPLE' });
+  });
+  it('is unknown while the minimum is unknown', () => {
+    expect(resolveMaximum({ ...base, minimum: null, requested: 50 })).toBeNull();
+  });
+  it('maximumReached', () => {
+    expect(maximumReached(19, 20)).toBe(false);
+    expect(maximumReached(20, 20)).toBe(true);
+    expect(maximumReached(21, 20)).toBe(true);
+    expect(maximumReached(100, null)).toBe(false);
+    expect(maximumReached(100, undefined)).toBe(false);
   });
 });

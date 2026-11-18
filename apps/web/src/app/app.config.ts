@@ -6,6 +6,7 @@ import {
   provideBrowserGlobalErrorListeners,
   provideZonelessChangeDetection,
 } from '@angular/core';
+import { MatPaginatorIntl } from '@angular/material/paginator';
 import { Router, provideRouter, withComponentInputBinding } from '@angular/router';
 import { provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
@@ -13,6 +14,7 @@ import { catchError, throwError } from 'rxjs';
 import { routes } from './app.routes';
 import { AuthService, SessionStore } from './core/auth.service';
 import { I18nService } from './core/i18n.service';
+import { TranslatedPaginatorIntl } from './core/paginator-intl';
 
 /** On 401 from a protected endpoint, drop the session and go to login. */
 const sessionInterceptor: HttpInterceptorFn = (req, next) => {
@@ -40,6 +42,7 @@ export const appConfig: ApplicationConfig = {
       fallbackLang: 'es',
       lang: 'es',
     }),
+    { provide: MatPaginatorIntl, useClass: TranslatedPaginatorIntl },
     provideAppInitializer(async () => {
       const i18n = inject(I18nService);
       const auth = inject(AuthService);

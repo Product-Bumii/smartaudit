@@ -1,16 +1,20 @@
 /**
- * Derived values of an M1 campaign: minimum of completed interviews, window and activated questions.
+ * Derived values of an M1 campaign: minimum and maximum of completed interviews, window and activated questions.
  * Recomputed by the API whenever an editable campaign is saved, and shown as a preview while editing.
  */
 import { computeCampaignWindow, campaignWindowWarnings, type CampaignWindow, type WindowWarning } from './business-days';
 import type { AuditType } from './enums';
 import { classifyQuestions, type Question, type QuestionActivationState } from './questionnaire';
-import { resolveMinimum, type MinimumResolution, type SamplingBracket } from './sampling';
+import { resolveMaximum, resolveMinimum, type MaximumResolution, type MinimumResolution, type SamplingBracket } from './sampling';
 
 export interface M1DerivationInput {
   scopeSize: number;
   auditorMinimum?: number | null;
-  visitDate: string;
+  /** Maximum of completed interviews requested by the auditor (`null` = the minimum). */
+  maxCompleted?: number | null;
+  /** People already in the loaded sample (0 before loading). */
+  sampleSize?: number;
+  interviewStartDate: string;
   timeZone: string;
   brackets: readonly SamplingBracket[];
   questions: readonly Question[];
@@ -22,6 +26,8 @@ export interface M1DerivationInput {
 
 export interface M1Derivation {
   minimum: MinimumResolution;
+  /** `null` while the minimum is unknown. */
+  maximum: MaximumResolution | null;
   window: CampaignWindow | null;
   windowError: string | null;
   windowWarnings: WindowWarning[];
@@ -33,18 +39,25 @@ export function deriveM1Campaign(input: M1DerivationInput): M1Derivation {
   let window: CampaignWindow | null = null;
   let windowError: string | null = null;
   try {
-    window = computeCampaignWindow(input.visitDate, input.timeZone);
+    window = computeCampaignWindow(input.interviewStartDate, input.timeZone);
   } catch (e) {
     windowError = (e as Error).message;
   }
   const questions = classifyQuestions(input.questions, {
     campaign: { auditType: input.auditType, excellence: input.excellence, norm: input.norm },
   });
+  const maximum = resolveMaximum({
+    minimum: minimum.ok ? minimum.minimum : null,
+    requested: input.maxCompleted,
+    scopeSize: input.scopeSize,
+    sampleSize: input.sampleSize,
+  });
   return {
     minimum,
+    maximum,
     window,
     windowError,
-    windowWarnings: window ? campaignWindowWarnings(window, input.now) : [],
+    windowWarnings: window ? campaignWindowWarnings(window, input.now, input.interviewStartDate) : [],
     questions,
   };
 }

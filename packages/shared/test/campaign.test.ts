@@ -93,7 +93,7 @@ describe('permissions matrix', () => {
 describe('deriveM1Campaign', () => {
   const input = {
     scopeSize: 120,
-    visitDate: '2026-11-20',
+    interviewStartDate: '2026-11-06',
     timeZone: 'America/Bogota',
     brackets: seedTable.brackets as SamplingBracket[],
     questions: seedQuestionnaire.questions as Question[],
@@ -106,6 +106,7 @@ describe('deriveM1Campaign', () => {
   it('computes minimum, window and question states', () => {
     const d = deriveM1Campaign(input);
     expect(d.minimum).toMatchObject({ ok: true, minimum: 20 });
+    expect(d.maximum).toEqual({ ok: true, maximum: 20, auditorChosen: false });
     expect(d.window?.openDate).toBe('2026-11-06');
     expect(d.windowError).toBeNull();
     expect(d.windowWarnings).toEqual(['OPENS_IN_PAST']);
@@ -113,8 +114,18 @@ describe('deriveM1Campaign', () => {
     expect(d.questions.find((q) => q.code === 'P9')?.state).toBe('inactive');
   });
 
+  it('applies the maximum chosen by the auditor, validated against the sample', () => {
+    expect(deriveM1Campaign({ ...input, maxCompleted: 30 }).maximum).toEqual({ ok: true, maximum: 30, auditorChosen: true });
+    expect(deriveM1Campaign({ ...input, maxCompleted: 30, sampleSize: 25 }).maximum).toEqual({ ok: false, error: 'MAXIMUM_ABOVE_SAMPLE' });
+  });
+
+  it('has no maximum while the minimum is unknown', () => {
+    expect(deriveM1Campaign({ ...input, scopeSize: 20_000 }).maximum).toBeNull();
+    expect(deriveM1Campaign({ ...input, scopeSize: 0 }).maximum).toBeNull();
+  });
+
   it('reports a window error without failing', () => {
-    const d = deriveM1Campaign({ ...input, visitDate: '2026-13-01' });
+    const d = deriveM1Campaign({ ...input, interviewStartDate: '2026-13-01' });
     expect(d.window).toBeNull();
     expect(d.windowError).toBe('INVALID_DATE');
     expect(d.windowWarnings).toEqual([]);

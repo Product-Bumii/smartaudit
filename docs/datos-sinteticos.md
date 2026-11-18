@@ -9,26 +9,29 @@ Los dominios `.example` están reservados (RFC 2606): ningún correo sale a pers
 |---|---|---|
 | superadmin.bumii@bumii.example | SUPERADMIN_BUMII | — |
 | superadmin.fundacion@masfamilia.example | SUPERADMIN_FUNDACION | — |
-| coordinacion@certandes.example | COORDINATOR | Certificadora Andes (sintética) · CO |
-| coordinacion@certiberica.example | COORDINATOR | Certificadora Ibérica (sintética) · ES |
+| coordinacion@icontec.example | COORDINATOR | ICONTEC · CO |
+| coordinacion@aenor.example | COORDINATOR | AENOR · ES |
 | auditor1@auditoria.example | AUDITOR | **Ambas** (al entrar elige entidad) |
-| auditor2@auditoria.example | AUDITOR | Certificadora Ibérica |
+| auditor2@auditoria.example | AUDITOR | AENOR |
 
 ## Organizaciones de la semilla (empresas efr, sin usuarios)
 
 | Organización | País · zona horaria | Entidad · coordinador | Auditor |
 |---|---|---|---|
-| Andina Servicios S.A.S. (sintética) | CO · America/Bogota | Andes · coordinacion@certandes.example | auditor1 (Andes) |
-| Costa Alimentos S.A.S. (sintética) | CO · America/Bogota | Andes · coordinacion@certandes.example | — (para probar la asignación) |
-| Ibérica Logística S.L. (sintética) | ES · Europe/Madrid | Ibérica · coordinacion@certiberica.example | auditor1 (Ibérica) |
-| Montaña Textil S.L. (sintética) | ES · Europe/Madrid | Ibérica · coordinacion@certiberica.example | auditor2 |
+| Andina Servicios S.A.S. (sintética) | CO · America/Bogota | ICONTEC · coordinacion@icontec.example | auditor1 (ICONTEC) |
+| Costa Alimentos S.A.S. (sintética) | CO · America/Bogota | ICONTEC · coordinacion@icontec.example | — (para probar la asignación) |
+| Ibérica Logística S.L. (sintética) | ES · Europe/Madrid | AENOR · coordinacion@aenor.example | auditor1 (AENOR) |
+| Montaña Textil S.L. (sintética) | ES · Europe/Madrid | AENOR · coordinacion@aenor.example | auditor2 |
 
-Las entidades de auditoría de la semilla tienen nombres inventados; nunca se usan nombres de certificadoras reales en
-los datos de prueba.
+## Entidades de auditoría (tabla maestra)
+
+Desde el 18/11/2026 (decisión 67) la semilla carga la **lista real** de entidades de auditoría facilitada por F+f:
+AENOR, APCER, AUDELCO, CMD, DNV, EDUQATIA, ICONTEC, LOT y SGS. Son datos de configuración, no personales. Los
+coordinadores, auditores y organizaciones que cuelgan de ICONTEC y AENOR siguen siendo **sintéticos** (`.example`).
 
 ## Configuración de la semilla
 
-- Cuestionario M1 **v1** publicado: español aprobado; inglés, catalán, portugués (de Portugal) y francés **pendientes de aprobación por la Fundación** (traducción de Bumii).
+- Cuestionario M1 **v1** publicado: español aprobado; inglés, catalán, portugués (de Portugal) y francés **pendientes de aprobación por la Fundación** (traducción de Bumii). El catalán se conserva pero no se ofrece (decisión 66).
 - Tabla de mínimos **v1** publicada (fuente: *Tablas entrevistas.xlsx*).
 
 ## Archivos de muestra (`seed/samples`, regenerables con `npx tsx seed/generate-samples.ts`)

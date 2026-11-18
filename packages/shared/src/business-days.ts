@@ -6,7 +6,7 @@
 import { DateTime } from 'luxon';
 
 export interface WindowRules {
-  /** Number of business days the window lasts (opens N business days before the visit). */
+  /** Number of business days the window lasts, starting on the interview start date. */
   openBusinessDays: number;
   /** 1-based business days of the window on which reminders are sent. */
   reminderBusinessDays: readonly number[];
@@ -28,7 +28,7 @@ export interface CampaignWindow {
   closeDate: string;
   /** Opening instant: open date at `sendHour` local time (moment invitations go out). */
   opensAt: string;
-  /** Closing instant: 23:59:59.999 local time of the business day before the visit. */
+  /** Closing instant: 23:59:59.999 local time of the last business day of the window. */
   closesAt: string;
   reminders: { businessDay: number; date: string; sendAt: string }[];
 }
@@ -56,31 +56,31 @@ export function isBusinessDay(date: string): boolean {
 
 const toDate = (dt: DateTime): string => dt.toISODate() as string;
 
-/** Returns the `count` business days strictly before `date`, in ascending order. */
-export function businessDaysBefore(date: string, count: number): string[] {
+/** Returns `count` business days starting on `date` (included when it is a business day), ascending. */
+export function businessDaysFrom(date: string, count: number): string[] {
   if (!Number.isInteger(count) || count < 1) throw new Error('INVALID_COUNT');
   const result: string[] = [];
   let cursor = parseLocalDate(date, 'UTC');
   while (result.length < count) {
-    cursor = cursor.minus({ days: 1 });
     const d = toDate(cursor);
-    if (isBusinessDay(d)) result.unshift(d);
+    if (isBusinessDay(d)) result.push(d);
+    cursor = cursor.plus({ days: 1 });
   }
   return result;
 }
 
-export function previousBusinessDay(date: string): string {
-  return businessDaysBefore(date, 1)[0];
-}
-
-/** Computes the participation window for a campaign whose visit is on `visitDate` (local date). */
+/**
+ * Computes the participation window of a campaign whose interviews start on `startDate` (local date):
+ * it opens that day (or the next business day) at `sendHour` and lasts `openBusinessDays` business days,
+ * closing at 23:59:59.999 local time of the last one (decision 64).
+ */
 export function computeCampaignWindow(
-  visitDate: string,
+  startDate: string,
   timeZone: string,
   rules: WindowRules = DEFAULT_WINDOW_RULES,
 ): CampaignWindow {
-  parseLocalDate(visitDate, timeZone);
-  const businessDays = businessDaysBefore(visitDate, rules.openBusinessDays);
+  parseLocalDate(startDate, timeZone);
+  const businessDays = businessDaysFrom(startDate, rules.openBusinessDays);
   const at = (date: string, hour: number, minute = 0, second = 0, millisecond = 0) =>
     parseLocalDate(date, timeZone).set({ hour, minute, second, millisecond }).toUTC().toISO() as string;
 
@@ -101,11 +101,15 @@ export function computeCampaignWindow(
   };
 }
 
-export type WindowWarning = 'OPENS_IN_PAST' | 'CLOSES_IN_PAST';
+export type WindowWarning = 'START_NOT_BUSINESS_DAY' | 'OPENS_IN_PAST' | 'CLOSES_IN_PAST';
 
-/** Warnings shown to the auditor when the window is already (partly) in the past. */
-export function campaignWindowWarnings(window: CampaignWindow, now: Date): WindowWarning[] {
+/**
+ * Warnings shown to the auditor: start date on a weekend (the window opens the next business day) and
+ * window already (partly) in the past.
+ */
+export function campaignWindowWarnings(window: CampaignWindow, now: Date, startDate: string = window.openDate): WindowWarning[] {
   const warnings: WindowWarning[] = [];
+  if (startDate !== window.openDate) warnings.push('START_NOT_BUSINESS_DAY');
   if (new Date(window.opensAt).getTime() < now.getTime()) warnings.push('OPENS_IN_PAST');
   if (new Date(window.closesAt).getTime() < now.getTime()) warnings.push('CLOSES_IN_PAST');
   return warnings;

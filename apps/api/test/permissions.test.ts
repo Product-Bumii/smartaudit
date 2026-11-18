@@ -230,7 +230,7 @@ describe('Superadmins', () => {
     expect(list.body.items.find((e: { id: string }) => e.id === entityId)).toMatchObject({ coordinators: 2, auditors: 0, organizations: 0 });
 
     // Organization created already assigned; a coordinator of another entity is refused.
-    const base = { name: 'Nueva Org (sintética)', country: 'ES', timeZone: 'Europe/Madrid', defaultLanguage: 'ca' };
+    const base = { name: 'Nueva Org (sintética)', country: 'ES', timeZone: 'Europe/Madrid', defaultLanguage: 'pt' };
     const bad = await call(s.superFundacion, ['post', () => '/api/organizations', { ...base, auditEntityId: entityId, coordinatorId: ids.coordES }]).expect(422);
     expect(bad.body.error.code).toBe('INVALID_COORDINATOR');
     expect(await Organization.countDocuments({ name: base.name })).toBe(0);

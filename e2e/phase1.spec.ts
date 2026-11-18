@@ -39,6 +39,15 @@ test('phase 1 end-to-end flow', async ({ page }) => {
   await page.getByTestId('org-submit').click();
   await expect(page.getByRole('heading', { name: ORG })).toBeVisible();
   await expect(page.getByTestId('assign-coordinator')).toContainText(COORDINATOR);
+
+  // The organization list is searched and filtered on the server (hundreds of organizations).
+  await page.goto('/admin/organizations');
+  await page.getByTestId('org-search').fill(`org e2e ${run}`.toUpperCase());
+  await expect(page.getByTestId('org-table').locator('tbody tr')).toHaveCount(1);
+  await page.getByTestId('org-search').fill('');
+  await matSelect(page, 'org-filter-entity', ENTITY);
+  await expect(page.getByTestId('org-table').locator('tbody tr')).toHaveCount(1);
+  await expect(page.getByTestId('org-table')).toContainText(ORG);
   await logout(page);
 
   // 2. The coordinator creates an auditor and designates them for the organization.
@@ -51,23 +60,27 @@ test('phase 1 end-to-end flow', async ({ page }) => {
   await expect(page.getByTestId('users-auditors')).toContainText(AUDITOR);
   await page.goto('/my/organizations');
   const row = page.locator('tr', { hasText: ORG });
-  await row.locator('mat-select').click();
+  await row.locator('mat-form-field').click(); // the label is part of the clickable field
   await page.getByRole('option', { name: AUDITOR }).click();
   await expect(row.locator('mat-select')).toContainText(AUDITOR);
   await logout(page);
 
-  // 3. The auditor signs in and creates the campaign (ES, Madrid: visit Wed 9 Dec 2026, 120 people).
+  // 3. The auditor signs in and creates the audit (ES, Madrid: interviews start Wed 25 Nov 2026, 120 people).
   await login(page, AUDITOR);
   await expect(page).toHaveURL(/\/my\/organizations$/);
-  await page.locator('tr', { hasText: ORG }).getByRole('link', { name: /nueva campaña/i }).click();
+  await page.locator('tr', { hasText: ORG }).getByRole('link', { name: /nueva auditoría/i }).click();
   await expect(page.getByTestId('cf-organization')).toContainText(ORG);
   await page.getByTestId('cf-reference').fill(`Auditoría E2E ${run}`);
-  await page.getByTestId('cf-visit-date').fill('2026-12-09');
+  await page.getByTestId('cf-start-date').fill('2026-11-25');
   await page.getByTestId('cf-scope').fill('120');
   await expect(page.getByTestId('cf-minimum')).toHaveText('20');
+  await expect(page.getByTestId('cf-maximum')).toHaveText('20'); // empty = the minimum
+  await page.getByTestId('cf-max').fill('25');
+  await expect(page.getByTestId('cf-maximum')).toHaveText('25');
   await page.getByTestId('cf-submit').click();
   await expect(page.getByTestId('campaign-status')).toHaveText('Borrador');
   await expect(page.getByTestId('campaign-minimum')).toHaveText('20');
+  await expect(page.getByTestId('campaign-maximum')).toHaveText('25');
 
   // 4. Upload a sample with errors: per-row errors, nothing loaded.
   await page.getByTestId('sample-file').setInputFiles(join(SAMPLES, 'muestra-invalida-errores-fila.csv'));
@@ -89,20 +102,24 @@ test('phase 1 end-to-end flow', async ({ page }) => {
   const id = page.url().split('/').pop();
   const { campaign } = await (await page.request.get(`/api/campaigns/${id}`)).json();
   expect(campaign.status).toBe('muestra_cargada');
-  expect(campaign.sampling.minimum).toBe(20);
+  expect(campaign.sampling).toMatchObject({ minimum: 20, maximum: 25 });
   expect(campaign.window).toMatchObject({
     openDate: '2026-11-25',
     closeDate: '2026-12-08',
     opensAt: '2026-11-25T08:00:00.000Z', // 09:00 Europe/Madrid
-    closesAt: '2026-12-08T22:59:59.999Z', // 23:59 Europe/Madrid, business day before the visit
+    closesAt: '2026-12-08T22:59:59.999Z', // 23:59 Europe/Madrid, 10th business day
   });
   await expect(page.getByTestId('campaign-opens')).toContainText('25 nov 2026');
   await expect(page.getByTestId('campaign-closes')).toContainText('8 dic 2026');
 
-  // 7. The coordinator sees the campaign only as aggregate: no sample, no codes.
+  // 7. The coordinator finds the audit with the search and sees it only as aggregate: no sample, no codes.
   await logout(page);
   await login(page, COORDINATOR);
-  await page.goto(`/campaigns/${id}`);
+  await page.goto('/campaigns');
+  await page.getByTestId('campaign-search').fill(`E2E ${run}`);
+  await expect(page.getByTestId('campaign-table').locator('tbody tr')).toHaveCount(1);
+  await page.getByTestId('campaign-table').getByRole('link', { name: `Auditoría E2E ${run}` }).click();
+  await expect(page).toHaveURL(new RegExp(`/campaigns/${id}$`));
   await expect(page.getByTestId('aggregate-notice')).toBeVisible();
   await expect(page.getByTestId('sample-section')).toHaveCount(0);
   expect((await page.request.get(`/api/campaigns/${id}/sample/summary`)).status()).toBe(403);
@@ -112,9 +129,9 @@ test('phase 1 end-to-end flow', async ({ page }) => {
 test('an email with accounts in two audit entities chooses where to enter', async ({ page }) => {
   await openMagicLink(page, 'auditor1@auditoria.example');
   await expect(page.getByRole('heading', { name: /Elige la entidad de auditoría/ })).toBeVisible();
-  await page.getByTestId('account-Certificadora Ibérica (sintética)').click();
+  await page.getByTestId('account-AENOR').click();
   await expect(page).toHaveURL(/\/my\/organizations$/);
-  await expect(page.getByTestId('user-info')).toContainText('Certificadora Ibérica');
+  await expect(page.getByTestId('user-info')).toContainText('AENOR');
   await expect(page.getByTestId('my-orgs')).toContainText('Ibérica Logística');
 });
 
@@ -122,7 +139,7 @@ test('a person without email opens the link from the codes file and enters the a
   await login(page, 'auditor2@auditoria.example');
   const options = await (await page.request.get('/api/campaigns/options')).json();
   const created = await page.request.post('/api/campaigns', {
-    data: { organizationId: options.organizations[0].id, reference: `Códigos ${run}`, norm: '1000-1', auditType: 'inicial', excellence: false, visitDate: '2026-12-09', scopeSize: 40, languages: ['es', 'en', 'ca'] },
+    data: { organizationId: options.organizations[0].id, reference: `Códigos ${run}`, norm: '1000-1', auditType: 'inicial', excellence: false, interviewStartDate: '2026-11-25', scopeSize: 40, languages: ['es', 'en', 'pt'] },
   });
   const { campaign } = await created.json();
   const fs = await import('node:fs');

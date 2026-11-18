@@ -3,17 +3,20 @@ import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSortModule } from '@angular/material/sort';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiService } from '../../core/api.service';
-import { LANGS, type AuditEntityListItem, type OrganizationDto, type UserDto } from '../../core/models';
+import { LANGS, PAGE_SIZES, type AuditEntityListItem, type OrganizationDto, type Paged, type UserDto } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
 import { buildOrgForm, COUNTRIES, supportedTimeZones } from '../../shared/org-form';
+import { PagedList } from '../../shared/paged-list';
 
 @Component({
   selector: 'app-organizations',
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, TranslatePipe],
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, MatPaginatorModule, MatSelectModule, MatSortModule, TranslatePipe],
   template: `
     <div class="page-header">
       <div class="titles">
@@ -85,20 +88,47 @@ import { buildOrgForm, COUNTRIES, supportedTimeZones } from '../../shared/org-fo
     }
 
     <section class="card">
+      <div class="list-toolbar">
+        <mat-form-field appearance="outline" class="search" subscriptSizing="dynamic">
+          <mat-label>{{ 'list.searchOrgs' | translate }}</mat-label>
+          <input matInput type="search" [value]="list.q()" (input)="list.onSearch($any($event.target).value)" data-testid="org-search" />
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter" subscriptSizing="dynamic">
+          <mat-label>{{ 'list.auditEntity' | translate }}</mat-label>
+          <mat-select [value]="list.filters()['auditEntityId'] ?? ''" (selectionChange)="list.setFilter('auditEntityId', $event.value)" data-testid="org-filter-entity">
+            <mat-option value="">{{ 'list.all' | translate }}</mat-option>
+            <mat-option value="none">{{ 'list.noEntity' | translate }}</mat-option>
+            @for (e of entities(); track e.id) {
+              <mat-option [value]="e.id"><span class="keep-case">{{ e.name }}</span></mat-option>
+            }
+          </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="filter" subscriptSizing="dynamic">
+          <mat-label>{{ 'list.status' | translate }}</mat-label>
+          <mat-select [value]="list.filters()['status'] ?? ''" (selectionChange)="list.setFilter('status', $event.value)">
+            <mat-option value="">{{ 'list.all' | translate }}</mat-option>
+            <mat-option value="active">{{ 'status.active' | translate }}</mat-option>
+            <mat-option value="inactive">{{ 'status.inactive' | translate }}</mat-option>
+          </mat-select>
+        </mat-form-field>
+        @if (list.narrowed()) {
+          <button mat-button class="clear" type="button" (click)="list.clear()">{{ 'list.clear' | translate }}</button>
+        }
+      </div>
       <div class="table-wrap">
-        <table class="simple-table">
+        <table class="simple-table" matSort [matSortActive]="list.sort()" [matSortDirection]="list.dir()" (matSortChange)="list.onSort($event)" data-testid="org-table">
           <thead>
             <tr>
-              <th>{{ 'orgs.name' | translate }}</th>
-              <th>{{ 'orgs.country' | translate }}</th>
+              <th mat-sort-header="name">{{ 'orgs.name' | translate }}</th>
+              <th mat-sort-header="country">{{ 'orgs.country' | translate }}</th>
               <th>{{ 'assignment.auditEntity' | translate }}</th>
               <th>{{ 'assignment.coordinator' | translate }}</th>
               <th>{{ 'assignment.auditor' | translate }}</th>
-              <th>{{ 'users.status' | translate }}</th>
+              <th mat-sort-header="status">{{ 'users.status' | translate }}</th>
             </tr>
           </thead>
           <tbody>
-            @for (o of orgs(); track o.id) {
+            @for (o of list.items(); track o.id) {
               <tr>
                 <td><a class="strong" [routerLink]="['/admin/organizations', o.id]">{{ o.name }}</a></td>
                 <td>{{ o.country }}</td>
@@ -108,11 +138,21 @@ import { buildOrgForm, COUNTRIES, supportedTimeZones } from '../../shared/org-fo
                 <td><span class="chip" [class.neutral]="o.status !== 'active'">{{ 'status.' + o.status | translate }}</span></td>
               </tr>
             } @empty {
-              <tr><td colspan="6" class="muted">{{ 'orgs.empty' | translate }}</td></tr>
+              @if (list.loaded()) {
+                <tr><td colspan="6" class="muted">{{ (list.narrowed() ? 'orgs.noResults' : 'orgs.empty') | translate }}</td></tr>
+              }
             }
           </tbody>
         </table>
       </div>
+      <mat-paginator
+        [length]="list.total()"
+        [pageIndex]="list.page()"
+        [pageSize]="list.pageSize()"
+        [pageSizeOptions]="pageSizes"
+        [showFirstLastButtons]="true"
+        (page)="list.onPage($event)"
+      />
     </section>
   `,
   styles: `.strong { font-weight: 700; }`,
@@ -125,7 +165,15 @@ export class OrganizationsPage implements OnInit {
   readonly langs = LANGS;
   readonly countries = COUNTRIES;
   readonly timeZones = supportedTimeZones();
-  readonly orgs = signal<OrganizationDto[]>([]);
+  readonly pageSizes = PAGE_SIZES;
+  /** 300–400 organizations: searched, filtered, sorted and paged on the server. */
+  readonly list = new PagedList<OrganizationDto>({
+    load: (params) => this.api.get<Paged<OrganizationDto>>('/organizations', params),
+    onError: (e) => this.notify.error(e),
+    sort: 'name',
+    dir: 'asc',
+    filters: ['auditEntityId', 'status'],
+  });
   readonly showForm = signal(false);
   readonly busy = signal(false);
   readonly form = buildOrgForm(this.fb);
@@ -135,7 +183,7 @@ export class OrganizationsPage implements OnInit {
   readonly coordinators = signal<UserDto[]>([]);
 
   async ngOnInit(): Promise<void> {
-    await this.load();
+    await this.list.reload();
     try {
       this.entities.set((await this.api.get<{ items: AuditEntityListItem[] }>('/audit-entities')).items);
     } catch (e) {
@@ -149,14 +197,6 @@ export class OrganizationsPage implements OnInit {
     if (!entityId) return;
     try {
       this.coordinators.set((await this.api.get<{ items: UserDto[] }>(`/audit-entities/${entityId}/coordinators`)).items);
-    } catch (e) {
-      this.notify.error(e);
-    }
-  }
-
-  async load(): Promise<void> {
-    try {
-      this.orgs.set((await this.api.get<{ items: OrganizationDto[] }>('/organizations')).items);
     } catch (e) {
       this.notify.error(e);
     }

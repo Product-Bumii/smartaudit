@@ -1,5 +1,7 @@
 import {
+  canTransition,
   campaignAccess,
+  maximumReached,
   deriveM1Campaign,
   isSuperadmin,
   objectIdSchema,
@@ -14,6 +16,7 @@ import {
   type QuestionnaireLanguage,
   type SamplingBracket,
 } from '@smartaudit/shared';
+import { Types } from 'mongoose';
 import type { AppContext } from '../context';
 import { forbidden, notFound, unprocessable } from '../lib/errors';
 import type { AuthUser } from '../middleware/auth';
@@ -23,6 +26,7 @@ import {
   getSettings,
   Organization,
   Questionnaire,
+  Respondent,
   SamplingTable,
   type CampaignDoc,
   type OrganizationDoc,
@@ -57,6 +61,7 @@ export async function computeCampaign(
   org: OrganizationDoc,
   leadAuditorId: string,
   input: CampaignM1Input,
+  sampleSize = 0,
 ): Promise<ComputedCampaign> {
   const settings = await getSettings();
   const conf = await currentConfiguration();
@@ -72,7 +77,9 @@ export async function computeCampaign(
   const derivation = deriveM1Campaign({
     scopeSize: input.scopeSize,
     auditorMinimum: input.auditorMinimum ?? null,
-    visitDate: input.visitDate,
+    maxCompleted: input.maxCompleted ?? null,
+    sampleSize,
+    interviewStartDate: input.interviewStartDate,
     timeZone: org.timeZone,
     brackets: conf.table.brackets as SamplingBracket[],
     questions,
@@ -85,7 +92,9 @@ export async function computeCampaign(
   else if (derivation.minimum.minimum === null) {
     problems.push({ code: 'AUDITOR_MINIMUM_REQUIRED', details: { min: derivation.minimum.bracket.required, max: derivation.minimum.bracket.rangeMax } });
   }
-  if (derivation.windowError) problems.push({ code: 'INVALID_VISIT_DATE', details: { reason: derivation.windowError } });
+  if (derivation.windowError) problems.push({ code: 'INVALID_START_DATE', details: { reason: derivation.windowError } });
+  const max = derivation.maximum;
+  if (max && !max.ok) problems.push({ code: max.error, details: { minimum: m0(derivation), scopeSize: input.scopeSize, sampleSize } });
 
   const m = derivation.minimum;
   const set = {
@@ -96,9 +105,10 @@ export async function computeCampaign(
       excellence: input.excellence,
       leadAuditorId,
       efrManagerName: input.efrManagerName ?? null,
-      visitDate: input.visitDate,
+      interviewStartDate: input.interviewStartDate,
       scopeSize: input.scopeSize,
       auditorMinimum: m.ok && m.auditorChosen ? input.auditorMinimum : null,
+      maxCompleted: max?.ok && max.auditorChosen ? max.maximum : null,
       languages: input.languages,
     },
     sampling: m.ok
@@ -109,6 +119,7 @@ export async function computeCampaign(
           bracketIndex: m.bracketIndex,
           bracket: m.bracket,
           minimum: m.minimum,
+          maximum: max?.ok ? max.maximum : null,
           requiresAuditorChoice: m.requiresAuditorChoice,
           auditorChosen: m.auditorChosen,
         }
@@ -122,19 +133,43 @@ export async function computeCampaign(
   return { derivation, problems, offered, set };
 }
 
+const m0 = (d: M1Derivation) => (d.minimum.ok ? d.minimum.minimum : null);
+
 /**
- * Mongo filter for the campaign list: superadmins see all; coordinators and auditors only campaigns of
+ * Closes a running campaign (`en_curso` → `finalizada`) once its completed interviews reach the maximum
+ * (decision 65). Returns whether it was closed. Called whenever an interview is completed.
+ * TODO(Fase 2): call it from the interview engine when an interview reaches `completedAt`.
+ */
+export async function closeIfMaximumReached(ctx: AppContext, campaignId: string): Promise<boolean> {
+  const campaign = await Campaign.findById(campaignId);
+  if (!campaign || !canTransition(campaign.status as CampaignStatus, 'finalizada')) return false;
+  const completed = await Respondent.countDocuments({ campaignId: campaign._id, status: 'completed' });
+  if (!maximumReached(completed, campaign.sampling?.maximum)) return false;
+  const from = campaign.status as CampaignStatus;
+  const updated = await Campaign.updateOne(
+    { _id: campaign._id, status: from },
+    {
+      $set: { status: 'finalizada' },
+      $push: { statusHistory: { from, to: 'finalizada', at: ctx.now(), by: null, reason: 'maximum_reached' } },
+    },
+  );
+  return updated.modifiedCount === 1;
+}
+
+/**
+ * Mongo filter for the campaign list (find and aggregate): superadmins see all; coordinators and auditors only campaigns of
  * their audit entity where they are the lead auditor or (coordinators) of the organizations they coordinate.
  * The precise access level of each campaign comes from the shared `campaignAccess`.
  */
 export async function campaignListScope(user: AuthUser): Promise<Record<string, unknown>> {
   if (isSuperadmin(user.role)) return {};
-  const or: Record<string, unknown>[] = [{ 'm1Config.leadAuditorId': user.id }];
+  // ObjectIds (not strings): the filter is also used in aggregations, which do not cast.
+  const or: Record<string, unknown>[] = [{ 'm1Config.leadAuditorId': new Types.ObjectId(user.id) }];
   if (user.role === 'COORDINATOR') {
     const orgIds = await Organization.find({ auditEntityId: user.auditEntityId, coordinatorId: user.id }).distinct('_id');
     or.push({ organizationId: { $in: orgIds } });
   }
-  return { auditEntityId: user.auditEntityId, $or: or };
+  return { auditEntityId: new Types.ObjectId(user.auditEntityId!), $or: or };
 }
 
 export const accessFor = (user: AuthUser, campaign: CampaignDoc, org: OrganizationDoc): CampaignAccess =>
@@ -190,9 +225,10 @@ export function toCampaignDto(raw: object, access: CampaignAccess): CampaignDto 
       excellence: m1.excellence,
       leadAuditorId: String(m1.leadAuditorId),
       efrManagerName: m1.efrManagerName ?? null,
-      visitDate: m1.visitDate,
+      interviewStartDate: m1.interviewStartDate,
       scopeSize: m1.scopeSize,
       auditorMinimum: m1.auditorMinimum ?? null,
+      maxCompleted: m1.maxCompleted ?? null,
       languages: m1.languages as Language[],
     },
     sampling:
@@ -202,6 +238,7 @@ export function toCampaignDto(raw: object, access: CampaignAccess): CampaignDto 
             scopeSize: s.scopeSize as number,
             bracket: { min: s.bracket?.min as number, max: s.bracket?.max ?? null },
             minimum: s.minimum ?? null,
+            maximum: s.maximum ?? null,
             requiresAuditorChoice: Boolean(s.requiresAuditorChoice),
             auditorChosen: Boolean(s.auditorChosen),
           }

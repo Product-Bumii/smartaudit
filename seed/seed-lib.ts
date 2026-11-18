@@ -20,17 +20,32 @@ import samplingTable from './data/sampling-table-v1.json';
 export const SEED_USERS = {
   superBumii: 'superadmin.bumii@bumii.example',
   superFundacion: 'superadmin.fundacion@masfamilia.example',
-  coordinatorCO: 'coordinacion@certandes.example',
-  coordinatorES: 'coordinacion@certiberica.example',
+  coordinatorCO: 'coordinacion@icontec.example',
+  coordinatorES: 'coordinacion@aenor.example',
   /** Auditor of both audit entities → account selection after the magic link. */
   auditorMulti: 'auditor1@auditoria.example',
   auditorES: 'auditor2@auditoria.example',
 } as const;
 
-/** Synthetic audit entities (certification bodies). Never real names in seed data. */
+/**
+ * Audit entities (certification bodies): the real master list provided by F+f (decision 67). Their
+ * coordinators, auditors and organizations in the seed are synthetic. Country only where it is certain.
+ */
+export const SEED_ENTITY_CATALOG: { name: string; country: string | null }[] = [
+  { name: 'AENOR', country: 'ES' },
+  { name: 'APCER', country: 'PT' },
+  { name: 'AUDELCO', country: null },
+  { name: 'CMD', country: null },
+  { name: 'DNV', country: null },
+  { name: 'EDUQATIA', country: null },
+  { name: 'ICONTEC', country: 'CO' },
+  { name: 'LOT', country: null },
+  { name: 'SGS', country: null },
+];
+/** Entities that carry the synthetic test users. */
 export const SEED_ENTITIES = {
-  CO: { name: 'Certificadora Andes (sintética)', country: 'CO' },
-  ES: { name: 'Certificadora Ibérica (sintética)', country: 'ES' },
+  CO: { name: 'ICONTEC', country: 'CO' },
+  ES: { name: 'AENOR', country: 'ES' },
 } as const;
 
 export const SEED_ORGS = {
@@ -38,7 +53,7 @@ export const SEED_ORGS = {
   ES: { name: 'Ibérica Logística S.L. (sintética)', country: 'ES', timeZone: 'Europe/Madrid', defaultLanguage: 'es' },
   /** Assigned to a coordinator but still without auditor (to try the assignment). */
   CO2: { name: 'Costa Alimentos S.A.S. (sintética)', country: 'CO', timeZone: 'America/Bogota', defaultLanguage: 'es' },
-  ES2: { name: 'Montaña Textil S.L. (sintética)', country: 'ES', timeZone: 'Europe/Madrid', defaultLanguage: 'ca' },
+  ES2: { name: 'Montaña Textil S.L. (sintética)', country: 'ES', timeZone: 'Europe/Madrid', defaultLanguage: 'es' },
 } as const;
 
 export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = console.log): Promise<void> {
@@ -61,7 +76,7 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
       languages: questionnaire.languages.map((l) => ({ ...l, approvedAt: l.status === 'approved' ? new Date() : null })),
       questions: questionnaire.questions,
     });
-    log('questionnaire M1 v1 published (es approved; en, ca pending approval)');
+    log('questionnaire M1 v1 published (es approved; en, ca, pt, fr pending approval)');
   }
 
   await addMissingQuestionnaireLanguages(log);
@@ -74,7 +89,7 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
     log(`user ${role}${auditEntityId ? ` @ ${auditEntityId}` : ''}`);
     return User.create({ emailEncrypted: crypto.encrypt(email), emailHash, role, auditEntityId, preferredLanguage: 'es' });
   };
-  const upsertEntity = async (e: (typeof SEED_ENTITIES)[keyof typeof SEED_ENTITIES]) =>
+  const upsertEntity = async (e: { name: string; country: string | null }) =>
     (await AuditEntity.findOne({ name: e.name })) ?? (await AuditEntity.create(e));
   /** Creates the organization and, only when it has no assignment yet, assigns it. */
   const upsertOrg = async (
@@ -91,6 +106,7 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
 
   await upsertUser(SEED_USERS.superBumii, 'SUPERADMIN_BUMII', null);
   await upsertUser(SEED_USERS.superFundacion, 'SUPERADMIN_FUNDACION', null);
+  for (const e of SEED_ENTITY_CATALOG) await upsertEntity(e);
   const andes = await upsertEntity(SEED_ENTITIES.CO);
   const iberica = await upsertEntity(SEED_ENTITIES.ES);
   const coordCO = await upsertUser(SEED_USERS.coordinatorCO, 'COORDINATOR', andes._id);

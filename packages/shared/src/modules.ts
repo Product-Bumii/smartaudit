@@ -11,10 +11,13 @@ export interface M1Config {
   leadAuditorId: string;
   /** Only a coding reference; the AI never mentions it. */
   efrManagerName?: string | null;
-  visitDate: string;
+  /** First day of interviews (local date); the window opens that day (decision 64). */
+  interviewStartDate: string;
   scopeSize: number;
   /** Figure chosen by the auditor for ranged brackets (> 16.000). */
   auditorMinimum?: number | null;
+  /** Completed interviews at which the campaign closes; `null` = the minimum (decision 65). */
+  maxCompleted?: number | null;
   languages: Language[];
 }
 

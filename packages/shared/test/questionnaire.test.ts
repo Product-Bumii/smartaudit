@@ -81,7 +81,9 @@ describe('offeredLanguages', () => {
   ];
   it('offers only approved AND enabled languages', () => {
     expect(offeredLanguages(langs, ['es', 'en'])).toEqual(['es']);
-    expect(offeredLanguages(langs, ['es', 'en', 'ca'])).toEqual(['es', 'ca']);
+  });
+  it('never offers a hidden language (ca), even if approved and enabled', () => {
+    expect(offeredLanguages(langs, ['es', 'en', 'ca'])).toEqual(['es']);
   });
 });
 

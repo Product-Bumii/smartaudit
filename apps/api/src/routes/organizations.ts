@@ -1,7 +1,10 @@
 import { Router } from 'express';
 import {
+  assignedOrganizationListQuerySchema,
   auditorAssignmentSchema,
   canAssignAuditor,
+  organizationListQuerySchema,
+  searchPattern,
   objectIdSchema,
   organizationAssignmentSchema,
   organizationCreateSchema,
@@ -24,6 +27,29 @@ async function findOrg(id: string): Promise<OrganizationDoc> {
   return org as OrganizationDoc;
 }
 
+/** Organization names sort and compare ignoring case and accents. */
+const COLLATION = { locale: 'es', strength: 1 } as const;
+
+/** One page of organizations matching `filter` and the free-text query. */
+async function pageOfOrganizations(
+  filter: Record<string, unknown>,
+  q: { q?: string; page: number; pageSize: number; sort: string; dir?: 'asc' | 'desc' },
+): Promise<{ orgs: OrganizationDoc[]; total: number }> {
+  const pattern = searchPattern(q.q);
+  const where = pattern ? { ...filter, name: { $regex: pattern, $options: 'i' } } : filter;
+  const dir = (q.dir ?? (q.sort === 'createdAt' ? 'desc' : 'asc')) === 'asc' ? 1 : -1;
+  const [orgs, total] = await Promise.all([
+    Organization.find(where)
+      .collation(COLLATION)
+      .sort({ [q.sort]: dir, ...(q.sort === 'name' ? {} : { name: 1 }), _id: 1 })
+      .skip((q.page - 1) * q.pageSize)
+      .limit(q.pageSize)
+      .lean(),
+    Organization.countDocuments(where),
+  ]);
+  return { orgs: orgs as OrganizationDoc[], total };
+}
+
 export const accessUser = (u: AuthUser): AccessUser => ({ id: u.id, role: u.role, auditEntityId: u.auditEntityId });
 
 /** Organization the user may change the auditor of (superadmins, or its coordinator); 404 otherwise. */
@@ -37,9 +63,13 @@ export function organizationsRouter(ctx: AppContext): Router {
   const r = Router();
 
   // ---------- Organizations (superadmins)
-  r.get('/', requireAction('organization.manage'), async (_req, res) => {
-    const orgs = (await Organization.find().sort({ name: 1 }).lean()) as OrganizationDoc[];
-    res.json({ items: await toOrganizationDtos(ctx, orgs) });
+  r.get('/', requireAction('organization.manage'), async (req, res) => {
+    const q = organizationListQuerySchema.parse(req.query);
+    const filter: Record<string, unknown> = {};
+    if (q.auditEntityId) filter.auditEntityId = q.auditEntityId === 'none' ? null : q.auditEntityId;
+    if (q.status) filter.status = q.status;
+    const { orgs, total } = await pageOfOrganizations(filter, q);
+    res.json({ items: await toOrganizationDtos(ctx, orgs), total, page: q.page, pageSize: q.pageSize });
   });
 
   r.post('/', requireAction('organization.manage'), async (req, res) => {
@@ -97,11 +127,15 @@ export function assignedOrganizationsRouter(ctx: AppContext): Router {
   const r = Router();
   r.get('/', requireAction('organization.viewAssigned'), async (req, res) => {
     const user = req.user as AuthUser;
+    const q = assignedOrganizationListQuerySchema.parse(req.query);
     const or: Record<string, unknown>[] = [{ auditorId: user.id }];
     if (user.role === 'COORDINATOR') or.push({ coordinatorId: user.id });
-    const orgs = (await Organization.find({ auditEntityId: user.auditEntityId, $or: or }).sort({ name: 1 }).lean()) as OrganizationDoc[];
+    const { orgs, total } = await pageOfOrganizations({ auditEntityId: user.auditEntityId, $or: or }, q);
     const dtos = await toOrganizationDtos(ctx, orgs);
     res.json({
+      total,
+      page: q.page,
+      pageSize: q.pageSize,
       items: dtos.map((o, i) => ({
         ...o,
         coordinates: user.role === 'COORDINATOR' && String(orgs[i].coordinatorId) === user.id,

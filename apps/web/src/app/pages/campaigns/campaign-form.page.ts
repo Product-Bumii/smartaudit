@@ -66,8 +66,9 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
             </mat-select>
           </mat-form-field>
           <mat-form-field appearance="outline">
-            <mat-label>{{ 'campaigns.visitDate' | translate }}</mat-label>
-            <input matInput type="date" formControlName="visitDate" data-testid="cf-visit-date" />
+            <mat-label>{{ 'campaigns.interviewStartDate' | translate }}</mat-label>
+            <input matInput type="date" formControlName="interviewStartDate" data-testid="cf-start-date" />
+            <mat-hint>{{ 'campaignForm.interviewStartDateHint' | translate }}</mat-hint>
           </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>{{ 'campaignForm.scopeSize' | translate }}</mat-label>
@@ -80,6 +81,11 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
               <mat-hint>{{ 'campaignForm.auditorMinimumHint' | translate: rangeHint() }}</mat-hint>
             </mat-form-field>
           }
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'campaignForm.maxCompleted' | translate }}</mat-label>
+            <input matInput type="number" min="1" formControlName="maxCompleted" [placeholder]="defaultMaximum()" data-testid="cf-max" />
+            <mat-hint>{{ 'campaignForm.maxCompletedHint' | translate }}</mat-hint>
+          </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>{{ 'campaignForm.efrManager' | translate }}</mat-label>
             <input matInput formControlName="efrManagerName" />
@@ -118,6 +124,11 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
             @if (p.minimum.ok) {
               <span class="meta">{{ 'campaignForm.bracket' | translate: { min: p.minimum.bracket.min, max: p.minimum.bracket.max ?? '∞' } }}</span>
             }
+          </div>
+          <div class="stat">
+            <span class="value" data-testid="cf-maximum">{{ p.maximum?.ok ? $any(p.maximum).maximum : '—' }}</span>
+            <span class="label">{{ 'campaigns.maximum' | translate }}</span>
+            <span class="meta">{{ 'campaigns.maximumHint' | translate }}</span>
           </div>
           @if (p.window; as w) {
             <h3>{{ 'campaigns.window' | translate }}</h3>
@@ -193,9 +204,10 @@ export class CampaignFormPage implements OnInit {
     norm: ['', Validators.required],
     auditType: ['inicial', Validators.required],
     excellence: [false],
-    visitDate: ['', Validators.required],
+    interviewStartDate: ['', Validators.required],
     scopeSize: [null as number | null, [Validators.required, Validators.min(1)]],
     auditorMinimum: [null as number | null],
+    maxCompleted: [null as number | null, Validators.min(1)],
     efrManagerName: [''],
   });
 
@@ -210,7 +222,7 @@ export class CampaignFormPage implements OnInit {
         this.organizations.set([{ id: organization.id, name: organization.name }]);
         this.form.patchValue({ ...m, organizationId: organization.id, reference: campaign.reference ?? '', efrManagerName: m.efrManagerName ?? '' });
         this.form.controls.organizationId.disable();
-        this.selectedLangs.set(m.languages);
+        this.selectedLangs.set(m.languages.filter((l) => (LANGS as readonly string[]).includes(l)));
       } else {
         this.organizations.set(opts.organizations);
         const preset = opts.organizations.find((o) => o.id === this.org()) ?? (opts.organizations.length === 1 ? opts.organizations[0] : null);
@@ -226,6 +238,12 @@ export class CampaignFormPage implements OnInit {
   needsAuditorMinimum(): boolean {
     const m = this.preview()?.minimum;
     return !!m && m.ok && m.requiresAuditorChoice;
+  }
+
+  /** Shown as placeholder: the maximum when the field is left empty (= the minimum). */
+  defaultMaximum(): string {
+    const m = this.preview()?.minimum;
+    return m && m.ok && m.minimum != null ? String(m.minimum) : '';
   }
 
   rangeHint(): Record<string, unknown> {
@@ -246,9 +264,10 @@ export class CampaignFormPage implements OnInit {
       norm: v.norm,
       auditType: v.auditType,
       excellence: !!v.excellence,
-      visitDate: v.visitDate,
+      interviewStartDate: v.interviewStartDate,
       scopeSize: Number(v.scopeSize),
       auditorMinimum: v.auditorMinimum ? Number(v.auditorMinimum) : null,
+      maxCompleted: v.maxCompleted ? Number(v.maxCompleted) : null,
       efrManagerName: v.efrManagerName || null,
       languages: this.selectedLangs(),
     };
@@ -256,7 +275,7 @@ export class CampaignFormPage implements OnInit {
 
   async refreshPreview(): Promise<void> {
     const v = this.form.getRawValue();
-    if (!v.organizationId || !v.visitDate || !v.scopeSize || !v.norm || this.selectedLangs().length === 0) {
+    if (!v.organizationId || !v.interviewStartDate || !v.scopeSize || !v.norm || this.selectedLangs().length === 0) {
       this.preview.set(null);
       return;
     }

@@ -37,6 +37,7 @@ import { COUNTRIES } from '../../shared/org-form';
             <mat-form-field appearance="outline">
               <mat-label>{{ 'orgs.country' | translate }}</mat-label>
               <mat-select formControlName="country" data-testid="entity-country">
+                <mat-option [value]="null">—</mat-option>
                 @for (c of countries; track c.code) {
                   <mat-option [value]="c.code">{{ 'countries.' + c.code | translate }} ({{ c.code }})</mat-option>
                 }
@@ -73,7 +74,7 @@ import { COUNTRIES } from '../../shared/org-form';
             @for (e of items(); track e.id) {
               <tr>
                 <td><a class="strong keep-case" [routerLink]="['/admin/audit-entities', e.id]">{{ e.name }}</a></td>
-                <td>{{ e.country }}</td>
+                <td>{{ e.country ?? '—' }}</td>
                 <td class="num">{{ e.coordinators }}</td>
                 <td class="num">{{ e.auditors }}</td>
                 <td class="num">{{ e.organizations }}</td>
@@ -99,7 +100,7 @@ export class AuditEntitiesPage implements OnInit {
   readonly busy = signal(false);
   readonly form = inject(FormBuilder).nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(200)]],
-    country: ['ES', Validators.required],
+    country: [null as string | null],
     coordinatorEmail: ['', Validators.email],
   });
 

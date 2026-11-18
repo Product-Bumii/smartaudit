@@ -26,7 +26,7 @@ export interface TestEnv {
   replSet: MongoMemoryReplSet;
   /** Audited organizations: CO and ES have an auditor (auditor1 in each entity); CO2 has none; ES2 → auditor2. */
   orgs: Record<keyof typeof SEED_ORGS, string>;
-  /** Audit entities: CO = Certificadora Andes, ES = Certificadora Ibérica. */
+  /** Audit entities: CO = ICONTEC, ES = AENOR. */
   entities: Record<keyof typeof SEED_ENTITIES, string>;
   stop: () => Promise<void>;
 }
@@ -74,7 +74,7 @@ export async function sessionFor(env: TestEnv, email: string, auditEntityId: str
 
 let defaultOrganizationId = '';
 
-/** Campaign input; by default for the CO organization (assigned to auditor1 @ Certificadora Andes). */
+/** Campaign input; by default for the CO organization (assigned to auditor1 @ ICONTEC). */
 export const campaignInput = (over: Record<string, unknown> = {}) => ({
   organizationId: defaultOrganizationId,
   reference: 'Auditoría sintética',
@@ -82,9 +82,9 @@ export const campaignInput = (over: Record<string, unknown> = {}) => ({
   auditType: 'inicial',
   excellence: false,
   efrManagerName: 'Mánager ficticio',
-  visitDate: '2026-12-09',
+  interviewStartDate: '2026-11-25',
   scopeSize: 120,
-  languages: ['es', 'en', 'ca'],
+  languages: ['es', 'en', 'pt'],
   ...over,
 });
 

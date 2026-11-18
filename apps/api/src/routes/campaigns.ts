@@ -1,23 +1,26 @@
 import { Router } from 'express';
+import { Types } from 'mongoose';
 import multer from 'multer';
 import {
   AUDIT_TYPES,
   can,
   campaignCreateSchema,
+  campaignListQuerySchema,
   campaignM1InputSchema,
+  CLOSED_CAMPAIGN_STATUSES,
+  isAvailableLanguage,
+  searchPattern,
   canCreateCampaignFor,
   campaignStatusChangeSchema,
   canTransition,
   fileFormatQuerySchema,
   generateSlug,
   isCampaignEditable,
-  objectIdSchema,
   sampleUploadQuerySchema,
   type CampaignAccess,
   type CampaignStatus,
   type QuestionnaireLanguage,
 } from '@smartaudit/shared';
-import { z } from 'zod';
 import type { AppContext } from '../context';
 import { audit } from '../lib/audit';
 import { secureBytes } from '../lib/crypto';
@@ -58,12 +61,36 @@ async function organizationForNewCampaign(user: AuthUser, organizationId: string
 export function campaignsRouter(ctx: AppContext): Router {
   const r = Router();
 
+  /** Paged list with free search (reference or organization), status filter and sorting. */
   r.get('/', requireAction('campaign.view'), async (req, res) => {
     const user = req.user as AuthUser;
-    const q = z.object({ organizationId: objectIdSchema.optional() }).parse(req.query);
-    const filter: Record<string, unknown> = { module: 'M1', ...(await campaignListScope(user)) };
-    if (q.organizationId) filter.organizationId = q.organizationId;
-    const campaigns = await Campaign.find(filter).sort({ createdAt: -1 }).lean<CampaignDoc[]>();
+    const q = campaignListQuerySchema.parse(req.query);
+    const match: Record<string, unknown> = { module: 'M1', ...(await campaignListScope(user)) };
+    if (q.organizationId) match.organizationId = new Types.ObjectId(q.organizationId);
+    if (q.status === 'open') match.status = { $nin: [...CLOSED_CAMPAIGN_STATUSES] };
+    else if (q.status === 'closed') match.status = { $in: [...CLOSED_CAMPAIGN_STATUSES] };
+    else if (q.status) match.status = q.status;
+    const pattern = searchPattern(q.q);
+    const sortField = { createdAt: 'createdAt', reference: 'reference', organization: 'organizationName', interviewStartDate: 'm1Config.interviewStartDate', status: 'status' }[q.sort];
+    const dir = (q.dir ?? (q.sort === 'createdAt' ? 'desc' : 'asc')) === 'asc' ? 1 : -1;
+
+    const [result] = await Campaign.aggregate<{ items: CampaignDoc[]; total: { n: number }[] }>(
+      [
+        { $match: match },
+        { $lookup: { from: 'organizations', localField: 'organizationId', foreignField: '_id', as: 'org', pipeline: [{ $project: { name: 1 } }] } },
+        { $set: { organizationName: { $first: '$org.name' } } },
+        { $project: { org: 0 } },
+        ...(pattern ? [{ $match: { $or: [{ reference: { $regex: pattern, $options: 'i' } }, { organizationName: { $regex: pattern, $options: 'i' } }] } }] : []),
+        {
+          $facet: {
+            items: [{ $sort: { [sortField]: dir, _id: dir } }, { $skip: (q.page - 1) * q.pageSize }, { $limit: q.pageSize }],
+            total: [{ $count: 'n' }],
+          },
+        },
+      ],
+      { collation: { locale: 'es', strength: 1 } },
+    );
+    const campaigns = result.items;
     const orgs = new Map(
       ((await Organization.find({ _id: { $in: campaigns.map((c) => c.organizationId) } }).lean()) as OrganizationDoc[]).map((o) => [String(o._id), o]),
     );
@@ -72,7 +99,7 @@ export function campaignsRouter(ctx: AppContext): Router {
       const access: CampaignAccess = org ? accessFor(user, c, org) : 'none';
       return access === 'none' ? [] : [{ ...toCampaignDto(c, access), organizationName: org!.name }];
     });
-    res.json({ items });
+    res.json({ items, total: result.total[0]?.n ?? 0, page: q.page, pageSize: q.pageSize });
   });
 
   /** Form options for the auditor: organizations assigned to them, norms, audit types, languages. */
@@ -87,7 +114,9 @@ export function campaignsRouter(ctx: AppContext): Router {
       organizations: orgs.map((o) => ({ id: String(o._id), name: o.name, timeZone: o.timeZone, country: o.country })),
       norms: settings.norms,
       auditTypes: AUDIT_TYPES,
-      languages: ((questionnaire?.languages ?? []) as QuestionnaireLanguage[]).map((l) => ({ lang: l.lang, approved: l.status === 'approved' })),
+      languages: ((questionnaire?.languages ?? []) as QuestionnaireLanguage[])
+        .filter((l) => isAvailableLanguage(l.lang))
+        .map((l) => ({ lang: l.lang, approved: l.status === 'approved' })),
     });
   });
 
@@ -104,6 +133,7 @@ export function campaignsRouter(ctx: AppContext): Router {
     const c = await computeCampaign(ctx, org, user.id, input);
     res.json({
       minimum: c.derivation.minimum,
+      maximum: c.derivation.maximum,
       window: c.derivation.window,
       windowWarnings: c.derivation.windowWarnings,
       questions: c.derivation.questions,
@@ -147,7 +177,7 @@ export function campaignsRouter(ctx: AppContext): Router {
     if (!isCampaignEditable(campaign.status as CampaignStatus)) throw conflict('CAMPAIGN_NOT_EDITABLE');
     const input = campaignM1InputSchema.parse(req.body);
     // Only the lead auditor manages the campaign; the organization never changes.
-    const c = await computeCampaign(ctx, org, String(campaign.m1Config!.leadAuditorId), input);
+    const c = await computeCampaign(ctx, org, String(campaign.m1Config!.leadAuditorId), input, campaign.sampleSize);
     if (c.problems.length) throw unprocessable('INVALID_CAMPAIGN', { problems: c.problems });
     campaign.set(c.set);
     await campaign.save();

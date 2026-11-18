@@ -34,10 +34,18 @@ export interface UserRef {
   status: EntityStatus;
 }
 
+/** One page of a list. */
+export interface Paged<T> {
+  items: T[];
+  total: number;
+  page: number;
+  pageSize: number;
+}
+
 export interface AuditEntityDto {
   id: string;
   name: string;
-  country: string;
+  country: string | null;
   status: EntityStatus;
 }
 
@@ -79,6 +87,8 @@ export interface CampaignDto {
     scopeSize: number;
     bracket: { min: number; max: number | null };
     minimum: number | null;
+    /** Completed interviews at which the campaign closes (`null` while the minimum is unknown). */
+    maximum: number | null;
     requiresAuditorChoice: boolean;
     auditorChosen: boolean;
   } | null;

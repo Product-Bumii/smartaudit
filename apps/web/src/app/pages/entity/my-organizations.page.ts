@@ -1,13 +1,17 @@
 import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSortModule } from '@angular/material/sort';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiService } from '../../core/api.service';
 import { AuthService } from '../../core/auth.service';
-import type { AssignedOrganization, OrganizationDto, UserDto } from '../../core/models';
+import { PAGE_SIZES, type AssignedOrganization, type OrganizationDto, type Paged, type UserDto } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
+import { PagedList } from '../../shared/paged-list';
 
 /**
  * Coordinators: organizations assigned to them by F+f, with the responsible auditor (changeable;
@@ -15,7 +19,7 @@ import { NotifyService } from '../../core/notify.service';
  */
 @Component({
   selector: 'app-my-organizations',
-  imports: [RouterLink, MatButtonModule, MatFormFieldModule, MatSelectModule, TranslatePipe],
+  imports: [RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, MatPaginatorModule, MatSelectModule, MatSortModule, TranslatePipe],
   template: `
     <div class="page-header">
       <div class="titles">
@@ -25,18 +29,24 @@ import { NotifyService } from '../../core/notify.service';
       </div>
     </div>
     <section class="card">
+      <div class="list-toolbar">
+        <mat-form-field appearance="outline" class="search" subscriptSizing="dynamic">
+          <mat-label>{{ 'list.searchOrgs' | translate }}</mat-label>
+          <input matInput type="search" [value]="list.q()" (input)="list.onSearch($any($event.target).value)" data-testid="my-orgs-search" />
+        </mat-form-field>
+      </div>
       <div class="table-wrap">
-        <table class="simple-table" data-testid="my-orgs">
+        <table class="simple-table" data-testid="my-orgs" matSort [matSortActive]="list.sort()" [matSortDirection]="list.dir()" (matSortChange)="list.onSort($event)">
           <thead>
             <tr>
-              <th>{{ 'orgs.name' | translate }}</th>
-              <th>{{ 'orgs.country' | translate }}</th>
+              <th mat-sort-header="name">{{ 'orgs.name' | translate }}</th>
+              <th mat-sort-header="country">{{ 'orgs.country' | translate }}</th>
               @if (isCoordinator()) { <th>{{ 'myOrgs.auditor' | translate }}</th> } @else { <th>{{ 'myOrgs.coordinator' | translate }}</th> }
               <th><span class="cdk-visually-hidden">{{ 'common.actions' | translate }}</span></th>
             </tr>
           </thead>
           <tbody>
-            @for (o of items(); track o.id) {
+            @for (o of list.items(); track o.id) {
               <tr [attr.data-testid]="'my-org-' + o.id">
                 <td class="strong keep-case">
                   {{ o.name }}
@@ -74,11 +84,21 @@ import { NotifyService } from '../../core/notify.service';
                 </td>
               </tr>
             } @empty {
-              <tr><td colspan="4" class="muted">{{ 'myOrgs.empty' | translate }}</td></tr>
+              @if (list.loaded()) {
+                <tr><td colspan="4" class="muted">{{ (list.narrowed() ? 'orgs.noResults' : 'myOrgs.empty') | translate }}</td></tr>
+              }
             }
           </tbody>
         </table>
       </div>
+      <mat-paginator
+        [length]="list.total()"
+        [pageIndex]="list.page()"
+        [pageSize]="list.pageSize()"
+        [pageSizeOptions]="pageSizes"
+        [showFirstLastButtons]="true"
+        (page)="list.onPage($event)"
+      />
       @if (isCoordinator()) { <p class="muted small">{{ 'myOrgs.reassignHint' | translate }}</p> }
     </section>
   `,
@@ -92,20 +112,19 @@ export class MyOrganizationsPage implements OnInit {
   readonly auth = inject(AuthService);
   private readonly api = inject(ApiService);
   private readonly notify = inject(NotifyService);
-  readonly items = signal<AssignedOrganization[]>([]);
+  readonly pageSizes = PAGE_SIZES;
+  /** A coordinator may have 50–60 organizations: searched, sorted and paged on the server. */
+  readonly list = new PagedList<AssignedOrganization>({
+    load: (params) => this.api.get<Paged<AssignedOrganization>>('/assigned-organizations', params),
+    onError: (e) => this.notify.error(e),
+    sort: 'name',
+    dir: 'asc',
+  });
   private readonly candidates = signal<Record<string, UserDto[]>>({});
   readonly isCoordinator = computed(() => this.auth.user()?.role === 'COORDINATOR');
 
   async ngOnInit(): Promise<void> {
-    await this.load();
-  }
-
-  private async load(): Promise<void> {
-    try {
-      this.items.set((await this.api.get<{ items: AssignedOrganization[] }>('/assigned-organizations')).items);
-    } catch (e) {
-      this.notify.error(e);
-    }
+    await this.list.reload();
   }
 
   /** Eligible auditors; the current one is listed even before the list is loaded. */
@@ -128,13 +147,13 @@ export class MyOrganizationsPage implements OnInit {
   async assign(o: AssignedOrganization, auditorId: string | null): Promise<void> {
     try {
       const { organization } = await this.api.put<{ organization: OrganizationDto }>(`/organizations/${o.id}/auditor`, { auditorId });
-      this.items.update((list) =>
+      this.list.items.update((list) =>
         list.map((x) => (x.id === o.id ? { ...x, ...organization, audits: organization.auditor?.id === this.auth.user()?.id } : x)),
       );
       this.notify.ok('myOrgs.assigned');
     } catch (e) {
       this.notify.error(e);
-      await this.load();
+      await this.list.reload();
     }
   }
 }

@@ -19,7 +19,7 @@
     "language": "Language",
     "logout": "Sign out",
     "auditors": "Auditors",
-    "campaigns": "Campaigns",
+    "campaigns": "Audits",
     "organizations": "Organizations",
     "config": "Configuration",
     "auditEntities": "Audit entities"
@@ -88,7 +88,8 @@
     "deactivate": "Deactivate organization",
     "activate": "Activate organization",
     "eyebrow": "Platform",
-    "assignmentHint": "Optional: it can be assigned later from the organization's page"
+    "assignmentHint": "Optional: it can be assigned later from the organization's page",
+    "noResults": "No organization matches the search."
   },
   "countries": {
     "ES": "Spain",
@@ -118,7 +119,7 @@
     "eyebrow": "Platform"
   },
   "sampling": {
-    "help": "Minimum completed interviews by total population. Campaigns keep the version they were created with.",
+    "help": "Minimum completed interviews by total population. Audits keep the version they were created with.",
     "from": "From (people)",
     "to": "To (people)",
     "required": "Minimum completed",
@@ -172,31 +173,31 @@
     "normsHint": "Comma separated, e.g. 1000-1, 1000-2"
   },
   "campaigns": {
-    "title": "Campaigns",
-    "new": "New campaign",
+    "title": "Audits",
+    "new": "New audit",
     "reference": "Reference",
     "organization": "Organization",
-    "visitDate": "Visit date",
     "auditType": "Audit type",
     "minimum": "Minimum completed",
     "sampleSize": "People in the sample",
     "status": "Status",
-    "empty": "No campaigns yet.",
+    "empty": "No audits yet.",
     "window": "Participation window",
     "opens": "Opens",
     "closes": "Closes",
     "reminders": "Reminders",
     "reminderDay": "Business day {{n}}",
     "warnings": {
-      "OPENS_IN_PAST": "The window starts in the past: check the visit date.",
-      "CLOSES_IN_PAST": "The window has already ended."
+      "OPENS_IN_PAST": "The window starts in the past: check the interview start date.",
+      "CLOSES_IN_PAST": "The window has already ended.",
+      "START_NOT_BUSINESS_DAY": "The start date is not a business day: the window opens on the next business day."
     },
     "questions": "Activated questions",
     "offeredLanguages": "Participant languages",
     "changeStatus": "Change status",
     "suspend": "Suspend",
     "resume": "Resume",
-    "cancel": "Cancel campaign",
+    "cancel": "Cancel audit",
     "tableVersion": "table v{{v}}",
     "questionnaireVersion": "questionnaire v{{v}}",
     "businessDays": "Business days",
@@ -205,7 +206,12 @@
     "eyebrow": "M1 · audit",
     "questionnaire": "Questionnaire",
     "aggregateOnly": "progress only",
-    "aggregateHint": "As coordinator you see the status and aggregate progress. The sample, codes and answers are only for the responsible auditor."
+    "aggregateHint": "As coordinator you see the status and aggregate progress. The sample, codes and answers are only for the responsible auditor.",
+    "noResults": "No audit matches the search.",
+    "interviewStartDate": "Interviews start",
+    "maximum": "Maximum completed",
+    "maximumHint": "When this number of completed interviews is reached, the audit closes automatically.",
+    "maximumAboveSample": "The maximum ({{max}}) exceeds the people in the sample ({{n}}): the audit cannot close on the maximum and will close when the window ends."
   },
   "auditTypes": {
     "inicial": "Initial",
@@ -223,10 +229,10 @@
     "cancelada": "Cancelled"
   },
   "campaignForm": {
-    "newTitle": "New M1 campaign",
-    "editTitle": "Edit campaign",
+    "newTitle": "New M1 audit",
+    "editTitle": "Edit audit",
     "data": "Audit data",
-    "referenceHint": "Optional, to identify the campaign",
+    "referenceHint": "Optional, to identify the audit",
     "norm": "Norm",
     "scopeSize": "Total population",
     "auditorMinimum": "Minimum set by the auditor",
@@ -240,11 +246,14 @@
     "preview": "Automatic calculation",
     "bracket": "Bracket {{min}}–{{max}} people",
     "previewEmpty": "Fill in the date, size and norm to see the minimum, window and questions.",
-    "created": "Campaign created",
+    "created": "Audit created",
     "howTitle": "the minimum and the window are computed by the system",
-    "howText": "The current minimums table and business days from Monday to Friday, in the organization's time zone, are applied. AI is not involved in these calculations.",
+    "howText": "The current minimums table and business days (Monday to Friday) apply, in the organization's time zone. The window opens on the interview start date and lasts 10 business days. AI plays no part in these calculations.",
     "organizationHint": "Only the organizations assigned to you as auditor",
-    "noOrganizations": "You have no organizations assigned. Your audit coordinator must assign one before you can create the campaign."
+    "noOrganizations": "You have no organizations assigned. Your audit coordinator must assign one before you can create the audit.",
+    "interviewStartDateHint": "The window opens that day and lasts 10 business days",
+    "maxCompleted": "Maximum completed interviews",
+    "maxCompletedHint": "Empty = the minimum. When it is reached, the audit closes automatically."
   },
   "questionStates": {
     "active": "Will be asked",
@@ -283,7 +292,7 @@
     "REQUIRED": "Mandatory field is empty.",
     "INVALID_EMAIL": "Invalid email (use SIN_CORREO if the person has none).",
     "DUPLICATE_EMAIL": "Duplicated email (already in row {{firstRow}}).",
-    "EMAIL_ALREADY_IN_CAMPAIGN": "This email is already in the campaign.",
+    "EMAIL_ALREADY_IN_CAMPAIGN": "This email is already in the audit.",
     "INVALID_VALUE": "Value not allowed. Valid values: {{allowed}}.",
     "TOO_LONG": "Text too long (maximum {{limit}} characters)."
   },
@@ -299,7 +308,8 @@
   },
   "historyReasons": {
     "created": "created",
-    "sample_loaded": "sample loaded"
+    "sample_loaded": "sample loaded",
+    "maximum_reached": "maximum of completed interviews reached"
   },
   "errors": {
     "GENERIC": "An error occurred ({{code}}).",
@@ -329,9 +339,8 @@
     "NO_BRACKET": "The minimums table does not cover that size.",
     "CHOICE_OUT_OF_RANGE": "The minimum set is outside the allowed range.",
     "AUDITOR_MINIMUM_REQUIRED": "With more than 16,000 people you must set the minimum between {{min}} and {{max}}.",
-    "INVALID_VISIT_DATE": "The visit date is not valid.",
-    "INVALID_CAMPAIGN": "Check the campaign data.",
-    "CAMPAIGN_NOT_EDITABLE": "The campaign can no longer be edited.",
+    "INVALID_CAMPAIGN": "Check the audit data.",
+    "CAMPAIGN_NOT_EDITABLE": "The audit can no longer be edited.",
     "TRANSITION_NOT_ALLOWED": "That status change is not allowed.",
     "SAMPLE_MODE_NOT_ALLOWED": "The sample cannot be loaded that way in this status.",
     "SAMPLE_INVALID": "The sample has errors.",
@@ -342,12 +351,16 @@
     "INVALID_ACCESS_CODE": "The code is not valid. Check it and try again.",
     "TOO_MANY_ATTEMPTS": "Too many failed attempts. Wait 15 minutes before trying again.",
     "CAMPAIGN_NOT_FOUND": "This link does not match any interview.",
-    "ORG_HAS_OPEN_CAMPAIGNS": "The organization has open campaigns: it cannot change audit entity or be left without an auditor.",
+    "ORG_HAS_OPEN_CAMPAIGNS": "The organization has open audits: it cannot change audit entity or be left without an auditor.",
     "INVALID_COORDINATOR": "The coordinator must be active and belong to the chosen audit entity.",
     "INVALID_AUDITOR": "The auditor must be active and belong to the organization's audit entity.",
     "INVALID_AUDIT_ENTITY": "The audit entity does not exist or is inactive.",
     "COORDINATOR_REQUIRES_AUDIT_ENTITY": "Choose the audit entity before assigning a coordinator.",
-    "AUDITOR_REQUIRES_AUDIT_ENTITY": "The organization needs an audit entity before assigning an auditor."
+    "AUDITOR_REQUIRES_AUDIT_ENTITY": "The organization needs an audit entity before assigning an auditor.",
+    "INVALID_START_DATE": "The interview start date is not valid.",
+    "MAXIMUM_BELOW_MINIMUM": "The maximum cannot be lower than the minimum of completed interviews.",
+    "MAXIMUM_ABOVE_SCOPE": "The maximum cannot exceed the total population.",
+    "MAXIMUM_ABOVE_SAMPLE": "The maximum cannot exceed the people in the loaded sample."
   },
   "brand": {
     "sideNote": "For organizations with a valid efr certificate."
@@ -403,13 +416,13 @@
   "myOrgs": {
     "title": "My organizations",
     "introCoordinator": "Organizations assigned to you by Fundación Másfamilia. Designate the responsible auditor for each one; you can assign yourself.",
-    "introAuditor": "Organizations assigned to you. From here you can create the campaign for each one.",
+    "introAuditor": "Organizations assigned to you. From here you can create the audit for each one.",
     "auditor": "Responsible auditor",
     "coordinator": "Coordination",
     "noAuditor": "Unassigned",
     "me": "me",
     "empty": "You have no organizations assigned.",
-    "reassignHint": "When the auditor changes, open campaigns move to the new auditor and the change is recorded.",
+    "reassignHint": "When the auditor changes, open audits move to the new auditor and the change is recorded.",
     "assigned": "Auditor assigned"
   },
   "assignment": {
@@ -421,5 +434,23 @@
     "none": "Unassigned",
     "auditorHint": "Usually designated by the coordinator",
     "saved": "Assignment saved"
+  },
+  "list": {
+    "search": "Search",
+    "searchOrgs": "Search by name",
+    "searchCampaigns": "Search by reference or organization",
+    "status": "Status",
+    "all": "All",
+    "open": "Open",
+    "closed": "Closed (report generated or cancelled)",
+    "auditEntity": "Audit entity",
+    "noEntity": "No entity assigned",
+    "clear": "Clear filters",
+    "itemsPerPage": "Rows per page",
+    "nextPage": "Next page",
+    "previousPage": "Previous page",
+    "firstPage": "First page",
+    "lastPage": "Last page",
+    "range": "{{start}}–{{end}} of {{total}}"
   }
 }

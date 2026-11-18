@@ -5,6 +5,7 @@ import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { SEED_USERS } from '../../../seed/seed-lib';
 import { AuditLog, Campaign, ParticipantContact, Respondent } from '../src/models';
+import { closeIfMaximumReached } from '../src/services/campaigns';
 import { campaignInput, sessionFor, startTestEnv, type TestEnv } from './helpers';
 
 const SAMPLES = join(__dirname, '../../../seed/samples');
@@ -29,7 +30,8 @@ describe('campaign creation and derived values', () => {
     const res = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput()).expect(201);
     const c = res.body.campaign;
     expect(c.status).toBe('borrador');
-    expect(c.sampling).toMatchObject({ tableVersion: 1, scopeSize: 120, bracket: { min: 91, max: 150 }, minimum: 20 });
+    expect(c.sampling).toMatchObject({ tableVersion: 1, scopeSize: 120, bracket: { min: 91, max: 150 }, minimum: 20, maximum: 20 });
+    expect(c.m1Config).toMatchObject({ interviewStartDate: '2026-11-25', maxCompleted: null });
     expect(c.window).toMatchObject({
       openDate: '2026-11-25',
       closeDate: '2026-12-08',
@@ -63,9 +65,28 @@ describe('campaign creation and derived values', () => {
     expect(ok.body.campaign.sampling).toMatchObject({ minimum: 100, auditorChosen: true, requiresAuditorChoice: true });
   });
 
-  it('validates norm, visit date and languages', async () => {
-    const res = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput({ norm: '3000', visitDate: '2026-02-30', languages: ['en'] })).expect(422);
-    expect(res.body.error.details.problems.map((p: { code: string }) => p.code)).toEqual(['INVALID_NORM', 'NO_APPROVED_LANGUAGE_SELECTED', 'INVALID_VISIT_DATE']);
+  it('validates norm, interview start date and languages; Catalan is not accepted', async () => {
+    const res = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput({ norm: '3000', interviewStartDate: '2026-02-30', languages: ['en'] })).expect(422);
+    expect(res.body.error.details.problems.map((p: { code: string }) => p.code)).toEqual(['INVALID_NORM', 'NO_APPROVED_LANGUAGE_SELECTED', 'INVALID_START_DATE']);
+    await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput({ languages: ['es', 'ca'] })).expect(400);
+  });
+
+  it('a start date on a weekend opens the window the next business day, with a warning', async () => {
+    const res = await request(env.app).post('/api/campaigns/preview').set('Cookie', auditor).send(campaignInput({ interviewStartDate: '2026-11-28' })).expect(200);
+    expect(res.body.window.openDate).toBe('2026-11-30');
+    expect(res.body.windowWarnings).toContain('START_NOT_BUSINESS_DAY');
+  });
+
+  it('maximum of completed interviews: defaults to the minimum, may be raised within scope and sample', async () => {
+    const preview = await request(env.app).post('/api/campaigns/preview').set('Cookie', auditor).send(campaignInput({ maxCompleted: 40 })).expect(200);
+    expect(preview.body.maximum).toEqual({ ok: true, maximum: 40, auditorChosen: true });
+    const low = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput({ maxCompleted: 19 })).expect(422);
+    expect(low.body.error.details.problems[0]).toMatchObject({ code: 'MAXIMUM_BELOW_MINIMUM', details: { minimum: 20 } });
+    const high = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput({ maxCompleted: 121 })).expect(422);
+    expect(high.body.error.details.problems[0].code).toBe('MAXIMUM_ABOVE_SCOPE');
+    const ok = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput({ maxCompleted: 35 })).expect(201);
+    expect(ok.body.campaign.m1Config.maxCompleted).toBe(35);
+    expect(ok.body.campaign.sampling.maximum).toBe(35);
   });
 
   it('provides form options', async () => {
@@ -74,7 +95,6 @@ describe('campaign creation and derived values', () => {
     expect(res.body.languages).toEqual([
       { lang: 'es', approved: true },
       { lang: 'en', approved: false },
-      { lang: 'ca', approved: false },
       { lang: 'pt', approved: false },
       { lang: 'fr', approved: false },
     ]);
@@ -209,6 +229,11 @@ describe('sample template, upload and validation', () => {
     expect(res.body.campaign.status).toBe('muestra_cargada');
   });
 
+  it('rejects a maximum above the loaded sample', async () => {
+    const res = await request(env.app).put(`/api/campaigns/${campaignId}`).set('Cookie', auditor).send(campaignInput({ scopeSize: 600, maxCompleted: 100 })).expect(422);
+    expect(res.body.error.details.problems[0]).toMatchObject({ code: 'MAXIMUM_ABOVE_SAMPLE', details: { minimum: 52 } });
+  });
+
   it('suspends, resumes and cancels; then it is no longer editable', async () => {
     const s = await request(env.app).post(`/api/campaigns/${campaignId}/status`).set('Cookie', auditor).send({ to: 'suspendida', reason: 'prueba' }).expect(200);
     expect(s.body.campaign.status).toBe('suspendida');
@@ -219,5 +244,32 @@ describe('sample template, upload and validation', () => {
     await request(env.app).post(`/api/campaigns/${campaignId}/status`).set('Cookie', auditor).send({ to: 'cancelada' }).expect(200);
     await request(env.app).put(`/api/campaigns/${campaignId}`).set('Cookie', auditor).send(campaignInput()).expect(409);
     await request(env.app).post(`/api/campaigns/${campaignId}/sample`).set('Cookie', auditor).attach('file', sample('muestra-valida-30.csv'), 'm.csv').expect(409);
+  });
+});
+
+describe('automatic close when the maximum of completed interviews is reached', () => {
+  it('closes a running campaign (en_curso → finalizada) only once completed interviews reach the maximum', async () => {
+    const res = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput({ scopeSize: 50 })).expect(201);
+    const id = res.body.campaign.id;
+    expect(res.body.campaign.sampling.maximum).toBe(14);
+    const campaign = (await Campaign.findById(id))!;
+    const respondent = (status: string) => ({
+      campaignId: campaign._id, organizationId: campaign.organizationId, module: 'M1', status,
+      demographics: { sex: 'Mujer', ageBand: '30-40', workCenter: 'Sede', jobType: 'Técnico' },
+    });
+    await Respondent.insertMany([...Array.from({ length: 13 }, () => respondent('completed')), respondent('started')]);
+
+    // Not running yet: never closes.
+    expect(await closeIfMaximumReached(env.ctx, id)).toBe(false);
+    await Campaign.updateOne({ _id: id }, { $set: { status: 'en_curso' } });
+    expect(await closeIfMaximumReached(env.ctx, id)).toBe(false); // 13 of 14
+
+    await Respondent.updateOne({ campaignId: campaign._id, status: 'started' }, { $set: { status: 'completed' } });
+    expect(await closeIfMaximumReached(env.ctx, id)).toBe(true);
+    const closed = (await Campaign.findById(id).lean())!;
+    expect(closed.status).toBe('finalizada');
+    expect(closed.statusHistory.at(-1)).toMatchObject({ from: 'en_curso', to: 'finalizada', reason: 'maximum_reached' });
+    expect(await closeIfMaximumReached(env.ctx, id)).toBe(false); // already closed
+    expect(await closeIfMaximumReached(env.ctx, '0123456789abcdef01234567')).toBe(false);
   });
 });

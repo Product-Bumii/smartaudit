@@ -13,7 +13,7 @@
 4. **Privacidad desde el día 1.** Solo datos sintéticos en desarrollo. Nunca se captan nombres, documentos de identidad, salario, afiliación sindical, datos de salud ni motivos de baja.
 5. **Configuración, no código.** Cuestionarios, tabla de mínimos, festivos, textos de correo y umbrales viven en la base de datos, versionados, y se cambian sin redesplegar.
 6. **Si algo no está definido aquí**, elige la opción más simple coherente con este documento, déjala marcada como `DECISIÓN POR DEFECTO` en el resumen de la fase y sigue.
-7. **Idioma del código:** identificadores, nombres de colecciones y comentarios técnicos en inglés. Textos de interfaz en archivos de traducción (es, en, ca). Términos de dominio en este documento se dan en español con su nombre técnico entre paréntesis.
+7. **Idioma del código:** identificadores, nombres de colecciones y comentarios técnicos en inglés. Textos de interfaz en archivos de traducción (es, en, pt, fr; el catalán se conserva oculto, ver 5.7). Términos de dominio en este documento se dan en español con su nombre técnico entre paréntesis.
 
 ---
 
@@ -110,6 +110,7 @@ Código en GitHub. Despliegue con `infra/scripts/deploy.sh <staging|prod>`: buil
 | `AUDITOR` | Auditor de una entidad de auditoría | Las organizaciones que su coordinador le asigna |
 | Participante | Persona de la muestra | Solo su entrevista, sin cuenta |
 
+- **Entidades de auditoría = tabla maestra** gestionada por los superadmins (pueden añadir más). Lista inicial facilitada por F+f (18/11/2026, decisión 67): AENOR, APCER, AUDELCO, CMD, DNV, EDUQATIA, ICONTEC, LOT y SGS. El país de la entidad es opcional.
 - **Organización = empresa efr auditada.** No tiene usuarios. Los superadmins la crean y la **asignan a una entidad de auditoría y a uno de sus coordinadores** (una entidad puede tener varios; un coordinador puede llevar varias organizaciones).
 - Los superadmins crean las **entidades de auditoría** y sus coordinadores. El coordinador crea y desactiva los auditores de su entidad y **designa el auditor responsable** de cada organización; puede cambiarlo y puede asignarse a sí mismo (entonces actúa como auditor de esa organización).
 - **Una cuenta por entidad de auditoría:** el mismo correo puede existir en varias entidades como usuarios distintos (índice único `email + auditEntityId`). Si un correo tiene varias cuentas, tras el enlace mágico el usuario elige a qué entidad entra.
@@ -177,7 +178,9 @@ Reglas:
 
 ## 5. Reglas de negocio de M1
 
-### 5.1 Campaña M1
+### 5.1 Campaña M1 (en la interfaz: «auditoría»)
+
+> Revisado el 18/11/2026 (cambio 2, decisiones 64–69): en la interfaz y en los textos para usuarios la campaña se llama **auditoría**; en el código, la API y la base de datos sigue siendo `campaign`.
 
 Campos que diligencia el auditor:
 - Entidad (organización, fijada por contexto) y marca del certificado.
@@ -186,9 +189,10 @@ Campos que diligencia el auditor:
 - Postula o mantiene excelencia: sí/no.
 - Auditor líder (usuario que crea la campaña) y auditores colaboradores opcionales de la misma organización.
 - Nombre del mánager efr de la entidad (solo para referencia de codificación; la IA no lo menciona).
-- Fecha de la visita.
+- **Fecha de comienzo de las entrevistas** (sustituye a la fecha de la visita): la ventana abre ese día (ver 5.4).
+- **Máximo de entrevistas completadas**: por defecto, el mínimo de la tabla; el auditor puede subirlo, nunca por debajo del mínimo ni por encima de la población total o de la muestra cargada. **Al alcanzarlo, la auditoría pasa de `en_curso` a `finalizada`** automáticamente (motivo `maximum_reached`) y los enlaces y códigos pendientes dejan de servir.
 - Número total de personas en el alcance (cuenta ajena el día de la auditoría, sin subcontratas ni personal de ETT). **Es el único dato de la plantilla que se pide.**
-- Idiomas disponibles para los participantes (por defecto: es, en, ca, solo los aprobados).
+- Idiomas disponibles para los participantes (por defecto: es, en, pt, fr, solo los aprobados; el catalán no se ofrece).
 
 **Estados** (aprobados por la Fundación):
 `borrador` → `muestra_cargada` → `envios_activos` → `en_curso` → `finalizada` → `informe_generado`, más `suspendida` y `cancelada` desde cualquier estado activo. Cada transición se valida en código y se registra en el historial. Una campaña activa congela la versión del cuestionario y de la tabla con la que se lanzó.
@@ -268,7 +272,7 @@ Validación: errores por fila (correo inválido, duplicado, campo obligatorio va
 **Remitente:** cuenta de bumii.ai vía SMTP de Google Workspace (configurar SPF, DKIM y DMARC). El nombre visible y el remitente están en `settings` para poder pasar después a un dominio de la Fundación. Limitar el envío en el worker para no superar el cupo diario de Workspace (unos 2.000 correos/día) y reintentar con backoff.
 
 **Ventana y recordatorios:**
-- Abre **10 días hábiles** antes de la visita y cierra a las 23:59 del día hábil anterior a la visita.
+- Abre el **día de comienzo de las entrevistas** a las 9:00 y dura **10 días hábiles**: cierra a las 23:59 del 10.º día hábil. Si la fecha no es hábil, abre el siguiente día hábil (con aviso al auditor).
 - Recordatorios automáticos en los días hábiles 4 y 8 de la ventana, solo a quien no ha completado.
 - Correos a las 9:00 hora local de la organización.
 - Días hábiles = lunes a viernes menos festivos del país de la organización (`date-holidays` + sobrescrituras en `holidayCalendars`), en su zona horaria.
@@ -307,6 +311,8 @@ Reglas duras:
 
 **Vista del auditor:** tablas agregadas, cola de respuestas dudosas y respuestas individuales ligadas a sus demográficos (nunca al correo). Mostrar aviso de confidencialidad al abrir respuestas individuales y registrar cada acceso. Advertir cuando un grupo demográfico tenga menos de 3 personas, por riesgo de reidentificación.
 
+**Listados:** las listas de organizaciones (superadmins, coordinador y auditor) y de auditorías se buscan, filtran, ordenan y paginan en el servidor (cientos de organizaciones, decenas por coordinador, miles de auditorías): búsqueda sin mayúsculas ni acentos, filtros por entidad de auditoría y estado, auditorías abiertas/cerradas o por estado, 25 filas por página.
+
 **Vista del coordinador (COORDINATOR):** solo avance agregado (% de completadas frente al mínimo), sin desglose por persona ni respuestas.
 
 **Síntesis IA:** la IA redacta la síntesis cualitativa (7.3) **a partir de las tablas ya calculadas y de los comentarios anonimizados**, marcada como «pendiente de contraste». El auditor la edita en la plataforma; se guardan el texto original de la IA, cada versión editada y la aprobación. Los porcentajes no son editables.
@@ -315,7 +321,7 @@ Reglas duras:
 
 ### 5.7 Internacionalización
 
-Español, inglés y catalán desde el inicio en: interfaz interna, área del participante, correos, cuestionario y entrevista. La interfaz detecta el idioma del navegador y permite cambiarlo. El participante elige idioma al entrar entre los habilitados en la campaña y aprobados en el cuestionario. Ningún texto visible queda escrito directamente en el código.
+Español, inglés, portugués (de Portugal) y francés en: interfaz interna, área del participante, correos, cuestionario y entrevista. **El catalán no se ofrece** (18/11/2026, decisión 66): no aparece en ningún selector ni se ofrece a participantes, pero se conservan sus traducciones y los textos del cuestionario por si se reactiva. La interfaz detecta el idioma del navegador y permite cambiarlo. El participante elige idioma al entrar entre los habilitados en la campaña y aprobados en el cuestionario. Ningún texto visible queda escrito directamente en el código.
 
 ### 5.8 Lo que nunca se capta ni se muestra
 

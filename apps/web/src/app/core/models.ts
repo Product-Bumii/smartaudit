@@ -10,6 +10,7 @@ export type {
   EntityStatus,
   Language,
   OrganizationDto,
+  Paged,
   Role,
   SampleError,
   SessionUser,
@@ -17,10 +18,18 @@ export type {
   UserRef,
 } from '@smartaudit/shared';
 
-import type { AuditEntityDto, CampaignDto, OrganizationDto } from '@smartaudit/shared';
+import type { AuditEntityDto, CampaignDto, Language, OrganizationDto } from '@smartaudit/shared';
 
-/** `pt` = portugués de Portugal (pt-PT). */
-export const LANGS = ['es', 'en', 'ca', 'pt', 'fr'] as const;
+/**
+ * Languages offered in the interface and selectors. `pt` = portugués de Portugal (pt-PT). The `ca`
+ * translation files are kept but Catalan is not offered (decision 66).
+ */
+export const LANGS = ['es', 'en', 'pt', 'fr'] as const;
+export const PAGE_SIZES = [10, 25, 50, 100];
+/** Status filter of the audit list: groups or one status. */
+export const CAMPAIGN_STATUS_VALUES = [
+  'borrador', 'muestra_cargada', 'envios_activos', 'en_curso', 'finalizada', 'informe_generado', 'suspendida', 'cancelada',
+] as const;
 export const AUDIT_TYPE_VALUES = ['inicial', 'mantenimiento', 'renovacion'] as const;
 export const SUPERADMIN_ROLE_VALUES = ['SUPERADMIN_BUMII', 'SUPERADMIN_FUNDACION'] as const;
 
@@ -44,13 +53,14 @@ export interface CampaignOptions {
   organizations: { id: string; name: string; timeZone: string; country: string }[];
   norms: string[];
   auditTypes: string[];
-  languages: { lang: 'es' | 'en' | 'ca'; approved: boolean }[];
+  languages: { lang: Language; approved: boolean }[];
 }
 
 export interface CampaignPreview {
   minimum:
     | { ok: true; minimum: number | null; requiresAuditorChoice: boolean; auditorChosen: boolean; bracket: { min: number; max: number | null; required: number; rangeMax?: number | null } }
     | { ok: false; error: string };
+  maximum: { ok: true; maximum: number; auditorChosen: boolean } | { ok: false; error: string } | null;
   window: CampaignDto['window'];
   windowWarnings: string[];
   questions: CampaignDto['activatedQuestions'];

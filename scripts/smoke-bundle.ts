@@ -55,7 +55,7 @@ async function main() {
     const created = await fetch(`${base}/campaigns`, {
       method: 'POST',
       headers: { ...json, ...auth },
-      body: JSON.stringify({ organizationId: options.organizations[0]?.id, norm: '1000-1', auditType: 'inicial', excellence: false, visitDate: '2026-12-09', scopeSize: 50, languages: ['es'] }),
+      body: JSON.stringify({ organizationId: options.organizations[0]?.id, norm: '1000-1', auditType: 'inicial', excellence: false, interviewStartDate: '2026-11-25', scopeSize: 50, languages: ['es'] }),
     });
     const { campaign } = (await created.json()) as { campaign: { id: string; sampling?: { minimum: number } } };
     if (campaign?.sampling?.minimum !== 14) throw new Error(`unexpected campaign ${JSON.stringify(campaign)}`);

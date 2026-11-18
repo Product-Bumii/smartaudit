@@ -20,9 +20,12 @@ const m1ConfigSchema = new Schema(
     excellence: { type: Boolean, required: true },
     leadAuditorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     efrManagerName: { type: String, default: null },
-    visitDate: { type: String, required: true },
+    /** First day of interviews (local date); the window opens that day. */
+    interviewStartDate: { type: String, required: true },
     scopeSize: { type: Number, required: true },
     auditorMinimum: { type: Number, default: null },
+    /** Maximum chosen by the auditor (`null` = the minimum). */
+    maxCompleted: { type: Number, default: null },
     languages: [{ type: String, enum: LANGUAGES }],
   },
   { _id: false },
@@ -63,6 +66,8 @@ const campaignSchema = new Schema(
       bracketIndex: Number,
       bracket: { _id: false, min: Number, max: { type: Number, default: null }, required: Number, rangeMax: { type: Number, default: null } },
       minimum: { type: Number, default: null },
+      /** Completed interviews at which the campaign closes automatically. */
+      maximum: { type: Number, default: null },
       requiresAuditorChoice: Boolean,
       auditorChosen: Boolean,
     },

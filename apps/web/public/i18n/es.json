@@ -19,7 +19,7 @@
     "language": "Idioma",
     "logout": "Cerrar sesión",
     "auditors": "Auditores",
-    "campaigns": "Campañas",
+    "campaigns": "Auditorías",
     "organizations": "Organizaciones",
     "config": "Configuración",
     "auditEntities": "Entidades de auditoría"
@@ -88,7 +88,8 @@
     "deactivate": "Desactivar organización",
     "activate": "Activar organización",
     "eyebrow": "Plataforma",
-    "assignmentHint": "Opcional: se puede asignar después desde la ficha de la organización"
+    "assignmentHint": "Opcional: se puede asignar después desde la ficha de la organización",
+    "noResults": "Ninguna organización coincide con la búsqueda."
   },
   "countries": {
     "ES": "España",
@@ -118,7 +119,7 @@
     "eyebrow": "Plataforma"
   },
   "sampling": {
-    "help": "Mínimo de entrevistas completadas según la población total. Las campañas guardan la versión con la que se crearon.",
+    "help": "Mínimo de entrevistas completadas según la población total. Las auditorías guardan la versión con la que se crearon.",
     "from": "Desde (personas)",
     "to": "Hasta (personas)",
     "required": "Mínimo de completadas",
@@ -172,31 +173,31 @@
     "normsHint": "Separadas por comas, p. ej. 1000-1, 1000-2"
   },
   "campaigns": {
-    "title": "Campañas",
-    "new": "Nueva campaña",
+    "title": "Auditorías",
+    "new": "Nueva auditoría",
     "reference": "Referencia",
     "organization": "Organización",
-    "visitDate": "Fecha de la visita",
     "auditType": "Tipo de auditoría",
     "minimum": "Mínimo de completadas",
     "sampleSize": "Personas en la muestra",
     "status": "Estado",
-    "empty": "Todavía no hay campañas.",
+    "empty": "Todavía no hay auditorías.",
     "window": "Ventana de participación",
     "opens": "Abre",
     "closes": "Cierra",
     "reminders": "Recordatorios",
     "reminderDay": "Día hábil {{n}}",
     "warnings": {
-      "OPENS_IN_PAST": "La ventana empieza en el pasado: revisa la fecha de la visita.",
-      "CLOSES_IN_PAST": "La ventana ya ha terminado."
+      "OPENS_IN_PAST": "La ventana empieza en el pasado: revisa la fecha de comienzo de las entrevistas.",
+      "CLOSES_IN_PAST": "La ventana ya ha terminado.",
+      "START_NOT_BUSINESS_DAY": "La fecha de comienzo no es un día hábil: la ventana abre el siguiente día hábil."
     },
     "questions": "Preguntas activadas",
     "offeredLanguages": "Idiomas para participantes",
     "changeStatus": "Cambiar estado",
     "suspend": "Suspender",
     "resume": "Reanudar",
-    "cancel": "Cancelar campaña",
+    "cancel": "Cancelar auditoría",
     "tableVersion": "tabla v{{v}}",
     "questionnaireVersion": "cuestionario v{{v}}",
     "businessDays": "Días hábiles",
@@ -205,7 +206,12 @@
     "eyebrow": "M1 · auditoría",
     "questionnaire": "Cuestionario",
     "aggregateOnly": "solo avance",
-    "aggregateHint": "Como coordinación ves el estado y el avance agregado. La muestra, los códigos y las respuestas son solo del auditor/a responsable."
+    "aggregateHint": "Como coordinación ves el estado y el avance agregado. La muestra, los códigos y las respuestas son solo del auditor/a responsable.",
+    "noResults": "Ninguna auditoría coincide con la búsqueda.",
+    "interviewStartDate": "Comienzo de las entrevistas",
+    "maximum": "Máximo de completadas",
+    "maximumHint": "Al alcanzar esta cifra de entrevistas completadas, la auditoría se cierra automáticamente.",
+    "maximumAboveSample": "El máximo ({{max}}) supera las personas de la muestra ({{n}}): la auditoría no podrá cerrarse por máximo y se cerrará al terminar la ventana."
   },
   "auditTypes": {
     "inicial": "Inicial",
@@ -223,10 +229,10 @@
     "cancelada": "Cancelada"
   },
   "campaignForm": {
-    "newTitle": "Nueva campaña M1",
-    "editTitle": "Editar campaña",
+    "newTitle": "Nueva auditoría M1",
+    "editTitle": "Editar auditoría",
     "data": "Datos de la auditoría",
-    "referenceHint": "Opcional, para identificar la campaña",
+    "referenceHint": "Opcional, para identificar la auditoría",
     "norm": "Norma",
     "scopeSize": "Población total",
     "auditorMinimum": "Mínimo fijado por el auditor",
@@ -240,11 +246,14 @@
     "preview": "Cálculo automático",
     "bracket": "Tramo {{min}}–{{max}} personas",
     "previewEmpty": "Completa la fecha, el tamaño y la norma para ver el mínimo, la ventana y las preguntas.",
-    "created": "Campaña creada",
+    "created": "Auditoría creada",
     "howTitle": "el mínimo y la ventana los calcula el sistema",
-    "howText": "Se aplican la tabla de mínimos vigente y los días hábiles de lunes a viernes, en la zona horaria de la organización. La IA no interviene en estos cálculos.",
+    "howText": "Se aplican la tabla de mínimos vigente y los días hábiles de lunes a viernes, en la zona horaria de la organización. La ventana abre el día de comienzo de las entrevistas y dura 10 días hábiles. La IA no interviene en estos cálculos.",
     "organizationHint": "Solo las organizaciones que tienes asignadas como auditor/a",
-    "noOrganizations": "No tienes organizaciones asignadas. Tu coordinador/a de auditorías debe asignarte una antes de crear la campaña."
+    "noOrganizations": "No tienes organizaciones asignadas. Tu coordinador/a de auditorías debe asignarte una antes de crear la auditoría.",
+    "interviewStartDateHint": "La ventana abre ese día y dura 10 días hábiles",
+    "maxCompleted": "Máximo de entrevistas completadas",
+    "maxCompletedHint": "Vacío = el mínimo. Al alcanzarlo, la auditoría se cierra automáticamente."
   },
   "questionStates": {
     "active": "Se preguntará",
@@ -283,7 +292,7 @@
     "REQUIRED": "Campo obligatorio vacío.",
     "INVALID_EMAIL": "Correo no válido (usa SIN_CORREO si la persona no tiene).",
     "DUPLICATE_EMAIL": "Correo repetido (ya aparece en la fila {{firstRow}}).",
-    "EMAIL_ALREADY_IN_CAMPAIGN": "Este correo ya está en la campaña.",
+    "EMAIL_ALREADY_IN_CAMPAIGN": "Este correo ya está en la auditoría.",
     "INVALID_VALUE": "Valor no permitido. Valores válidos: {{allowed}}.",
     "TOO_LONG": "Texto demasiado largo (máximo {{limit}} caracteres)."
   },
@@ -299,7 +308,8 @@
   },
   "historyReasons": {
     "created": "creada",
-    "sample_loaded": "muestra cargada"
+    "sample_loaded": "muestra cargada",
+    "maximum_reached": "se alcanzó el máximo de completadas"
   },
   "errors": {
     "GENERIC": "Se ha producido un error ({{code}}).",
@@ -329,9 +339,8 @@
     "NO_BRACKET": "La tabla de mínimos no cubre ese tamaño.",
     "CHOICE_OUT_OF_RANGE": "El mínimo fijado está fuera del rango permitido.",
     "AUDITOR_MINIMUM_REQUIRED": "Con más de 16.000 personas debes fijar el mínimo entre {{min}} y {{max}}.",
-    "INVALID_VISIT_DATE": "La fecha de la visita no es válida.",
-    "INVALID_CAMPAIGN": "Revisa los datos de la campaña.",
-    "CAMPAIGN_NOT_EDITABLE": "La campaña ya no se puede editar.",
+    "INVALID_CAMPAIGN": "Revisa los datos de la auditoría.",
+    "CAMPAIGN_NOT_EDITABLE": "La auditoría ya no se puede editar.",
     "TRANSITION_NOT_ALLOWED": "Ese cambio de estado no está permitido.",
     "SAMPLE_MODE_NOT_ALLOWED": "En este estado no se puede cargar la muestra de esa forma.",
     "SAMPLE_INVALID": "La muestra tiene errores.",
@@ -342,12 +351,16 @@
     "INVALID_ACCESS_CODE": "El código no es válido. Revísalo e inténtalo de nuevo.",
     "TOO_MANY_ATTEMPTS": "Demasiados intentos fallidos. Espera 15 minutos antes de volver a probar.",
     "CAMPAIGN_NOT_FOUND": "Este enlace no corresponde a ninguna entrevista.",
-    "ORG_HAS_OPEN_CAMPAIGNS": "La organización tiene campañas abiertas: no se puede cambiar de entidad de auditoría ni quedarse sin auditor/a.",
+    "ORG_HAS_OPEN_CAMPAIGNS": "La organización tiene auditorías abiertas: no se puede cambiar de entidad de auditoría ni quedarse sin auditor/a.",
     "INVALID_COORDINATOR": "El coordinador/a debe estar activo y pertenecer a la entidad de auditoría elegida.",
     "INVALID_AUDITOR": "El auditor/a debe estar activo y pertenecer a la entidad de auditoría de la organización.",
     "INVALID_AUDIT_ENTITY": "La entidad de auditoría no existe o está inactiva.",
     "COORDINATOR_REQUIRES_AUDIT_ENTITY": "Para asignar un coordinador/a primero elige la entidad de auditoría.",
-    "AUDITOR_REQUIRES_AUDIT_ENTITY": "Para asignar un auditor/a la organización debe tener entidad de auditoría."
+    "AUDITOR_REQUIRES_AUDIT_ENTITY": "Para asignar un auditor/a la organización debe tener entidad de auditoría.",
+    "INVALID_START_DATE": "La fecha de comienzo de las entrevistas no es válida.",
+    "MAXIMUM_BELOW_MINIMUM": "El máximo no puede ser menor que el mínimo de completadas.",
+    "MAXIMUM_ABOVE_SCOPE": "El máximo no puede superar la población total.",
+    "MAXIMUM_ABOVE_SAMPLE": "El máximo no puede superar las personas de la muestra cargada."
   },
   "brand": {
     "sideNote": "Para organizaciones con certificado efr en vigor."
@@ -403,13 +416,13 @@
   "myOrgs": {
     "title": "Mis organizaciones",
     "introCoordinator": "Organizaciones que la Fundación Másfamilia te ha asignado. Designa el auditor/a responsable de cada una; puedes asignarte a ti mismo/a.",
-    "introAuditor": "Organizaciones que tienes asignadas. Desde aquí puedes crear la campaña de cada una.",
+    "introAuditor": "Organizaciones que tienes asignadas. Desde aquí puedes crear la auditoría de cada una.",
     "auditor": "Auditor/a responsable",
     "coordinator": "Coordinación",
     "noAuditor": "Sin asignar",
     "me": "yo",
     "empty": "No tienes organizaciones asignadas.",
-    "reassignHint": "Al cambiar el auditor/a, las campañas abiertas pasan al nuevo auditor/a y el cambio queda registrado.",
+    "reassignHint": "Al cambiar el auditor/a, las auditorías abiertas pasan al nuevo auditor/a y el cambio queda registrado.",
     "assigned": "Auditor/a asignado"
   },
   "assignment": {
@@ -421,5 +434,23 @@
     "none": "Sin asignar",
     "auditorHint": "Normalmente lo designa el coordinador/a",
     "saved": "Asignación guardada"
+  },
+  "list": {
+    "search": "Buscar",
+    "searchOrgs": "Buscar por nombre",
+    "searchCampaigns": "Buscar por referencia u organización",
+    "status": "Estado",
+    "all": "Todos",
+    "open": "Abiertas",
+    "closed": "Cerradas (informe generado o canceladas)",
+    "auditEntity": "Entidad de auditoría",
+    "noEntity": "Sin entidad asignada",
+    "clear": "Limpiar filtros",
+    "itemsPerPage": "Filas por página",
+    "nextPage": "Página siguiente",
+    "previousPage": "Página anterior",
+    "firstPage": "Primera página",
+    "lastPage": "Última página",
+    "range": "{{start}}–{{end}} de {{total}}"
   }
 }

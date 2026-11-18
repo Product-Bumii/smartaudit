@@ -13,3 +13,4 @@ export * from './schemas';
 export * from './modules';
 export * from './types';
 export * from './participant';
+export * from './search';

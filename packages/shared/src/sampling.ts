@@ -92,3 +92,39 @@ export function resolveMinimum(
   }
   return { ok: true, bracketIndex, bracket, minimum: auditorChoice, requiresAuditorChoice: true, auditorChosen: true };
 }
+
+export type MaximumError = 'MAXIMUM_BELOW_MINIMUM' | 'MAXIMUM_ABOVE_SCOPE' | 'MAXIMUM_ABOVE_SAMPLE';
+export type MaximumResolution =
+  | {
+      ok: true;
+      /** Completed interviews at which the campaign closes automatically. */
+      maximum: number;
+      /** `false` = the auditor left it empty and the maximum is the minimum. */
+      auditorChosen: boolean;
+    }
+  | { ok: false; error: MaximumError };
+
+/**
+ * Maximum of completed interviews (decision 65). Defaults to the minimum; the auditor may raise it, never
+ * below the minimum nor above the people in scope or (once loaded) the size of the sample.
+ * Returns `null` while the minimum itself is unknown (ranged bracket without the auditor's figure).
+ */
+export function resolveMaximum(input: {
+  minimum: number | null;
+  requested?: number | null;
+  scopeSize: number;
+  sampleSize?: number;
+}): MaximumResolution | null {
+  const { minimum, requested, scopeSize, sampleSize = 0 } = input;
+  if (minimum === null) return null;
+  if (requested == null) return { ok: true, maximum: minimum, auditorChosen: false };
+  if (requested < minimum) return { ok: false, error: 'MAXIMUM_BELOW_MINIMUM' };
+  if (requested > scopeSize) return { ok: false, error: 'MAXIMUM_ABOVE_SCOPE' };
+  if (sampleSize > 0 && requested > sampleSize) return { ok: false, error: 'MAXIMUM_ABOVE_SAMPLE' };
+  return { ok: true, maximum: requested, auditorChosen: true };
+}
+
+/** The campaign closes (`en_curso` → `finalizada`) as soon as completed interviews reach the maximum. */
+export function maximumReached(completed: number, maximum: number | null | undefined): boolean {
+  return maximum != null && completed >= maximum;
+}

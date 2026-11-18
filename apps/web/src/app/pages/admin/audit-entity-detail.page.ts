@@ -37,6 +37,7 @@ import { UserListComponent } from '../../shared/user-list.component';
             <mat-form-field appearance="outline">
               <mat-label>{{ 'orgs.country' | translate }}</mat-label>
               <mat-select formControlName="country">
+                <mat-option [value]="null">—</mat-option>
                 @for (c of countries; track c.code) {
                   <mat-option [value]="c.code">{{ 'countries.' + c.code | translate }} ({{ c.code }})</mat-option>
                 }
@@ -60,7 +61,7 @@ export class AuditEntityDetailPage implements OnInit {
   readonly entity = signal<AuditEntityDto | null>(null);
   readonly form = inject(FormBuilder).nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(200)]],
-    country: ['ES', Validators.required],
+    country: [null as string | null],
   });
 
   async ngOnInit(): Promise<void> {

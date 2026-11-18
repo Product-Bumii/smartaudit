@@ -2,11 +2,15 @@
 import { Schema, model, type InferSchemaType, type Types } from 'mongoose';
 import { DEFAULT_NORMS, ENTITY_STATUSES, LANGUAGES, ROLES } from '@smartaudit/shared';
 
-/** Audit entity (certification body such as ICONTEC, AENOR, SGS). Coordinators and auditors belong to one. */
+/**
+ * Audit entity (certification body such as ICONTEC, AENOR, SGS): master table managed by superadmins.
+ * Coordinators and auditors belong to one.
+ */
 const auditEntitySchema = new Schema(
   {
     name: { type: String, required: true, trim: true },
-    country: { type: String, required: true },
+    /** Optional: some bodies work in several countries. */
+    country: { type: String, default: null },
     status: { type: String, enum: ENTITY_STATUSES, required: true, default: 'active' },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
   },

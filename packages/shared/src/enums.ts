@@ -13,6 +13,14 @@ export const isSuperadmin = (role: Role): boolean => SUPERADMIN_ROLES.includes(r
 export const LANGUAGES = ['es', 'en', 'ca', 'pt', 'fr'] as const;
 export type Language = (typeof LANGUAGES)[number];
 export const DEFAULT_LANGUAGE: Language = 'es';
+/**
+ * Languages offered in the interface, to organizations, users and participants. `ca` keeps its translations
+ * and questionnaire texts but is not offered (decision 66).
+ */
+export const AVAILABLE_LANGUAGES = ['es', 'en', 'pt', 'fr'] as const satisfies readonly Language[];
+export type AvailableLanguage = (typeof AVAILABLE_LANGUAGES)[number];
+export const isAvailableLanguage = (lang: string): lang is AvailableLanguage =>
+  (AVAILABLE_LANGUAGES as readonly string[]).includes(lang);
 
 export const MODULES = ['M1', 'M2', 'M3'] as const;
 export type Module = (typeof MODULES)[number];

@@ -6,7 +6,7 @@ import { LANGS, type Language } from './models';
 
 const STORAGE_KEY = 'sa.lang';
 
-/** Detects the browser language, remembers the choice and switches at runtime (es, en, ca). */
+/** Detects the browser language, remembers the choice and switches at runtime (only the offered `LANGS`). */
 @Injectable({ providedIn: 'root' })
 export class I18nService {
   private readonly translate = inject(TranslateService);
@@ -25,7 +25,8 @@ export class I18nService {
     await this.use(initial, false);
   }
 
-  async use(lang: Language, remember = true): Promise<void> {
+  async use(requested: Language, remember = true): Promise<void> {
+    const lang: Language = (LANGS as readonly string[]).includes(requested) ? requested : 'es';
     await firstValueFrom(this.translate.use(lang));
     this.lang.set(lang);
     this.document.documentElement.lang = lang;

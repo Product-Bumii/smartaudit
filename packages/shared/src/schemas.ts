@@ -4,12 +4,14 @@
  */
 import { z } from 'zod';
 import { isValidTimeZone } from './business-days';
-import { AUDIT_TYPES, ENTITY_STATUSES, LANGUAGES, QUESTION_TYPES, ROLES } from './enums';
+import { AUDIT_TYPES, AVAILABLE_LANGUAGES, CAMPAIGN_STATUSES, ENTITY_STATUSES, LANGUAGES, QUESTION_TYPES, ROLES } from './enums';
 import type { Activation } from './questionnaire';
 
 export const objectIdSchema = z.string().regex(/^[a-f0-9]{24}$/i, 'INVALID_ID');
 export const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'INVALID_DATE');
 export const languageSchema = z.enum(LANGUAGES);
+/** Languages that can be chosen (interface, organizations, users, campaigns); `ca` is hidden (decision 66). */
+export const availableLanguageSchema = z.enum(AVAILABLE_LANGUAGES);
 
 export const emailSchema = z.preprocess(
   (v) => (typeof v === 'string' ? v.trim().toLowerCase() : v),
@@ -20,14 +22,15 @@ export const timeZoneSchema = z.string().min(1).refine(isValidTimeZone, 'INVALID
 export const countrySchema = z.string().regex(/^[A-Z]{2}$/, 'INVALID_COUNTRY');
 
 // ---------- Auth
-export const magicLinkRequestSchema = z.object({ email: emailSchema, language: languageSchema.optional() });
+export const magicLinkRequestSchema = z.object({ email: emailSchema, language: availableLanguageSchema.optional() });
 export const magicLinkVerifySchema = z.object({ token: z.string().min(20).max(200) });
 export const selectAccountSchema = z.object({ userId: objectIdSchema });
 
 // ---------- Audit entities, organizations, assignments and users
 export const auditEntityCreateSchema = z.object({
   name: z.string().trim().min(1).max(200),
-  country: countrySchema,
+  /** Optional: some certification bodies work in several countries. */
+  country: countrySchema.nullable().optional(),
   coordinatorEmail: emailSchema.optional(),
 });
 export const auditEntityUpdateSchema = auditEntityCreateSchema
@@ -47,7 +50,7 @@ export const organizationCreateSchema = z.object({
   name: z.string().trim().min(1).max(200),
   country: countrySchema,
   timeZone: timeZoneSchema,
-  defaultLanguage: languageSchema,
+  defaultLanguage: availableLanguageSchema,
   auditEntityId: objectIdSchema.nullable().optional(),
   coordinatorId: objectIdSchema.nullable().optional(),
 });
@@ -56,12 +59,12 @@ export const organizationUpdateSchema = organizationCreateSchema
   .partial()
   .extend({ status: z.enum(ENTITY_STATUSES).optional() });
 
-export const userCreateSchema = z.object({ email: emailSchema, preferredLanguage: languageSchema.optional() });
+export const userCreateSchema = z.object({ email: emailSchema, preferredLanguage: availableLanguageSchema.optional() });
 export const userStatusSchema = z.object({ status: z.enum(ENTITY_STATUSES) });
 export const superadminCreateSchema = userCreateSchema.extend({
   role: z.enum(ROLES).refine((r) => r.startsWith('SUPERADMIN'), 'INVALID_ROLE'),
 });
-export const userPreferencesSchema = z.object({ preferredLanguage: languageSchema });
+export const userPreferencesSchema = z.object({ preferredLanguage: availableLanguageSchema });
 
 // ---------- Configuration
 export const samplingBracketSchema = z.object({
@@ -141,10 +144,11 @@ export const campaignM1InputSchema = z.object({
   auditType: z.enum(AUDIT_TYPES),
   excellence: z.boolean(),
   efrManagerName: z.string().trim().max(200).nullable().optional(),
-  visitDate: isoDateSchema,
+  interviewStartDate: isoDateSchema,
   scopeSize: z.number().int().min(1).max(10_000_000),
   auditorMinimum: z.number().int().min(1).nullable().optional(),
-  languages: z.array(languageSchema).min(1).max(LANGUAGES.length),
+  maxCompleted: z.number().int().min(1).nullable().optional(),
+  languages: z.array(availableLanguageSchema).min(1).max(AVAILABLE_LANGUAGES.length),
 });
 export type CampaignM1Input = z.infer<typeof campaignM1InputSchema>;
 /** Creation (and preview) also name the organization; it cannot change afterwards. */
@@ -161,3 +165,35 @@ export const accessCodeInputSchema = z.object({ code: z.string().min(1).max(40) 
 
 export const sampleUploadQuerySchema = z.object({ mode: z.enum(['replace', 'append']).default('replace') });
 export const fileFormatQuerySchema = z.object({ format: z.enum(['xlsx', 'csv']).default('xlsx') });
+
+// ---------- Lists (search, sort and pagination)
+export const PAGE_SIZES = [10, 25, 50, 100] as const;
+const listQueryBase = z.object({
+  q: z.string().trim().max(100).optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  pageSize: z.coerce
+    .number()
+    .int()
+    .refine((n) => (PAGE_SIZES as readonly number[]).includes(n), 'INVALID_PAGE_SIZE')
+    .default(25),
+  dir: z.enum(['asc', 'desc']).optional(),
+});
+
+/** Superadmins' organization list. `auditEntityId=none` = organizations without an audit entity. */
+export const organizationListQuerySchema = listQueryBase.extend({
+  sort: z.enum(['name', 'country', 'status', 'createdAt']).default('name'),
+  auditEntityId: z.union([objectIdSchema, z.literal('none')]).optional(),
+  status: z.enum(ENTITY_STATUSES).optional(),
+});
+/** Organizations assigned to a coordinator or an auditor. */
+export const assignedOrganizationListQuerySchema = listQueryBase.extend({
+  sort: z.enum(['name', 'country']).default('name'),
+});
+
+/** Status filter: one status, or the `open` / `closed` groups (closed = report generated or cancelled). */
+export const CAMPAIGN_STATUS_FILTERS = ['open', 'closed', ...CAMPAIGN_STATUSES] as const;
+export const campaignListQuerySchema = listQueryBase.extend({
+  sort: z.enum(['createdAt', 'reference', 'organization', 'interviewStartDate', 'status']).default('createdAt'),
+  status: z.enum(CAMPAIGN_STATUS_FILTERS).optional(),
+  organizationId: objectIdSchema.optional(),
+});

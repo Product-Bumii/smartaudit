@@ -18,7 +18,7 @@ import { createUser, toUserDto } from '../services/users';
 const toAuditEntityDto = (e: AuditEntityDoc): AuditEntityDto => ({
   id: String(e._id),
   name: e.name,
-  country: e.country,
+  country: e.country ?? null,
   status: e.status as AuditEntityDto['status'],
 });
 

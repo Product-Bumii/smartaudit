@@ -26,7 +26,7 @@ describe('magic link authentication', () => {
 
     const res = await request(env.app).post('/api/auth/verify').send({ token }).expect(200);
     expect(res.body.status).toBe('authenticated');
-    expect(res.body.user).toMatchObject({ role: 'COORDINATOR', auditEntityId: env.entities.CO, auditEntityName: 'Certificadora Andes (sintética)', email: SEED_USERS.coordinatorCO });
+    expect(res.body.user).toMatchObject({ role: 'COORDINATOR', auditEntityId: env.entities.CO, auditEntityName: 'ICONTEC', email: SEED_USERS.coordinatorCO });
     const setCookie = cookiesOf(res).find((c) => c.startsWith('sa_session='))!;
     expect(setCookie).toMatch(/HttpOnly/);
     expect(setCookie).toMatch(/SameSite=Lax/);
@@ -50,8 +50,8 @@ describe('magic link authentication', () => {
   });
 
   it('asks to choose an audit entity when the email has several accounts', async () => {
-    await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.auditorMulti, language: 'ca' }).expect(202);
-    expect(env.mail.outbox.at(-1)!.subject).toContain("enllaç d'accés");
+    await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.auditorMulti, language: 'pt' }).expect(202);
+    expect(env.mail.outbox.at(-1)!.subject).toContain('ligação de acesso');
     const token = lastMagicToken(env.mail, SEED_USERS.auditorMulti);
     const res = await request(env.app).post('/api/auth/verify').send({ token }).expect(200);
     expect(res.body.status).toBe('select_account');

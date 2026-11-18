@@ -49,10 +49,18 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
           <span class="label">{{ 'campaigns.minimum' | translate }}</span>
           @if (c.sampling) { <span class="meta">{{ 'campaignForm.bracket' | translate: { min: c.sampling.bracket.min, max: c.sampling.bracket.max ?? '∞' } }} · {{ 'campaigns.tableVersion' | translate: { v: c.sampling.tableVersion } }}</span> }
         </div>
+        <div class="stat">
+          <span class="value" data-testid="campaign-maximum">{{ c.sampling?.maximum ?? '—' }}</span>
+          <span class="label">{{ 'campaigns.maximum' | translate }}</span>
+          <span class="meta">{{ 'campaigns.maximumHint' | translate }}</span>
+        </div>
         <div class="stat"><span class="value" data-testid="campaign-sample-size">{{ c.sampleSize }}</span><span class="label">{{ 'campaigns.sampleSize' | translate }}</span></div>
         <div class="stat"><span class="value">{{ c.m1Config.scopeSize }}</span><span class="label">{{ 'campaignForm.scopeSize' | translate }}</span></div>
-        <div class="stat"><span class="value small">{{ c.m1Config.visitDate | tzDate: 'UTC' : 'date' }}</span><span class="label">{{ 'campaigns.visitDate' | translate }}</span></div>
+        <div class="stat"><span class="value small">{{ c.m1Config.interviewStartDate | tzDate: 'UTC' : 'date' }}</span><span class="label">{{ 'campaigns.interviewStartDate' | translate }}</span></div>
       </div>
+      @if (c.sampling?.maximum && c.sampleSize > 0 && c.sampling!.maximum! > c.sampleSize && c.m1Config.maxCompleted) {
+        <div class="alert warn" role="status" data-testid="maximum-above-sample">{{ 'campaigns.maximumAboveSample' | translate: { max: c.sampling!.maximum, n: c.sampleSize } }}</div>
+      }
 
       <div class="numbered">
         <div class="grid-2 top">

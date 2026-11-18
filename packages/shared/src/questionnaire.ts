@@ -2,7 +2,7 @@
  * Questionnaire structure and declarative activation rules (section 5.2).
  * Activation is ALWAYS evaluated here, in code, never by the AI.
  */
-import { ABSTENTION_CODE, type AuditType, type Language, type QuestionType, type TranslationStatus } from './enums';
+import { ABSTENTION_CODE, isAvailableLanguage, type AuditType, type Language, type QuestionType, type TranslationStatus } from './enums';
 
 export type LocalizedText = Partial<Record<Language, string>>;
 
@@ -106,7 +106,7 @@ export function offeredLanguages(
   campaignLanguages: readonly Language[],
 ): Language[] {
   return questionnaireLanguages
-    .filter((l) => l.status === 'approved' && campaignLanguages.includes(l.lang))
+    .filter((l) => l.status === 'approved' && isAvailableLanguage(l.lang) && campaignLanguages.includes(l.lang))
     .map((l) => l.lang);
 }
 
