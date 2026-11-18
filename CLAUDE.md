@@ -60,7 +60,7 @@ Hoy el auditor elige una muestra de personas, las entrevista en persona o por te
 /apps
   /api        Express: rutas, controladores, servicios, middlewares de auth y permisos
   /worker     Agenda: envíos, recordatorios, cambios de estado programados, codificación IA, generación de informes
-  /web        Angular: área interna (superadmins, admin de organización, auditor) y área del participante
+  /web        Angular: área interna (superadmins, coordinador, auditor) y área del participante
 /packages
   /shared     Tipos, enums, esquemas Zod y TODA la lógica determinista (tabla de mínimos, días hábiles,
               condiciones del cuestionario, cálculo de porcentajes, validación de muestra). 100% testeado.
@@ -100,37 +100,43 @@ Código en GitHub. Despliegue con `infra/scripts/deploy.sh <staging|prod>`: buil
 
 ### 3.1 Roles
 
+> Revisado el 17/11/2026 a propuesta de F+f (decisiones 56–63 en `docs/decisiones.md`): el antiguo `ORG_ADMIN` (administrador de la empresa) pasa a ser el **coordinador de auditorías de una entidad auditora**. La empresa auditada no tiene usuarios.
+
 | Rol (código) | Quién | Ámbito |
 |---|---|---|
 | `SUPERADMIN_BUMII` | Equipo Bumii | Toda la plataforma |
-| `SUPERADMIN_FUNDACION` | Fundación Másfamilia | Toda la plataforma |
-| `ORG_ADMIN` | Administrador de la empresa efr (organización) | Su organización |
-| `AUDITOR` | Auditor asignado a la organización | Su organización |
+| `SUPERADMIN_FUNDACION` | Fundación Másfamilia (F+f) | Toda la plataforma |
+| `COORDINATOR` | Coordinador o planificador de auditorías efr de una **entidad de auditoría** (ICONTEC, AENOR, SGS…) | Las organizaciones que F+f le asigna |
+| `AUDITOR` | Auditor de una entidad de auditoría | Las organizaciones que su coordinador le asigna |
 | Participante | Persona de la muestra | Solo su entrevista, sin cuenta |
 
-- **Organización = empresa efr auditada.** Los superadmins crean la organización y su `ORG_ADMIN`.
-- El `ORG_ADMIN` crea y desactiva los perfiles `AUDITOR` de su organización.
-- **Una cuenta por organización:** el mismo correo puede existir en varias organizaciones como usuarios distintos (índice único `email + organizationId`). Si un correo tiene varias cuentas, tras el enlace mágico el usuario elige a qué organización entra.
+- **Organización = empresa efr auditada.** No tiene usuarios. Los superadmins la crean y la **asignan a una entidad de auditoría y a uno de sus coordinadores** (una entidad puede tener varios; un coordinador puede llevar varias organizaciones).
+- Los superadmins crean las **entidades de auditoría** y sus coordinadores. El coordinador crea y desactiva los auditores de su entidad y **designa el auditor responsable** de cada organización; puede cambiarlo y puede asignarse a sí mismo (entonces actúa como auditor de esa organización).
+- **Una cuenta por entidad de auditoría:** el mismo correo puede existir en varias entidades como usuarios distintos (índice único `email + auditEntityId`). Si un correo tiene varias cuentas, tras el enlace mágico el usuario elige a qué entidad entra.
 - Los dos superadmins tienen los mismos permisos funcionales. Solo `SUPERADMIN_BUMII` accede a la configuración técnica (proveedor de IA, umbrales, purga de datos).
 
 ### 3.2 Matriz de permisos M1
 
-| Acción | Superadmins | ORG_ADMIN | AUDITOR | Participante |
+| Acción | Superadmins | COORDINATOR | AUDITOR | Participante |
 |---|---|---|---|---|
-| Crear organizaciones y su ORG_ADMIN | ✅ | — | — | — |
-| Crear/desactivar auditores de la organización | ✅ | ✅ | — | — |
-| Gestionar cuestionarios, tabla de mínimos, festivos, textos | ✅ | — | — | — |
-| Crear y configurar campaña M1 | ✅ (ver, pausar, cerrar todas) | — | ✅ (en su organización) | — |
-| Cargar y validar la muestra | — | — | ✅ | — |
-| Ver estado por persona (invitada, iniciada, completada) | ✅ | — | ✅ | — |
-| Ver avance agregado (% completadas frente al mínimo) | ✅ | ✅ | ✅ | — |
-| Ver respuestas individuales con demográficos (sin correo) | ✅ | — | ✅ | — |
-| Revisar respuestas dudosas | ✅ | — | ✅ | — |
-| Editar y aprobar la síntesis, exportar informe | ✅ | — | ✅ | — |
-| Ver respuestas, muestra o quién respondió | — | ❌ nunca | — | — |
+| Crear entidades de auditoría y sus coordinadores | ✅ | — | — | — |
+| Crear organizaciones y asignarlas a entidad + coordinador | ✅ | — | — | — |
+| Crear/desactivar auditores de la entidad | ✅ | ✅ (la suya) | — | — |
+| Designar o cambiar el auditor de una organización | ✅ | ✅ (sus organizaciones) | — | — |
+| Gestionar cuestionarios, tabla de mínimos, textos | ✅ | — | — | — |
+| Crear y configurar campaña M1 | ✅ (ver, pausar, cerrar todas) | solo como auditor asignado | ✅ (organizaciones asignadas) | — |
+| Cargar y validar la muestra | — | solo como auditor | ✅ | — |
+| Ver estado por persona (invitada, iniciada, completada) | ✅ | solo como auditor | ✅ | — |
+| Ver avance agregado (% completadas frente al mínimo) | ✅ | ✅ (sus organizaciones) | ✅ | — |
+| Ver respuestas individuales con demográficos (sin correo) | ✅ | solo como auditor | ✅ | — |
+| Revisar respuestas dudosas | ✅ | solo como auditor | ✅ | — |
+| Editar y aprobar la síntesis, exportar informe | ✅ | solo como auditor | ✅ | — |
 | Responder la entrevista | — | — | — | ✅ (solo la suya) |
 
-Reglas transversales: aislamiento estricto por organización en todas las consultas (middleware que inyecta `organizationId`), mínimo privilegio, y **registro en `auditLogs`** de cada acceso a respuestas individuales, exportación, cambio de configuración y acción administrativa.
+Reglas transversales: aislamiento estricto por **entidad de auditoría** y acceso por **asignación** (reglas deterministas en `packages/shared/src/access.ts`: `manage` para el auditor responsable, `aggregate` para el coordinador de la organización, `supervise` para superadmins), mínimo privilegio, y **registro en `auditLogs`** de cada acceso a respuestas individuales, exportación, cambio de configuración, asignación y acción administrativa.
+
+- Al cambiar el auditor, las campañas abiertas pasan al nuevo auditor; no se puede dejar sin auditor una organización con campañas abiertas.
+- Cada campaña pertenece a la entidad de auditoría que la hizo. Una organización solo cambia de entidad sin campañas abiertas, y las campañas anteriores se quedan con la entidad anterior.
 
 ### 3.3 Autenticación
 
@@ -141,17 +147,18 @@ Reglas transversales: aislamiento estricto por organización en todas las consul
 
 ## 4. Modelo de datos (MongoDB)
 
-Todas las colecciones llevan `createdAt`, `updatedAt` y, si aplica, `organizationId`. Todo lo que es configuración tiene `version` y no se edita una versión publicada: se crea otra.
+Todas las colecciones llevan `createdAt`, `updatedAt` y, si aplica, `organizationId` (y `auditEntityId`). Todo lo que es configuración tiene `version` y no se edita una versión publicada: se crea otra.
 
 | Colección | Contenido clave |
 |---|---|
-| `organizations` | nombre, marca del certificado, país (`CO`, `ES`…), zona horaria IANA, idioma por defecto, estado |
-| `users` | email, rol, organizationId (nulo en superadmins), estado, idioma preferido. Índice único `(email, organizationId)` |
+| `auditEntities` | entidad de auditoría (certificadora): nombre, país, estado |
+| `organizations` | nombre, país (`CO`, `ES`…), zona horaria IANA, idioma por defecto, estado, asignación (`auditEntityId`, `coordinatorId`, `auditorId`) e historial de asignaciones |
+| `users` | email, rol, auditEntityId (nulo en superadmins), estado, idioma preferido. Índice único `(email, auditEntityId)` |
 | `magicLinkTokens` | hash del token, userId(s), expiración, usado |
 | `samplingTables` | versión, estado (`draft`/`published`), tramos `[{min, max, required, rangeMax?}]` |
 | `holidayCalendars` | país, año, fechas, origen (`date-holidays` + sobrescrituras manuales) |
 | `questionnaires` | módulo, versión, estado, idiomas con estado de aprobación por idioma, preguntas (ver 5.2) |
-| `campaigns` | módulo (`M1`/`M2`/`M3`), organizationId, creada por, auditores colaboradores, configuración M1 (ver 5.1), snapshot de cuestionario y tabla, idiomas disponibles, ventana, programación de recordatorios, mínimo exigido, estado e historial de estados |
+| `campaigns` | módulo (`M1`/`M2`/`M3`), organizationId, auditEntityId (entidad que la hace), creada por, configuración M1 (con el auditor responsable) (ver 5.1), snapshot de cuestionario y tabla, idiomas disponibles, ventana, programación de recordatorios, mínimo exigido, estado e historial de estados |
 | `participantContacts` | **colección separada**: campaignId, respondentId, email cifrado, `noEmail`, hash del token de invitación, hash del código de acceso, envíos y rebotes |
 | `respondents` | campaignId, demográficos (sexo, tramo de edad, centro, tipo de puesto y opcionales), estado (`invited`, `started`, `completed`), `completedAt`. **Sin correo ni identificadores personales** |
 | `interviews` | campaignId, respondentId, idioma, estado de la máquina de estados, mensajes, respuestas por pregunta (ver 5.5), versión de modelo y de prompt |
@@ -300,7 +307,7 @@ Reglas duras:
 
 **Vista del auditor:** tablas agregadas, cola de respuestas dudosas y respuestas individuales ligadas a sus demográficos (nunca al correo). Mostrar aviso de confidencialidad al abrir respuestas individuales y registrar cada acceso. Advertir cuando un grupo demográfico tenga menos de 3 personas, por riesgo de reidentificación.
 
-**Vista del ORG_ADMIN:** solo avance agregado (% de completadas frente al mínimo), sin desglose por persona ni respuestas.
+**Vista del coordinador (COORDINATOR):** solo avance agregado (% de completadas frente al mínimo), sin desglose por persona ni respuestas.
 
 **Síntesis IA:** la IA redacta la síntesis cualitativa (7.3) **a partir de las tablas ya calculadas y de los comentarios anonimizados**, marcada como «pendiente de contraste». El auditor la edita en la plataforma; se guardan el texto original de la IA, cada versión editada y la aprobación. Los porcentajes no son editables.
 
@@ -312,7 +319,7 @@ Español, inglés y catalán desde el inicio en: interfaz interna, área del par
 
 ### 5.8 Lo que nunca se capta ni se muestra
 
-Nombre, documento de identidad, número de empleado, salario, afiliación sindical, datos de salud, motivos de baja. La empresa (ORG_ADMIN) nunca ve quién respondió ni qué respondió.
+Nombre, documento de identidad, número de empleado, salario, afiliación sindical, datos de salud, motivos de baja. La empresa auditada no tiene acceso a la plataforma, y el coordinador nunca ve quién respondió ni qué respondió (salvo cuando actúa como auditor de esa organización).
 
 ---
 
@@ -326,9 +333,9 @@ Ciclos semanales con demo los viernes. Cada fase termina con sus criterios de ac
 1. Monorepo, Docker Compose de desarrollo (con Mailpit), Caddy, `.env.example`, README, script de despliegue manual y de backup.
 2. `packages/shared` con tipos, enums, esquemas Zod y la lógica determinista de esta fase: tabla de mínimos, días hábiles y ventana, validación del archivo de muestra, evaluación de activación de preguntas.
 3. Modelo de datos completo (todas las colecciones de la sección 4, aunque algunas se usen en fases posteriores), cifrado de correos, `auditLogs`.
-4. Autenticación por enlace mágico (los correos van a Mailpit en desarrollo; `MailProvider` con adaptador SMTP ya implementado), selección de organización cuando un correo tiene varias cuentas, roles y middleware de permisos con aislamiento por organización.
-5. Superadmins: gestión de organizaciones (país, zona horaria, idioma) y de sus ORG_ADMIN; gestión de configuración (cuestionarios con versiones e idiomas, tabla de mínimos, festivos).
-6. ORG_ADMIN: gestión de auditores de su organización.
+4. Autenticación por enlace mágico (los correos van a Mailpit en desarrollo; `MailProvider` con adaptador SMTP ya implementado), selección de entidad de auditoría cuando un correo tiene varias cuentas, roles y middleware de permisos con aislamiento por entidad de auditoría y acceso por asignación.
+5. Superadmins: gestión de entidades de auditoría y sus coordinadores, y de organizaciones (país, zona horaria, idioma) con su asignación a entidad y coordinador; gestión de configuración (cuestionarios con versiones e idiomas, tabla de mínimos, festivos).
+6. COORDINATOR: gestión de auditores de su entidad y designación del auditor responsable de cada organización asignada (puede ser él mismo).
 7. Auditor: crear y editar campaña M1 (5.1), cálculo automático del mínimo, de la ventana y de las preguntas activadas; descarga de plantilla de muestra; carga y validación con errores por fila; listado de valores distintos de centro y tipo de puesto; generación de tokens de invitación y códigos de acceso; descarga de la lista de códigos para personas sin correo; paso a `muestra_cargada`.
 8. Interfaz Angular con Material, tema de marca «SmartAudit efr · powered by Bumii», i18n es/en/ca.
 9. Semillas: cuestionario M1 v1 (es aprobado; en y ca en borrador), tabla de mínimos v1, festivos CO y ES 2026–2027, organizaciones y usuarios sintéticos, archivos de muestra sintéticos válidos e inválidos.
@@ -338,13 +345,13 @@ Ciclos semanales con demo los viernes. Cada fase termina con sus criterios de ac
 **Criterios de aceptación de la Fase 1:**
 - `docker compose up` deja todo funcionando en local con datos semilla.
 - Tests unitarios al 100 % de ramas en `packages/shared` (incluye fronteras de tramos: 90/91, 150/151, 249/250, 500/501, 16.000/16.001; ventanas que cruzan festivos y fines de semana en CO y ES).
-- Tests de integración de permisos: ningún rol accede a recursos de otra organización; el ORG_ADMIN no puede leer muestras ni respuestas.
-- E2E (Playwright): superadmin crea organización y su admin → admin crea auditor → auditor entra por enlace mágico, crea campaña, sube una muestra con errores, la corrige y la campaña queda en `muestra_cargada` con el mínimo y la ventana correctos.
+- Tests de integración de permisos: ningún rol accede a recursos de otra entidad de auditoría ni a organizaciones que no tiene asignadas; el COORDINATOR (salvo como auditor asignado) no puede leer muestras ni respuestas.
+- E2E (Playwright): superadmin crea la entidad de auditoría con su coordinador y una organización asignada a él → el coordinador crea un auditor y lo designa para la organización → el auditor entra por enlace mágico, crea campaña, sube una muestra con errores, la corrige y la campaña queda en `muestra_cargada` con el mínimo y la ventana correctos.
 - Ningún correo en claro en la base de datos.
 
 ### Fase 2 · Invitaciones y motor conversacional (semanas 3–4)
 
-**Construir:** envío de invitaciones (paso a `envios_activos`), enlace único y landing con código, aviso previo y selección de idioma, chat web adaptado a móvil (texto libre + botones + «Prefiero no responder»), máquina de estados de la entrevista, `LlmProvider` con adaptador mock y uno real, clasificación con confianza y una aclaración como máximo, pausa y reanudación, recordatorios programados, transiciones automáticas de estado (`en_curso` al abrir la ventana, `finalizada` al cerrarla), panel de avance (auditor: estado por persona; ORG_ADMIN: % agregado), alertas de mínimo, ampliación de ventana, suite de unas 40 personas sintéticas para pruebas (incluye perfiles evasivos, fuera de tema e intentos de manipular a la IA).
+**Construir:** envío de invitaciones (paso a `envios_activos`), enlace único y landing con código, aviso previo y selección de idioma, chat web adaptado a móvil (texto libre + botones + «Prefiero no responder»), máquina de estados de la entrevista, `LlmProvider` con adaptador mock y uno real, clasificación con confianza y una aclaración como máximo, pausa y reanudación, recordatorios programados, transiciones automáticas de estado (`en_curso` al abrir la ventana, `finalizada` al cerrarla), panel de avance (auditor: estado por persona; coordinador: % agregado), alertas de mínimo, ampliación de ventana, suite de unas 40 personas sintéticas para pruebas (incluye perfiles evasivos, fuera de tema e intentos de manipular a la IA).
 
 **Criterios de aceptación:** 0 preguntas inventadas o respuestas sugeridas en las 40 pruebas adversariales; la pregunta P7.1, P8 y P9 solo aparecen cuando corresponde; reanudar tras desconexión no repite ni pierde respuestas; entrevista completa en móvil; ningún identificador enviado al proveedor de IA (test que inspecciona las llamadas).
 

@@ -21,7 +21,8 @@
     "auditors": "Auditors",
     "campaigns": "Campanyes",
     "organizations": "Organitzacions",
-    "config": "Configuració"
+    "config": "Configuració",
+    "auditEntities": "Entitats d'auditoria"
   },
   "lang": {
     "es": "Castellà",
@@ -33,8 +34,8 @@
   "roles": {
     "SUPERADMIN_BUMII": "Superadmin Bumii",
     "SUPERADMIN_FUNDACION": "Superadmin Fundació",
-    "ORG_ADMIN": "Administració de l'organització",
-    "AUDITOR": "Auditor/a"
+    "AUDITOR": "Auditor/a",
+    "COORDINATOR": "Coordinació d'auditories"
   },
   "login": {
     "title": "Accés a la plataforma",
@@ -53,8 +54,8 @@
     }
   },
   "verify": {
-    "chooseOrg": "Tria l'organització",
-    "chooseOrgHelp": "El teu correu té comptes en diverses organitzacions. En quina vols entrar?",
+    "chooseOrg": "Tria l'entitat d'auditoria",
+    "chooseOrgHelp": "El teu correu té comptes en diverses entitats d'auditoria. A quina vols entrar?",
     "platform": "Plataforma",
     "failedTitle": "No s'ha pogut iniciar la sessió",
     "backToLogin": "Sol·licita un nou enllaç",
@@ -81,16 +82,13 @@
     "country": "País",
     "timeZone": "Zona horària",
     "defaultLanguage": "Idioma per defecte",
-    "adminEmail": "Correu de l'administrador/a (opcional)",
-    "adminEmailHint": "Es crearà el seu compte ORG_ADMIN i se l'avisarà per correu",
     "empty": "No hi ha organitzacions.",
     "created": "Organització creada",
     "details": "Dades de l'organització",
-    "admins": "Administradors de l'organització",
-    "auditors": "Auditors",
     "deactivate": "Desactiva l'organització",
     "activate": "Activa l'organització",
-    "eyebrow": "Plataforma"
+    "eyebrow": "Plataforma",
+    "assignmentHint": "Opcional: es pot assignar després des de la fitxa de l'organització"
   },
   "countries": {
     "ES": "Espanya",
@@ -101,10 +99,6 @@
     "AR": "Argentina",
     "EC": "Equador",
     "PT": "Portugal"
-  },
-  "orgAdmin": {
-    "title": "Auditors de l'organització",
-    "intro": "Crea i desactiva els perfils d'auditoria de la teva organització. Per confidencialitat, l'empresa no veu la mostra ni les respostes de les persones."
   },
   "config": {
     "title": "Configuració",
@@ -209,7 +203,9 @@
     "history": "Historial d'estats",
     "confirmStatus": "Vols canviar l'estat a «{{status}}»?",
     "eyebrow": "M1 · auditoria",
-    "questionnaire": "Qüestionari"
+    "questionnaire": "Qüestionari",
+    "aggregateOnly": "només avanç",
+    "aggregateHint": "Com a coordinació veus l'estat i l'avanç agregat. La mostra, els codis i les respostes són només de l'auditor/a responsable."
   },
   "auditTypes": {
     "inicial": "Inicial",
@@ -246,7 +242,9 @@
     "previewEmpty": "Completa la data, la mida i la norma per veure el mínim, la finestra i les preguntes.",
     "created": "Campanya creada",
     "howTitle": "el mínim i la finestra els calcula el sistema",
-    "howText": "S'apliquen la taula de mínims vigent i els dies feiners de dilluns a divendres, a la zona horària de l'organització. La IA no intervé en aquests càlculs."
+    "howText": "S'apliquen la taula de mínims vigent i els dies feiners de dilluns a divendres, a la zona horària de l'organització. La IA no intervé en aquests càlculs.",
+    "organizationHint": "Només les organitzacions que tens assignades com a auditor/a",
+    "noOrganizations": "No tens organitzacions assignades. El teu coordinador/a d'auditories te n'ha d'assignar una abans de crear la campanya."
   },
   "questionStates": {
     "active": "Es preguntarà",
@@ -316,7 +314,7 @@
     "ROUTE_NOT_FOUND": "No s'ha trobat.",
     "INVALID_OR_EXPIRED_LINK": "L'enllaç no és vàlid, ja s'ha fet servir o ha caducat.",
     "SELECTION_EXPIRED": "La selecció ha caducat. Sol·licita un nou enllaç.",
-    "USER_ALREADY_EXISTS": "Ja hi ha un usuari amb aquest correu en aquesta organització.",
+    "USER_ALREADY_EXISTS": "Ja existeix un usuari amb aquest correu en aquesta entitat d'auditoria.",
     "PUBLISHED_VERSION_IS_IMMUTABLE": "Una versió publicada no es pot modificar: crea'n una de nova.",
     "DRAFT_ALREADY_EXISTS": "Ja hi ha un esborrany.",
     "INVALID_SAMPLING_TABLE": "La taula té errors.",
@@ -343,7 +341,13 @@
     "UPLOAD_LIMIT_FILE_SIZE": "El fitxer supera els 5 MB.",
     "INVALID_ACCESS_CODE": "El codi no és vàlid. Revisa'l i torna-ho a provar.",
     "TOO_MANY_ATTEMPTS": "Massa intents fallits. Espera 15 minuts abans de tornar-ho a provar.",
-    "CAMPAIGN_NOT_FOUND": "Aquest enllaç no correspon a cap entrevista."
+    "CAMPAIGN_NOT_FOUND": "Aquest enllaç no correspon a cap entrevista.",
+    "ORG_HAS_OPEN_CAMPAIGNS": "L'organització té campanyes obertes: no pot canviar d'entitat d'auditoria ni quedar-se sense auditor/a.",
+    "INVALID_COORDINATOR": "El coordinador/a ha d'estar actiu i pertànyer a l'entitat d'auditoria triada.",
+    "INVALID_AUDITOR": "L'auditor/a ha d'estar actiu i pertànyer a l'entitat d'auditoria de l'organització.",
+    "INVALID_AUDIT_ENTITY": "L'entitat d'auditoria no existeix o està inactiva.",
+    "COORDINATOR_REQUIRES_AUDIT_ENTITY": "Per assignar un coordinador/a primer tria l'entitat d'auditoria.",
+    "AUDITOR_REQUIRES_AUDIT_ENTITY": "Per assignar un auditor/a l'organització ha de tenir entitat d'auditoria."
   },
   "brand": {
     "sideNote": "Per a organitzacions amb certificat efr vigent."
@@ -377,5 +381,45 @@
     "closedText": "El termini per respondre aquesta entrevista ha acabat.",
     "unavailableTitle": "entrevista no disponible",
     "unavailableText": "L'entrevista no està disponible en aquest moment. Consulta la persona auditora."
+  },
+  "entities": {
+    "eyebrow": "Plataforma",
+    "title": "Entitats d'auditoria",
+    "intro": "Entitats de certificació que auditen les empreses efr. Cadascuna té coordinadors/es, que assignen auditors/es a les organitzacions.",
+    "new": "Nova entitat d'auditoria",
+    "name": "Nom de l'entitat",
+    "coordinatorEmail": "Correu del coordinador/a (opcional)",
+    "coordinatorEmailHint": "Es crearà el seu compte de coordinació i se l'avisarà per correu",
+    "coordinators": "Coordinadors/es",
+    "auditors": "Auditors/es",
+    "organizations": "Organitzacions",
+    "empty": "No hi ha entitats d'auditoria.",
+    "created": "Entitat d'auditoria creada"
+  },
+  "entityAuditors": {
+    "title": "Auditors/es de l'entitat",
+    "intro": "Crea i desactiva els perfils d'auditoria de la teva entitat. Després assigna'ls a les teves organitzacions."
+  },
+  "myOrgs": {
+    "title": "Les meves organitzacions",
+    "introCoordinator": "Organitzacions que la Fundación Másfamilia t'ha assignat. Designa l'auditor/a responsable de cadascuna; et pots assignar a tu mateix/a.",
+    "introAuditor": "Organitzacions que tens assignades. Des d'aquí pots crear la campanya de cadascuna.",
+    "auditor": "Auditor/a responsable",
+    "coordinator": "Coordinació",
+    "noAuditor": "Sense assignar",
+    "me": "jo",
+    "empty": "No tens organitzacions assignades.",
+    "reassignHint": "En canviar l'auditor/a, les campanyes obertes passen al nou auditor/a i el canvi queda registrat.",
+    "assigned": "Auditor/a assignat"
+  },
+  "assignment": {
+    "title": "Assignació",
+    "intro": "Entitat d'auditoria i coordinador/a responsables d'aquesta organització. El coordinador/a designa l'auditor/a.",
+    "auditEntity": "Entitat d'auditoria",
+    "coordinator": "Coordinador/a",
+    "auditor": "Auditor/a",
+    "none": "Sense assignar",
+    "auditorHint": "Normalment el designa el coordinador/a",
+    "saved": "Assignació desada"
   }
 }

@@ -14,7 +14,7 @@ let env: TestEnv;
 let auditor: string;
 beforeAll(async () => {
   env = await startTestEnv();
-  auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.orgs.CO);
+  auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.entities.CO);
 });
 afterAll(() => env?.stop());
 

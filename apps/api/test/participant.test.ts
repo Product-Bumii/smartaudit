@@ -24,7 +24,7 @@ async function createCampaignWithCodes(cookie: string) {
 
 beforeAll(async () => {
   env = await startTestEnv({ rateLimits: { accessCodePerIp: 4 } });
-  const auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.orgs.CO);
+  const auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.entities.CO);
   const a = await createCampaignWithCodes(auditor);
   ({ slug, codes } = a);
   campaignId = a.id;

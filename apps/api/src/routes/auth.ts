@@ -25,14 +25,14 @@ import {
   requireAuth,
   type AuthUser,
 } from '../middleware/auth';
-import { getSettings, MagicLinkToken, Organization, User } from '../models';
+import { AuditEntity, getSettings, MagicLinkToken, User } from '../models';
 
 export function toSessionUser(ctx: AppContext, u: AuthUser): SessionUser {
   return {
     id: u.id,
     role: u.role,
-    organizationId: u.organizationId,
-    organizationName: u.organizationName,
+    auditEntityId: u.auditEntityId,
+    auditEntityName: u.auditEntityName,
     email: ctx.crypto.decrypt(u.emailEncrypted),
     preferredLanguage: u.preferredLanguage,
   };
@@ -65,11 +65,11 @@ export function authRouter(ctx: AppContext): Router {
   r.post('/magic-link', perIp, perEmail, async (req, res) => {
     const { email, language } = magicLinkRequestSchema.parse(req.body);
     const users = await User.find({ emailHash: ctx.crypto.hash(email), status: 'active' }).lean();
-    const orgIds = users.filter((u) => u.organizationId).map((u) => u.organizationId);
-    const activeOrgs = new Set(
-      (await Organization.find({ _id: { $in: orgIds }, status: 'active' }, { _id: 1 }).lean()).map((o) => String(o._id)),
+    const entityIds = users.filter((u) => u.auditEntityId).map((u) => u.auditEntityId);
+    const activeEntities = new Set(
+      (await AuditEntity.find({ _id: { $in: entityIds }, status: 'active' }, { _id: 1 }).lean()).map((e) => String(e._id)),
     );
-    const eligible = users.filter((u) => !u.organizationId || activeOrgs.has(String(u.organizationId)));
+    const eligible = users.filter((u) => !u.auditEntityId || activeEntities.has(String(u.auditEntityId)));
     let devLink: string | undefined;
     if (eligible.length > 0) {
       const token = randomToken(32);
@@ -99,7 +99,7 @@ export function authRouter(ctx: AppContext): Router {
     res.status(202).json(devLink ? { ok: true, devLink } : { ok: true });
   });
 
-  /** Consumes a magic link (single use). One account → session; several → account selection. */
+  /** Consumes a magic link (single use). One account → session; several (one per audit entity) → account selection. */
   r.post('/verify', verifyLimiter, async (req, res) => {
     const { token } = magicLinkVerifySchema.parse(req.body);
     const record = await MagicLinkToken.findOneAndUpdate(
@@ -126,8 +126,8 @@ export function authRouter(ctx: AppContext): Router {
     const choices: AccountChoice[] = accounts.map((a) => ({
       userId: a.id,
       role: a.role as Role,
-      organizationId: a.organizationId,
-      organizationName: a.organizationName,
+      auditEntityId: a.auditEntityId,
+      auditEntityName: a.auditEntityName,
     }));
     res.json({ status: 'select_account', accounts: choices });
   });
@@ -138,7 +138,7 @@ export function authRouter(ctx: AppContext): Router {
     if (!allowed) throw unauthorized('SELECTION_EXPIRED');
     const accounts = (await Promise.all(allowed.map((id) => loadAuthUser(id)))).filter((u): u is AuthUser => u !== null);
     res.json({
-      accounts: accounts.map((a) => ({ userId: a.id, role: a.role, organizationId: a.organizationId, organizationName: a.organizationName })),
+      accounts: accounts.map((a) => ({ userId: a.id, role: a.role, auditEntityId: a.auditEntityId, auditEntityName: a.auditEntityName })),
     });
   });
 

@@ -35,7 +35,7 @@ interface NavItem {
         <div class="account">
           <div class="who" data-testid="user-info">
             <span class="email" data-testid="user-email">{{ auth.user()?.email }}</span>
-            <span class="role">{{ 'roles.' + auth.user()?.role | translate }}@if (auth.user()?.organizationName) { · <span class="keep-case">{{ auth.user()?.organizationName }}</span> }</span>
+            <span class="role">{{ 'roles.' + auth.user()?.role | translate }}@if (auth.user()?.auditEntityName) { · <span class="keep-case">{{ auth.user()?.auditEntityName }}</span> }</span>
           </div>
           <div class="segmented" role="group" [attr.aria-label]="'nav.language' | translate">
             @for (l of langs; track l) {
@@ -102,10 +102,22 @@ export class ShellComponent {
 
   readonly nav = computed<NavItem[]>(() => {
     const role = this.auth.user()?.role;
-    if (role === 'ORG_ADMIN') return [{ path: '/org/auditors', label: 'nav.auditors' }];
-    if (role === 'AUDITOR') return [{ path: '/campaigns', label: 'nav.campaigns' }];
+    if (role === 'COORDINATOR') {
+      return [
+        { path: '/my/organizations', label: 'nav.organizations' },
+        { path: '/my/auditors', label: 'nav.auditors' },
+        { path: '/campaigns', label: 'nav.campaigns' },
+      ];
+    }
+    if (role === 'AUDITOR') {
+      return [
+        { path: '/my/organizations', label: 'nav.organizations' },
+        { path: '/campaigns', label: 'nav.campaigns' },
+      ];
+    }
     return [
       { path: '/admin/organizations', label: 'nav.organizations' },
+      { path: '/admin/audit-entities', label: 'nav.auditEntities' },
       { path: '/campaigns', label: 'nav.campaigns' },
       { path: '/admin/config', label: 'nav.config' },
     ];

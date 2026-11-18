@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { can, isSuperadmin, type Action, type Language, type Role } from '@smartaudit/shared';
 import type { AppContext } from '../context';
 import { forbidden, notFound, unauthorized } from '../lib/errors';
-import { Organization, User } from '../models';
+import { AuditEntity, User } from '../models';
 
 export const SESSION_COOKIE = 'sa_session';
 export const SELECT_COOKIE = 'sa_select';
@@ -13,8 +13,9 @@ const RENEW_AFTER_SECONDS = 15 * 60;
 export interface AuthUser {
   id: string;
   role: Role;
-  organizationId: string | null;
-  organizationName: string | null;
+  /** Audit entity of coordinators and auditors; `null` for superadmins. */
+  auditEntityId: string | null;
+  auditEntityName: string | null;
   emailEncrypted: string;
   preferredLanguage: Language;
 }
@@ -66,21 +67,21 @@ export function clearSelection(ctx: AppContext, res: Response): void {
   res.clearCookie(SELECT_COOKIE, { ...cookieOptions(ctx, 0), maxAge: undefined });
 }
 
-/** Loads an active user (and its active organization) as an AuthUser, or null. */
+/** Loads an active user (and its active audit entity) as an AuthUser, or null. */
 export async function loadAuthUser(userId: string): Promise<AuthUser | null> {
   const user = await User.findById(userId).lean();
   if (!user || user.status !== 'active') return null;
-  let organizationName: string | null = null;
-  if (user.organizationId) {
-    const org = await Organization.findById(user.organizationId).lean();
-    if (!org || org.status !== 'active') return null;
-    organizationName = org.name;
+  let auditEntityName: string | null = null;
+  if (user.auditEntityId) {
+    const entity = await AuditEntity.findById(user.auditEntityId).lean();
+    if (!entity || entity.status !== 'active') return null;
+    auditEntityName = entity.name;
   }
   return {
     id: String(user._id),
     role: user.role as Role,
-    organizationId: user.organizationId ? String(user.organizationId) : null,
-    organizationName,
+    auditEntityId: user.auditEntityId ? String(user.auditEntityId) : null,
+    auditEntityName,
     emailEncrypted: user.emailEncrypted,
     preferredLanguage: user.preferredLanguage as Language,
   };
@@ -125,17 +126,17 @@ export const requireAction =
   };
 
 /**
- * Organization isolation: superadmins may access any organization; everybody else only their own.
- * Responds 404 (not 403) for other organizations so their existence is not disclosed.
+ * Audit entity isolation: superadmins may access any audit entity; coordinators and auditors only their own.
+ * Responds 404 (not 403) for other entities so their existence is not disclosed.
  */
-export function assertOrgAccess(user: AuthUser, organizationId: string): void {
+export function assertEntityAccess(user: AuthUser, auditEntityId: string): void {
   if (isSuperadmin(user.role)) return;
-  if (user.organizationId !== organizationId) throw notFound();
+  if (user.auditEntityId !== auditEntityId) throw notFound();
 }
 
-export const requireOrgParam: RequestHandler = (req, _res, next) => {
+export const requireEntityParam: RequestHandler = (req, _res, next) => {
   try {
-    assertOrgAccess(req.user as AuthUser, String(req.params.orgId));
+    assertEntityAccess(req.user as AuthUser, String(req.params.entityId));
     next();
   } catch (e) {
     next(e);

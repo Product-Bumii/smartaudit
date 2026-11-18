@@ -5,14 +5,26 @@ Los dominios `.example` están reservados (RFC 2606): ningún correo sale a pers
 
 ## Usuarios de la semilla (`seed/seed-lib.ts`)
 
-| Correo | Rol | Organización |
+| Correo | Rol | Entidad de auditoría |
 |---|---|---|
 | superadmin.bumii@bumii.example | SUPERADMIN_BUMII | — |
 | superadmin.fundacion@masfamilia.example | SUPERADMIN_FUNDACION | — |
-| admin@andina.example | ORG_ADMIN | Andina Servicios S.A.S. (sintética) · CO · America/Bogota |
-| admin@iberica.example | ORG_ADMIN | Ibérica Logística S.L. (sintética) · ES · Europe/Madrid |
-| auditor1@auditoria.example | AUDITOR | **Ambas** (al entrar elige organización) |
-| auditor2@auditoria.example | AUDITOR | Ibérica Logística |
+| coordinacion@certandes.example | COORDINATOR | Certificadora Andes (sintética) · CO |
+| coordinacion@certiberica.example | COORDINATOR | Certificadora Ibérica (sintética) · ES |
+| auditor1@auditoria.example | AUDITOR | **Ambas** (al entrar elige entidad) |
+| auditor2@auditoria.example | AUDITOR | Certificadora Ibérica |
+
+## Organizaciones de la semilla (empresas efr, sin usuarios)
+
+| Organización | País · zona horaria | Entidad · coordinador | Auditor |
+|---|---|---|---|
+| Andina Servicios S.A.S. (sintética) | CO · America/Bogota | Andes · coordinacion@certandes.example | auditor1 (Andes) |
+| Costa Alimentos S.A.S. (sintética) | CO · America/Bogota | Andes · coordinacion@certandes.example | — (para probar la asignación) |
+| Ibérica Logística S.L. (sintética) | ES · Europe/Madrid | Ibérica · coordinacion@certiberica.example | auditor1 (Ibérica) |
+| Montaña Textil S.L. (sintética) | ES · Europe/Madrid | Ibérica · coordinacion@certiberica.example | auditor2 |
+
+Las entidades de auditoría de la semilla tienen nombres inventados; nunca se usan nombres de certificadoras reales en
+los datos de prueba.
 
 ## Configuración de la semilla
 

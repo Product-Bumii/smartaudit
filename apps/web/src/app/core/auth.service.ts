@@ -66,8 +66,7 @@ export class AuthService {
 
   homeFor(role: Role | undefined): string {
     if (!role) return '/login';
-    if (role === 'ORG_ADMIN') return '/org/auditors';
-    if (role === 'AUDITOR') return '/campaigns';
+    if (role === 'COORDINATOR' || role === 'AUDITOR') return '/my/organizations';
     return '/admin/organizations';
   }
 

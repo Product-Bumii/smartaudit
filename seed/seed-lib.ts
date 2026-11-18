@@ -6,6 +6,7 @@ import { type Language, type Question, type QuestionnaireLanguage, type Role } f
 import type { Types } from 'mongoose';
 import { FieldCrypto } from '../apps/api/src/lib/crypto';
 import {
+  AuditEntity,
   getSettings,
   Organization,
   Questionnaire,
@@ -19,15 +20,25 @@ import samplingTable from './data/sampling-table-v1.json';
 export const SEED_USERS = {
   superBumii: 'superadmin.bumii@bumii.example',
   superFundacion: 'superadmin.fundacion@masfamilia.example',
-  adminCO: 'admin@andina.example',
-  adminES: 'admin@iberica.example',
+  coordinatorCO: 'coordinacion@certandes.example',
+  coordinatorES: 'coordinacion@certiberica.example',
+  /** Auditor of both audit entities → account selection after the magic link. */
   auditorMulti: 'auditor1@auditoria.example',
   auditorES: 'auditor2@auditoria.example',
+} as const;
+
+/** Synthetic audit entities (certification bodies). Never real names in seed data. */
+export const SEED_ENTITIES = {
+  CO: { name: 'Certificadora Andes (sintética)', country: 'CO' },
+  ES: { name: 'Certificadora Ibérica (sintética)', country: 'ES' },
 } as const;
 
 export const SEED_ORGS = {
   CO: { name: 'Andina Servicios S.A.S. (sintética)', country: 'CO', timeZone: 'America/Bogota', defaultLanguage: 'es' },
   ES: { name: 'Ibérica Logística S.L. (sintética)', country: 'ES', timeZone: 'Europe/Madrid', defaultLanguage: 'es' },
+  /** Assigned to a coordinator but still without auditor (to try the assignment). */
+  CO2: { name: 'Costa Alimentos S.A.S. (sintética)', country: 'CO', timeZone: 'America/Bogota', defaultLanguage: 'es' },
+  ES2: { name: 'Montaña Textil S.L. (sintética)', country: 'ES', timeZone: 'Europe/Madrid', defaultLanguage: 'ca' },
 } as const;
 
 export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = console.log): Promise<void> {
@@ -56,25 +67,41 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
   await addMissingQuestionnaireLanguages(log);
 
 
-  const upsertUser = async (email: string, role: Role, organizationId: Types.ObjectId | null) => {
+  const upsertUser = async (email: string, role: Role, auditEntityId: Types.ObjectId | null) => {
     const emailHash = crypto.hash(email);
-    if (await User.exists({ emailHash, organizationId })) return;
-    await User.create({ emailEncrypted: crypto.encrypt(email), emailHash, role, organizationId, preferredLanguage: 'es' });
-    log(`user ${role}${organizationId ? ` @ ${organizationId}` : ''}`);
+    const existing = await User.findOne({ emailHash, auditEntityId });
+    if (existing) return existing;
+    log(`user ${role}${auditEntityId ? ` @ ${auditEntityId}` : ''}`);
+    return User.create({ emailEncrypted: crypto.encrypt(email), emailHash, role, auditEntityId, preferredLanguage: 'es' });
   };
-  const upsertOrg = async (o: (typeof SEED_ORGS)[keyof typeof SEED_ORGS]) =>
-    (await Organization.findOne({ name: o.name })) ?? (await Organization.create(o));
+  const upsertEntity = async (e: (typeof SEED_ENTITIES)[keyof typeof SEED_ENTITIES]) =>
+    (await AuditEntity.findOne({ name: e.name })) ?? (await AuditEntity.create(e));
+  /** Creates the organization and, only when it has no assignment yet, assigns it. */
+  const upsertOrg = async (
+    o: (typeof SEED_ORGS)[keyof typeof SEED_ORGS],
+    assignment: { auditEntityId: Types.ObjectId; coordinatorId: Types.ObjectId; auditorId: Types.ObjectId | null },
+  ) => {
+    const org = (await Organization.findOne({ name: o.name })) ?? (await Organization.create(o));
+    if (!org.auditEntityId) {
+      org.set({ ...assignment, assignmentHistory: [{ ...assignment, at: new Date(), by: null }] });
+      await org.save();
+    }
+    return org;
+  };
 
   await upsertUser(SEED_USERS.superBumii, 'SUPERADMIN_BUMII', null);
   await upsertUser(SEED_USERS.superFundacion, 'SUPERADMIN_FUNDACION', null);
-  const co = await upsertOrg(SEED_ORGS.CO);
-  const es = await upsertOrg(SEED_ORGS.ES);
-  await upsertUser(SEED_USERS.adminCO, 'ORG_ADMIN', co._id);
-  await upsertUser(SEED_USERS.adminES, 'ORG_ADMIN', es._id);
-  // Same email in two organizations → account selection after the magic link.
-  await upsertUser(SEED_USERS.auditorMulti, 'AUDITOR', co._id);
-  await upsertUser(SEED_USERS.auditorMulti, 'AUDITOR', es._id);
-  await upsertUser(SEED_USERS.auditorES, 'AUDITOR', es._id);
+  const andes = await upsertEntity(SEED_ENTITIES.CO);
+  const iberica = await upsertEntity(SEED_ENTITIES.ES);
+  const coordCO = await upsertUser(SEED_USERS.coordinatorCO, 'COORDINATOR', andes._id);
+  const coordES = await upsertUser(SEED_USERS.coordinatorES, 'COORDINATOR', iberica._id);
+  const auditorCO = await upsertUser(SEED_USERS.auditorMulti, 'AUDITOR', andes._id);
+  const auditorMultiES = await upsertUser(SEED_USERS.auditorMulti, 'AUDITOR', iberica._id);
+  const auditorES = await upsertUser(SEED_USERS.auditorES, 'AUDITOR', iberica._id);
+  await upsertOrg(SEED_ORGS.CO, { auditEntityId: andes._id, coordinatorId: coordCO._id, auditorId: auditorCO._id });
+  await upsertOrg(SEED_ORGS.ES, { auditEntityId: iberica._id, coordinatorId: coordES._id, auditorId: auditorMultiES._id });
+  await upsertOrg(SEED_ORGS.CO2, { auditEntityId: andes._id, coordinatorId: coordCO._id, auditorId: null });
+  await upsertOrg(SEED_ORGS.ES2, { auditEntityId: iberica._id, coordinatorId: coordES._id, auditorId: auditorES._id });
 }
 
 /**

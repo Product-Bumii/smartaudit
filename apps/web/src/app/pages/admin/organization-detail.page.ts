@@ -10,11 +10,11 @@ import { ApiService } from '../../core/api.service';
 import { LANGS, type OrganizationDto } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
 import { buildOrgForm, COUNTRIES, supportedTimeZones } from '../../shared/org-form';
-import { UserListComponent } from '../../shared/user-list.component';
+import { OrgAssignmentComponent } from '../../shared/org-assignment.component';
 
 @Component({
   selector: 'app-organization-detail',
-  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, TranslatePipe, UserListComponent],
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, TranslatePipe, OrgAssignmentComponent],
   template: `
     <div class="page-header">
       <div class="titles">
@@ -62,8 +62,7 @@ import { UserListComponent } from '../../shared/user-list.component';
         </form>
       </section>
 
-      <app-user-list [orgId]="o.id" kind="admins" title="orgs.admins" [defaultLanguage]="o.defaultLanguage" />
-      <app-user-list [orgId]="o.id" kind="auditors" title="orgs.auditors" [defaultLanguage]="o.defaultLanguage" />
+      <app-org-assignment [org]="o" (changed)="org.set($event)" />
     }
   `,
 })

@@ -20,19 +20,19 @@ const cookieValue = (res: request.Response, name: string) =>
 
 describe('magic link authentication', () => {
   it('logs in a single-account user with a one-time link and sets a secure session cookie', async () => {
-    await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.adminCO }).expect(202);
-    const token = lastMagicToken(env.mail, SEED_USERS.adminCO);
+    await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.coordinatorCO }).expect(202);
+    const token = lastMagicToken(env.mail, SEED_USERS.coordinatorCO);
     expect(env.mail.outbox.at(-1)!.html).toContain('powered by Bumii');
 
     const res = await request(env.app).post('/api/auth/verify').send({ token }).expect(200);
     expect(res.body.status).toBe('authenticated');
-    expect(res.body.user).toMatchObject({ role: 'ORG_ADMIN', organizationId: env.orgs.CO, email: SEED_USERS.adminCO });
+    expect(res.body.user).toMatchObject({ role: 'COORDINATOR', auditEntityId: env.entities.CO, auditEntityName: 'Certificadora Andes (sintética)', email: SEED_USERS.coordinatorCO });
     const setCookie = cookiesOf(res).find((c) => c.startsWith('sa_session='))!;
     expect(setCookie).toMatch(/HttpOnly/);
     expect(setCookie).toMatch(/SameSite=Lax/);
 
     const me = await request(env.app).get('/api/auth/me').set('Cookie', cookieValue(res, 'sa_session')!).expect(200);
-    expect(me.body.user.role).toBe('ORG_ADMIN');
+    expect(me.body.user.role).toBe('COORDINATOR');
 
     // Single use
     await request(env.app).post('/api/auth/verify').send({ token }).expect(401);
@@ -49,7 +49,7 @@ describe('magic link authentication', () => {
     await request(env.app).post('/api/auth/verify').send({ token }).expect(401);
   });
 
-  it('asks to choose an organization when the email has several accounts', async () => {
+  it('asks to choose an audit entity when the email has several accounts', async () => {
     await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.auditorMulti, language: 'ca' }).expect(202);
     expect(env.mail.outbox.at(-1)!.subject).toContain("enllaç d'accés");
     const token = lastMagicToken(env.mail, SEED_USERS.auditorMulti);
@@ -62,13 +62,13 @@ describe('magic link authentication', () => {
     const list = await request(env.app).get('/api/auth/accounts').set('Cookie', selection).expect(200);
     expect(list.body.accounts).toHaveLength(2);
 
-    const other = await User.findOne({ role: 'ORG_ADMIN' }).lean();
+    const other = await User.findOne({ role: 'COORDINATOR' }).lean();
     await request(env.app).post('/api/auth/select').set('Cookie', selection).send({ userId: String(other!._id) }).expect(401);
     await request(env.app).post('/api/auth/select').send({ userId: res.body.accounts[0].userId }).expect(401);
 
-    const es = res.body.accounts.find((a: { organizationId: string }) => a.organizationId === env.orgs.ES);
+    const es = res.body.accounts.find((a: { auditEntityId: string }) => a.auditEntityId === env.entities.ES);
     const ok = await request(env.app).post('/api/auth/select').set('Cookie', selection).send({ userId: es.userId }).expect(200);
-    expect(ok.body.user).toMatchObject({ role: 'AUDITOR', organizationId: env.orgs.ES });
+    expect(ok.body.user).toMatchObject({ role: 'AUDITOR', auditEntityId: env.entities.ES });
     expect(cookieValue(ok, 'sa_session')).toBeDefined();
   });
 
@@ -93,7 +93,7 @@ describe('magic link authentication', () => {
   });
 
   it('updates the preferred language and logs out', async () => {
-    const cookie = await sessionFor(env, SEED_USERS.adminES, env.orgs.ES);
+    const cookie = await sessionFor(env, SEED_USERS.coordinatorES, env.entities.ES);
     const res = await request(env.app).patch('/api/auth/me').set('Cookie', cookie).send({ preferredLanguage: 'en' }).expect(200);
     expect(res.body.user.preferredLanguage).toBe('en');
     const out = await request(env.app).post('/api/auth/logout').expect(200);
@@ -101,7 +101,7 @@ describe('magic link authentication', () => {
   });
 
   it('a deactivated user loses access immediately', async () => {
-    const cookie = await sessionFor(env, SEED_USERS.auditorES, env.orgs.ES);
+    const cookie = await sessionFor(env, SEED_USERS.auditorES, env.entities.ES);
     await request(env.app).get('/api/auth/me').set('Cookie', cookie).expect(200);
     await User.updateOne({ emailHash: env.ctx.crypto.hash(SEED_USERS.auditorES) }, { $set: { status: 'inactive' } });
     await request(env.app).get('/api/auth/me').set('Cookie', cookie).expect(401);
@@ -109,11 +109,11 @@ describe('magic link authentication', () => {
   });
 
   it('returns the link on screen only in test environments with DEV_SHOW_MAGIC_LINK', async () => {
-    const off = await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.adminES }).expect(202);
+    const off = await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.coordinatorES }).expect(202);
     expect(off.body).toEqual({ ok: true });
     env.ctx.config.devShowMagicLink = true;
     try {
-      const on = await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.adminES }).expect(202);
+      const on = await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.coordinatorES }).expect(202);
       expect(on.body.devLink).toMatch(/^http:\/\/localhost:4200\/auth\/verify\?token=[\w-]{40,}$/);
       const token = new URL(on.body.devLink).searchParams.get('token');
       await request(env.app).post('/api/auth/verify').send({ token }).expect(200);

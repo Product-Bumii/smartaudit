@@ -2,7 +2,9 @@
 export type {
   AccountChoice,
   ApiErrorBody,
+  AuditEntityDto,
   AuditType,
+  CampaignAccess,
   CampaignDto,
   CampaignStatus,
   EntityStatus,
@@ -12,9 +14,10 @@ export type {
   SampleError,
   SessionUser,
   UserDto,
+  UserRef,
 } from '@smartaudit/shared';
 
-import type { CampaignDto } from '@smartaudit/shared';
+import type { AuditEntityDto, CampaignDto, OrganizationDto } from '@smartaudit/shared';
 
 /** `pt` = portugués de Portugal (pt-PT). */
 export const LANGS = ['es', 'en', 'ca', 'pt', 'fr'] as const;
@@ -25,7 +28,20 @@ export interface CampaignListItem extends CampaignDto {
   organizationName: string | null;
 }
 
+export interface AuditEntityListItem extends AuditEntityDto {
+  coordinators: number;
+  auditors: number;
+  organizations: number;
+}
+
+/** Organization assigned to the current coordinator or auditor. */
+export interface AssignedOrganization extends OrganizationDto {
+  coordinates: boolean;
+  audits: boolean;
+}
+
 export interface CampaignOptions {
+  organizations: { id: string; name: string; timeZone: string; country: string }[];
   norms: string[];
   auditTypes: string[];
   languages: { lang: 'es' | 'en' | 'ca'; approved: boolean }[];

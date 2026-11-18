@@ -1,7 +1,9 @@
 import {
+  campaignAccess,
   deriveM1Campaign,
   isSuperadmin,
   objectIdSchema,
+  type CampaignAccess,
   offeredLanguages,
   type CampaignDto,
   type CampaignM1Input,
@@ -13,8 +15,9 @@ import {
   type SamplingBracket,
 } from '@smartaudit/shared';
 import type { AppContext } from '../context';
-import { notFound, unprocessable } from '../lib/errors';
+import { forbidden, notFound, unprocessable } from '../lib/errors';
 import type { AuthUser } from '../middleware/auth';
+import { assignmentOf } from './organizations';
 import {
   Campaign,
   getSettings,
@@ -119,30 +122,56 @@ export async function computeCampaign(
   return { derivation, problems, offered, set };
 }
 
-/** Mongo filter restricting campaigns to what the user may see. */
-export function campaignScope(user: AuthUser): Record<string, unknown> {
+/**
+ * Mongo filter for the campaign list: superadmins see all; coordinators and auditors only campaigns of
+ * their audit entity where they are the lead auditor or (coordinators) of the organizations they coordinate.
+ * The precise access level of each campaign comes from the shared `campaignAccess`.
+ */
+export async function campaignListScope(user: AuthUser): Promise<Record<string, unknown>> {
   if (isSuperadmin(user.role)) return {};
-  return {
-    organizationId: user.organizationId,
-    'm1Config.leadAuditorId': user.id,
-  };
+  const or: Record<string, unknown>[] = [{ 'm1Config.leadAuditorId': user.id }];
+  if (user.role === 'COORDINATOR') {
+    const orgIds = await Organization.find({ auditEntityId: user.auditEntityId, coordinatorId: user.id }).distinct('_id');
+    or.push({ organizationId: { $in: orgIds } });
+  }
+  return { auditEntityId: user.auditEntityId, $or: or };
 }
 
-export async function findCampaignForUser(user: AuthUser, id: string) {
+export const accessFor = (user: AuthUser, campaign: CampaignDoc, org: OrganizationDoc): CampaignAccess =>
+  campaignAccess(
+    { id: user.id, role: user.role, auditEntityId: user.auditEntityId },
+    { auditEntityId: String(campaign.auditEntityId), leadAuditorId: String(campaign.m1Config!.leadAuditorId) },
+    assignmentOf(org),
+  );
+
+/**
+ * Loads a campaign the user may act on with one of the `allowed` access levels.
+ * No access at all → 404 (existence not disclosed); visible but not enough → 403.
+ */
+export async function findCampaignForUser(user: AuthUser, id: string, allowed: readonly CampaignAccess[]) {
   const parsed = objectIdSchema.safeParse(id);
   if (!parsed.success) throw notFound();
-  const campaign = await Campaign.findOne({ _id: parsed.data, ...campaignScope(user) });
+  const campaign = await Campaign.findById(parsed.data);
   if (!campaign) throw notFound();
-  return campaign;
+  const org = (await Organization.findById(campaign.organizationId).lean()) as OrganizationDoc | null;
+  if (!org) throw notFound();
+  const access = accessFor(user, campaign.toObject() as CampaignDoc, org);
+  if (access === 'none') throw notFound();
+  if (!allowed.includes(access)) throw forbidden();
+  return { campaign, org, access };
 }
+
+export const MANAGE: readonly CampaignAccess[] = ['manage'];
+export const MANAGE_OR_SUPERVISE: readonly CampaignAccess[] = ['manage', 'supervise'];
+export const ANY_ACCESS: readonly CampaignAccess[] = ['manage', 'supervise', 'aggregate'];
 
 export async function findOrganization(id: unknown) {
   const org = await Organization.findById(id).lean();
   if (!org) throw notFound();
-  return org;
+  return org as OrganizationDoc;
 }
 
-export function toCampaignDto(raw: object): CampaignDto {
+export function toCampaignDto(raw: object, access: CampaignAccess): CampaignDto {
   const c = raw as CampaignDoc;
   const m1 = c.m1Config!;
   const s = c.sampling;
@@ -150,6 +179,8 @@ export function toCampaignDto(raw: object): CampaignDto {
     id: String(c._id),
     module: 'M1',
     organizationId: String(c.organizationId),
+    auditEntityId: String(c.auditEntityId),
+    access,
     slug: c.slug,
     reference: c.reference ?? null,
     status: c.status as CampaignStatus,

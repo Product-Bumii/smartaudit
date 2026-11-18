@@ -2,12 +2,12 @@ import jwt from 'jsonwebtoken';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
 import { MemoryMailProvider } from '@smartaudit/mail';
-import { runSeed, SEED_ORGS } from '../../../seed/seed-lib';
+import { runSeed, SEED_ENTITIES, SEED_ORGS } from '../../../seed/seed-lib';
 import { createApp } from '../src/app';
 import { createContext } from '../src/bootstrap';
 import { loadConfig } from '../src/config';
 import type { AppContext, RateLimits } from '../src/context';
-import { Organization, User } from '../src/models';
+import { AuditEntity, Organization, User } from '../src/models';
 
 export const TEST_ENV = {
   NODE_ENV: 'test',
@@ -24,7 +24,10 @@ export interface TestEnv {
   app: ReturnType<typeof createApp>;
   mail: MemoryMailProvider;
   replSet: MongoMemoryReplSet;
-  orgs: { CO: string; ES: string };
+  /** Audited organizations: CO and ES have an auditor (auditor1 in each entity); CO2 has none; ES2 → auditor2. */
+  orgs: Record<keyof typeof SEED_ORGS, string>;
+  /** Audit entities: CO = Certificadora Andes, ES = Certificadora Ibérica. */
+  entities: Record<keyof typeof SEED_ENTITIES, string>;
   stop: () => Promise<void>;
 }
 
@@ -43,14 +46,17 @@ export async function startTestEnv(opts: { rateLimits?: Partial<RateLimits> } = 
     rateLimits: { magicLinkPerIp: 1000, magicLinkPerEmail: 1000, verifyPerIp: 1000, accessCodePerIp: 1000, ...opts.rateLimits },
   });
   await runSeed(ctx.crypto, () => undefined);
-  const co = await Organization.findOne({ name: SEED_ORGS.CO.name }).lean();
-  const es = await Organization.findOne({ name: SEED_ORGS.ES.name }).lean();
+  const orgId = async (k: keyof typeof SEED_ORGS) => String((await Organization.findOne({ name: SEED_ORGS[k].name }).lean())!._id);
+  const entityId = async (k: keyof typeof SEED_ENTITIES) => String((await AuditEntity.findOne({ name: SEED_ENTITIES[k].name }).lean())!._id);
+  const orgs = { CO: await orgId('CO'), ES: await orgId('ES'), CO2: await orgId('CO2'), ES2: await orgId('ES2') };
+  defaultOrganizationId = orgs.CO;
   return {
     ctx,
     app: createApp(ctx),
     mail,
     replSet,
-    orgs: { CO: String(co!._id), ES: String(es!._id) },
+    orgs,
+    entities: { CO: await entityId('CO'), ES: await entityId('ES') },
     stop: async () => {
       await mongoose.disconnect();
       await replSet.stop();
@@ -58,15 +64,19 @@ export async function startTestEnv(opts: { rateLimits?: Partial<RateLimits> } = 
   };
 }
 
-/** Session cookie for a user found by email (and organization, for multi-account emails). */
-export async function sessionFor(env: TestEnv, email: string, organizationId: string | null = null): Promise<string> {
-  const user = await User.findOne({ emailHash: env.ctx.crypto.hash(email), ...(organizationId !== undefined ? { organizationId } : {}) }).lean();
+/** Session cookie for a user found by email and audit entity (`null` for superadmins). */
+export async function sessionFor(env: TestEnv, email: string, auditEntityId: string | null = null): Promise<string> {
+  const user = await User.findOne({ emailHash: env.ctx.crypto.hash(email), auditEntityId }).lean();
   if (!user) throw new Error(`no seed user ${email}`);
   const token = jwt.sign({ purpose: 'session' }, env.ctx.config.jwtSecret, { subject: String(user._id), expiresIn: '8h' });
   return `sa_session=${token}`;
 }
 
+let defaultOrganizationId = '';
+
+/** Campaign input; by default for the CO organization (assigned to auditor1 @ Certificadora Andes). */
 export const campaignInput = (over: Record<string, unknown> = {}) => ({
+  organizationId: defaultOrganizationId,
   reference: 'Auditoría sintética',
   norm: '1000-1',
   auditType: 'inicial',

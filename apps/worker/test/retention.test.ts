@@ -19,6 +19,7 @@ async function campaign(status: string, closedAt: Date) {
   const c = await Campaign.create({
     module: 'M1',
     organizationId: oid(),
+    auditEntityId: oid(),
     slug: `s${Math.random().toString(36).slice(2, 12)}`,
     createdBy: oid(),
     status,

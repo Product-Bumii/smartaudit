@@ -63,14 +63,17 @@ control**: elige la muestra, valida lo dudoso y aprueba el informe.
 Todos son ficticios y usan dominios `.example` reservados (RFC 2606): ningún correo llega a personas reales.
 Existen tanto en local como en el servidor de pruebas.
 
-| Correo | Rol | Organización | Qué puede hacer |
+| Correo | Rol | Entidad de auditoría | Qué puede hacer |
 |---|---|---|---|
 | `superadmin.bumii@bumii.example` | `SUPERADMIN_BUMII` | — (plataforma) | Lo mismo que el superadmin de la Fundación |
-| `superadmin.fundacion@masfamilia.example` | `SUPERADMIN_FUNDACION` | — (plataforma) | Organizaciones y sus administradores, configuración (tabla de mínimos, cuestionarios, ajustes), ver/suspender/cancelar campañas |
-| `admin@andina.example` | `ORG_ADMIN` | Andina Servicios S.A.S. (sintética) · Colombia | Crear y desactivar auditores de su organización |
-| `admin@iberica.example` | `ORG_ADMIN` | Ibérica Logística S.L. (sintética) · España | Crear y desactivar auditores de su organización |
-| `auditor1@auditoria.example` | `AUDITOR` | **Ambas organizaciones** | Al entrar **elige organización**; crea campañas y sube muestras |
-| `auditor2@auditoria.example` | `AUDITOR` | Ibérica Logística S.L. (sintética) | Crea campañas y sube muestras |
+| `superadmin.fundacion@masfamilia.example` | `SUPERADMIN_FUNDACION` | — (plataforma) | Entidades de auditoría y sus coordinadores, organizaciones y su asignación, configuración (tabla de mínimos, cuestionarios, ajustes), ver/suspender/cancelar campañas |
+| `coordinacion@certandes.example` | `COORDINATOR` | Certificadora Andes (sintética) · Colombia | Coordina Andina Servicios y Costa Alimentos (esta sin auditor): crea auditores y designa el auditor de cada organización |
+| `coordinacion@certiberica.example` | `COORDINATOR` | Certificadora Ibérica (sintética) · España | Coordina Ibérica Logística y Montaña Textil |
+| `auditor1@auditoria.example` | `AUDITOR` | **Ambas entidades** | Al entrar **elige entidad**; audita Andina Servicios (Andes) e Ibérica Logística (Ibérica) |
+| `auditor2@auditoria.example` | `AUDITOR` | Certificadora Ibérica (sintética) | Audita Montaña Textil |
+
+Organizaciones (empresas efr, **sin usuarios**): Andina Servicios S.A.S. y Costa Alimentos S.A.S. (Colombia), Ibérica
+Logística S.L. y Montaña Textil S.L. (España), todas sintéticas.
 
 **Participantes sin correo:** no tienen cuenta. Entran por `https://<dominio>/c/<campaña>` con un **código de 8
 caracteres** que el auditor descarga tras subir la muestra (ver [paso 4.6](#46-acceso-de-una-persona-sin-correo)).
@@ -101,12 +104,15 @@ Se regeneran con `npx tsx seed/generate-samples.ts`.
 ### Funcionalidades disponibles hoy
 
 - **Acceso por enlace mágico** (sin contraseñas): un solo uso, caduca a los 15 minutos. Si un correo tiene cuentas en
-  varias organizaciones, se elige a cuál entrar. En entornos de prueba el enlace aparece en pantalla.
-- **Superadmins:** gestión de organizaciones (país, zona horaria, idioma) y de sus administradores; configuración
+  varias entidades de auditoría, se elige a cuál entrar. En entornos de prueba el enlace aparece en pantalla.
+- **Superadmins (F+f):** gestión de **entidades de auditoría** (ICONTEC, AENOR, SGS…) y sus coordinadores; gestión de
+  organizaciones (país, zona horaria, idioma) y su **asignación** a una entidad y un coordinador; configuración
   versionada de la **tabla de mínimos** y el **cuestionario M1** (con aprobación por idioma); ajustes generales.
-- **Administrador de organización:** gestión de los auditores de su organización. Nunca ve muestras ni respuestas.
+- **Coordinador de auditorías:** ve las organizaciones que tiene asignadas, crea y desactiva los auditores de su
+  entidad y **designa el auditor responsable** de cada organización (puede asignarse a sí mismo). De las campañas solo
+  ve el estado y el avance agregado; nunca la muestra, los códigos ni las respuestas.
 - **Auditor:**
-  - Crea y edita campañas M1 con **cálculo automático** del mínimo de entrevistas completadas, la **ventana de
+  - Ve sus organizaciones asignadas y crea y edita campañas M1 para ellas, con **cálculo automático** del mínimo de entrevistas completadas, la **ventana de
     participación** (10 días hábiles, de lunes a viernes) y las **preguntas activadas**.
   - Descarga la plantilla de muestra (Excel/CSV), la sube y ve **errores fila a fila** (si hay errores no se carga nada).
   - Ve el resumen de la muestra: valores distintos de centro y tipo de puesto, distribución por sexo y edad, avisos de
@@ -125,22 +131,33 @@ el cálculo de resultados y la exportación del informe (Word/Excel/PDF). Ver [h
 
 ## 3. Roles y permisos
 
-| Acción | Superadmins | ORG_ADMIN | AUDITOR | Participante |
+La organización auditada (empresa efr) **no tiene usuarios**. Los usuarios son F+f (superadmins) y las **entidades de
+auditoría** (certificadoras), con dos perfiles: coordinador y auditor (decisión 56).
+
+| Acción | Superadmins (F+f) | COORDINATOR | AUDITOR | Participante |
 |---|---|---|---|---|
-| Crear organizaciones y su ORG_ADMIN | ✅ | — | — | — |
-| Crear/desactivar auditores de la organización | ✅ | ✅ (solo la suya) | — | — |
+| Crear entidades de auditoría y sus coordinadores | ✅ | — | — | — |
+| Crear organizaciones y asignarlas a entidad + coordinador | ✅ | — | — | — |
+| Crear/desactivar auditores de la entidad | ✅ | ✅ (la suya) | — | — |
+| Designar o cambiar el auditor de una organización | ✅ | ✅ (sus organizaciones; también a sí mismo) | — | — |
 | Gestionar cuestionarios, tabla de mínimos y ajustes | ✅ | — | — | — |
-| Crear y configurar campañas M1 | Ver, suspender y cancelar todas | — | ✅ (las suyas) | — |
-| Cargar y validar la muestra, descargar códigos | — | — | ✅ | — |
-| Ver respuestas, muestra o quién respondió | ✅ (Fase 3) | ❌ **nunca** | ✅ (Fase 3) | — |
+| Crear y configurar campañas M1 | Ver, suspender y cancelar todas | Solo si es el auditor asignado | ✅ (organizaciones asignadas) | — |
+| Ver estado y avance agregado de las campañas | ✅ | ✅ (sus organizaciones) | ✅ (las suyas) | — |
+| Cargar y validar la muestra, descargar códigos | — | Solo como auditor | ✅ (las suyas) | — |
+| Ver respuestas, muestra o quién respondió | ✅ (Fase 3) | ❌ salvo como auditor | ✅ (Fase 3) | — |
 | Responder la entrevista | — | — | — | ✅ (solo la suya) |
 
 Reglas transversales:
 
-- **Aislamiento por organización** en todas las consultas. Un recurso de otra organización responde **404** (no se
-  revela su existencia).
-- **Cada campaña solo la ve y la gestiona el auditor que la creó** (no hay auditores colaboradores). Los superadmins las
-  ven todas.
+- **Aislamiento por entidad de auditoría** en todas las consultas. Un recurso de otra entidad responde **404** (no se
+  revela su existencia); un recurso visible pero sin permiso (coordinador sobre la muestra) responde **403**.
+- **Acceso por asignación** (reglas en `packages/shared/src/access.ts`): el auditor solo crea campañas para las
+  organizaciones que tiene asignadas; cada campaña la gestiona su **auditor responsable**; el coordinador de la
+  organización ve solo el agregado; los superadmins ven todas.
+- **Cambio de auditor:** las campañas abiertas pasan al nuevo auditor (queda registrado); no se puede dejar una
+  organización sin auditor mientras tenga campañas abiertas.
+- **Cambio de entidad de auditoría:** solo sin campañas abiertas. Las campañas anteriores **se quedan con la entidad
+  que las hizo** (la nueva no las ve).
 - Los guards de Angular solo controlan la navegación; **la autorización siempre la aplica la API**.
 - Las acciones administrativas, cambios de configuración y exportaciones quedan registradas en `auditLogs`.
 
@@ -153,13 +170,17 @@ Reglas transversales:
 1. Abre la URL del entorno e introduce un correo de la [tabla de usuarios](#usuarios-de-prueba-semilla-sintética).
 2. Pulsa **«enviar enlace de acceso»**. En entornos de prueba aparece el recuadro **«entorno de pruebas»**: pulsa
    **«entrar con el enlace»** (o copia la URL que aparece debajo).
-3. Con `auditor1@auditoria.example` aparecerá **«elige la organización»**.
+3. Con `auditor1@auditoria.example` aparecerá **«elige la entidad de auditoría»**.
 
-### 4.2 Superadmin: crear una organización y su administrador
+### 4.2 Superadmin: entidades de auditoría y organizaciones
 
-1. Entra con `superadmin.fundacion@masfamilia.example` → **Organizaciones** → **nueva organización**.
-2. Rellena nombre, país (rellena la zona horaria), idioma por defecto y, opcionalmente, el correo del administrador.
-3. En la ficha de la organización puedes editar sus datos, activarla/desactivarla y gestionar administradores y auditores.
+1. Entra con `superadmin.fundacion@masfamilia.example` → **Entidades de auditoría** → **nueva entidad de auditoría**:
+   nombre, país y, opcionalmente, el correo de su primer coordinador. En la ficha de la entidad se gestionan sus
+   coordinadores y auditores.
+2. **Organizaciones** → **nueva organización**: nombre, país (rellena la zona horaria), idioma por defecto y,
+   opcionalmente, entidad de auditoría y coordinador.
+3. En la ficha de la organización puedes editar sus datos, activarla/desactivarla y cambiar su **asignación**
+   (entidad, coordinador y, si hace falta, auditor).
 
 ### 4.3 Superadmin: configuración
 
@@ -173,14 +194,18 @@ se crea una nueva (solo puede haber un borrador a la vez). Las campañas guardan
 - **Ajustes:** remitente de correo y normas disponibles. Los ajustes técnicos (confianza mínima de la IA, proveedor de
   IA y conservación de datos) no se muestran en la interfaz; mantienen sus valores por defecto en la base de datos.
 
-### 4.4 Administrador de organización: crear auditores
+### 4.4 Coordinador: auditores y asignación
 
-Entra con `admin@andina.example` → **Auditores** → escribe el correo y el idioma → **añadir**. Puede desactivar y
-reactivar auditores. No ve campañas, muestras ni respuestas.
+1. Entra con `coordinacion@certandes.example` → **Auditores** → escribe el correo y el idioma → **añadir**. Puede
+   desactivar y reactivar auditores de su entidad.
+2. **Organizaciones** (sus organizaciones asignadas) → en la columna **auditor/a responsable** elige un auditor de su
+   entidad o a sí mismo. «Costa Alimentos» viene sin auditor para probarlo.
+3. En **Campañas** ve las campañas de sus organizaciones con la etiqueta «solo avance».
 
 ### 4.5 Auditor: crear una campaña y cargar la muestra
 
-1. Entra con `auditor2@auditoria.example` (o `auditor1` eligiendo organización) → **Campañas** → **nueva campaña**.
+1. Entra con `auditor2@auditoria.example` (o `auditor1` eligiendo entidad) → **Organizaciones** → **nueva campaña** en
+   la fila de la organización (o **Campañas** → **nueva campaña** y elige la organización).
 2. Rellena: referencia (opcional), norma (`1000-1` / `1000-2`), tipo de auditoría (inicial, mantenimiento, renovación),
    fecha de la visita, **población total**, mánager efr (solo referencia), si postula a excelencia e idiomas.
 3. El panel **«2. cálculo automático»** muestra en vivo el mínimo de completadas, la ventana (apertura, cierre y
@@ -249,13 +274,13 @@ datos, versionados, y se cambian sin redesplegar.
 ```
 apps/
   api/            Express: rutas, servicios, auth (enlace mágico), permisos, auditLogs
-    src/models/   Las 12 colecciones de MongoDB
-    src/routes/   auth, organizations, config, campaigns, participant
-    src/services/ campaigns (cálculo y snapshot), sample (Excel/CSV, carga, códigos), users
+    src/models/   Las 13 colecciones de MongoDB
+    src/routes/   auth, audit-entities, organizations, config, campaigns, participant
+    src/services/ campaigns (cálculo, snapshot y acceso), organizations (asignación), sample (Excel/CSV, carga, códigos), users
     test/         Integración (MongoDB en memoria): auth, permisos, campañas, config, privacidad, participante
   worker/         Agenda: job de purga de retención (apagado por defecto)
-  web/            Angular: área interna (superadmins, admin, auditor) y página pública del participante
-    public/i18n/  Traducciones es / en / ca
+  web/            Angular: área interna (superadmins, coordinador, auditor) y página pública del participante
+    public/i18n/  Traducciones es / en / ca / pt / fr
 packages/
   shared/         Tipos, enums, esquemas Zod y TODA la lógica determinista (100 % de ramas testeadas)
   llm/            Interfaz LlmProvider
@@ -270,8 +295,9 @@ seed/
   samples/        Archivos de muestra sintéticos válidos e inválidos
   seed-lib.ts     Semilla idempotente
 scripts/          dev-local.ts (modo sin Docker), check-i18n.ts, smoke-bundle.ts
-e2e/              Playwright
+e2e/              Playwright (presentation/ genera las capturas de docs/presentacion)
 docs/             decisiones.md, datos-sinteticos.md, marca.md
+  presentacion/   Presentación con capturas; cambios-pendientes.md numera lo que falta por actualizar
 design_handoff_smartaudit_marca_efr/   Manual de marca efr y referencia de diseño
 ```
 
@@ -330,12 +356,12 @@ npm run check:i18n         # mismas claves en es/en/ca/pt/fr y claves usadas exi
 
 | Suite | Contenido | Resultado actual |
 |---|---|---|
-| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles (lunes a viernes) y ventanas con fin de semana, fin de año y cambio de hora, validación de muestra, activación de preguntas, estados de campaña, permisos, códigos, retención, disponibilidad del participante | 129 tests · **100 % de ramas** |
+| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles (lunes a viernes) y ventanas con fin de semana, fin de año y cambio de hora, validación de muestra, activación de preguntas, estados de campaña, permisos, **acceso por asignación** (entidad, coordinador, auditor, traspaso de campañas), códigos, retención, disponibilidad del participante | 138 tests · **100 % de ramas** |
 | `packages/mail` | Plantillas por idioma, marca, escape HTML, proveedores | 6 tests |
-| `apps/api` | Enlace mágico, selección de organización, límites de peticiones, aislamiento entre organizaciones, ORG_ADMIN sin acceso a muestras, campañas, carga de muestra, configuración versionada, **ningún correo en claro en la BD**, acceso con código | 53 tests |
+| `apps/api` | Enlace mágico, selección de entidad, límites de peticiones, aislamiento entre entidades de auditoría, coordinador solo con agregado, asignación y traspaso de campañas, campañas, carga de muestra, configuración versionada, **ningún correo en claro en la BD**, acceso con código | 58 tests |
 | `apps/worker` | Purga de retención (apagada / activada) | 2 tests |
-| E2E (Playwright) | Superadmin crea organización y admin → admin crea auditor → auditor crea campaña, sube muestra con errores, la corrige → `muestra_cargada` con mínimo y ventana correctos; selección de organización; acceso con código | 3 tests (local y servidor de pruebas) |
-| i18n | 333 claves × 5 idiomas | OK |
+| E2E (Playwright) | Superadmin crea entidad de auditoría con coordinador y organización asignada → coordinador crea auditor y lo designa → auditor crea campaña, sube muestra con errores, la corrige → `muestra_cargada` con mínimo y ventana correctos → coordinador solo ve el agregado; selección de entidad; acceso con código | 3 tests |
+| i18n | 349 claves × 5 idiomas | OK |
 
 E2E contra el servidor de pruebas:
 
@@ -450,12 +476,13 @@ una versión publicada no se edita.
 
 | Colección | Contenido |
 |---|---|
-| `organizations` | Nombre, país, zona horaria IANA, idioma por defecto, estado |
-| `users` | Correo **cifrado** + hash, rol, organización (nula en superadmins), estado, idioma. Único por (correo, organización) |
+| `auditEntities` | Entidad de auditoría (certificadora): nombre, país, estado |
+| `organizations` | Empresa efr auditada: nombre, país, zona horaria IANA, idioma por defecto, estado y **asignación** (`auditEntityId`, `coordinatorId`, `auditorId`, historial) |
+| `users` | Correo **cifrado** + hash, rol, entidad de auditoría (nula en superadmins), estado, idioma. Único por (correo, entidad) |
 | `magicLinkTokens` | Hash del token, usuarios, caducidad, uso |
 | `samplingTables` | Versión, estado, tramos `{min, max, required, rangeMax}` |
 | `questionnaires` | Módulo, versión, estado, idiomas con estado de aprobación, preguntas |
-| `campaigns` | Módulo, organización, `slug` público, configuración M1, **instantánea** de cuestionario y tabla, mínimo, ventana, estado e historial |
+| `campaigns` | Módulo, organización, **entidad de auditoría** que la hace, `slug` público, configuración M1, **instantánea** de cuestionario y tabla, mínimo, ventana, estado e historial |
 | `participantContacts` | **Colección separada**: correo cifrado, token de invitación y código de acceso (hash + copia cifrada), fila del archivo, envíos |
 | `respondents` | Demográficos y estado (`pending`, `invited`, `started`, `completed`), `completedAt`. **Sin correo ni identificadores** |
 | `interviews` | Entrevista: estado, mensajes, respuestas codificadas (Fase 2) |
@@ -534,17 +561,21 @@ Prefijo `/api`. Sesión por cookie `httpOnly` (`sa_session`). Errores: `{ "error
 |---|---|---|
 | `GET /health` | Público | Estado de la API y la base de datos |
 | `POST /auth/magic-link` | Público | Solicita el enlace (siempre 202; `devLink` en pruebas) |
-| `POST /auth/verify` | Público | Consume el enlace → sesión o elección de organización |
-| `GET /auth/accounts` · `POST /auth/select` | Con selección pendiente | Elegir organización |
+| `POST /auth/verify` | Público | Consume el enlace → sesión o elección de entidad de auditoría |
+| `GET /auth/accounts` · `POST /auth/select` | Con selección pendiente | Elegir entidad de auditoría |
 | `GET /auth/me` · `PATCH /auth/me` · `POST /auth/logout` | Con sesión | Usuario actual, idioma, salir |
+| `GET/POST /audit-entities` · `GET/PATCH /audit-entities/:entityId` | Superadmins | Entidades de auditoría |
+| `GET/POST /audit-entities/:entityId/coordinators` · `PATCH …/coordinators/:userId` | Superadmins | Coordinadores |
+| `GET/POST /audit-entities/:entityId/auditors` · `PATCH …/auditors/:userId` | Superadmins, coordinador (la suya) | Auditores |
 | `GET/POST /organizations` · `GET/PATCH /organizations/:orgId` | Superadmins | Organizaciones |
-| `GET/POST /organizations/:orgId/admins` · `PATCH …/admins/:userId` | Superadmins | Administradores de la organización |
-| `GET/POST /organizations/:orgId/auditors` · `PATCH …/auditors/:userId` | Superadmins, ORG_ADMIN (la suya) | Auditores |
+| `PUT /organizations/:orgId/assignment` | Superadmins | Entidad de auditoría y coordinador |
+| `GET /organizations/:orgId/assignable-auditors` · `PUT /organizations/:orgId/auditor` | Superadmins, coordinador de la organización | Auditor responsable (traspasa las campañas abiertas) |
+| `GET /assigned-organizations` | Coordinador, auditor | Organizaciones asignadas |
 | `/config/sampling-tables[/:id[/publish]]` | Superadmins | Tabla de mínimos versionada |
 | `/config/questionnaires[/:id[/new-version · /publish · /languages/:lang/approve]]` | Superadmins | Cuestionarios |
 | `GET/PUT /config/settings` | Superadmins (los ajustes técnicos solo Bumii, vía API) | Ajustes |
-| `GET /campaigns` · `GET /campaigns/:id` | Auditor (las suyas), superadmins | Listado y detalle |
-| `GET /campaigns/options` · `POST /campaigns/preview` · `POST /campaigns` · `PUT /campaigns/:id` | Auditor | Opciones, vista previa del cálculo, crear, editar |
+| `GET /campaigns` · `GET /campaigns/:id` | Auditor (las suyas), coordinador (agregado), superadmins | Listado y detalle con `access` (`manage`, `aggregate`, `supervise`) |
+| `GET /campaigns/options` · `POST /campaigns/preview` · `POST /campaigns` · `PUT /campaigns/:id` | Auditor de la organización | Opciones (incluye sus organizaciones), vista previa del cálculo, crear (`organizationId`), editar |
 | `POST /campaigns/:id/status` | Auditor, superadmins | Suspender, reanudar, cancelar |
 | `GET /campaigns/sample-template?format=xlsx\|csv` | Auditor | Plantilla de muestra |
 | `POST /campaigns/:id/sample?mode=replace\|append` | Auditor | Subir muestra (multipart `file`) |
@@ -563,7 +594,8 @@ Prefijo `/api`. Sesión por cookie `httpOnly` (`sa_session`). Errores: `{ "error
   Un test recorre todas las colecciones para comprobarlo.
 - Las respuestas se relacionan con **demográficos, nunca con la identidad**; el vínculo correo ↔ persona está en una
   colección separada que solo sirve para invitar y marcar el estado.
-- La empresa (ORG_ADMIN) **nunca** ve quién respondió ni qué respondió.
+- La empresa auditada **no tiene acceso** a la plataforma; el coordinador de la entidad de auditoría tampoco ve quién
+  respondió ni qué respondió (salvo que actúe como auditor de esa organización).
 - Enlaces mágicos de un solo uso, 15 minutos, guardados como hash. Sesión JWT de 8 horas con renovación, cookie
   `httpOnly`, `Secure`, `SameSite=Lax`.
 - Límites de peticiones: enlace mágico (30 por IP y 5 por correo cada 15 min), verificación (60 por IP) y códigos de
@@ -621,8 +653,9 @@ La semilla (`seed/seed-lib.ts`, idempotente) carga:
 - Cuestionario M1 **v1** publicado (español aprobado; inglés, catalán, portugués y francés pendientes). En bases de
   datos anteriores a portugués y francés, la semilla publica una versión nueva que los añade.
 - Tabla de mínimos **v1** publicada.
-- Organizaciones **Andina Servicios S.A.S. (sintética)** (CO, America/Bogota) e **Ibérica Logística S.L. (sintética)**
-  (ES, Europe/Madrid).
+- Entidades de auditoría **Certificadora Andes (sintética)** (CO) y **Certificadora Ibérica (sintética)** (ES).
+- Organizaciones **Andina Servicios S.A.S.** y **Costa Alimentos S.A.S.** (CO, America/Bogota; asignadas a Andes) e
+  **Ibérica Logística S.L.** y **Montaña Textil S.L.** (ES, Europe/Madrid; asignadas a Ibérica), todas sintéticas.
 - Los usuarios de la [tabla de la sección 1](#usuarios-de-prueba-semilla-sintética).
 
 ```bash

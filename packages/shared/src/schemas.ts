@@ -24,16 +24,35 @@ export const magicLinkRequestSchema = z.object({ email: emailSchema, language: l
 export const magicLinkVerifySchema = z.object({ token: z.string().min(20).max(200) });
 export const selectAccountSchema = z.object({ userId: objectIdSchema });
 
-// ---------- Organizations and users
+// ---------- Audit entities, organizations, assignments and users
+export const auditEntityCreateSchema = z.object({
+  name: z.string().trim().min(1).max(200),
+  country: countrySchema,
+  coordinatorEmail: emailSchema.optional(),
+});
+export const auditEntityUpdateSchema = auditEntityCreateSchema
+  .omit({ coordinatorEmail: true })
+  .partial()
+  .extend({ status: z.enum(ENTITY_STATUSES).optional() });
+
+/** Superadmins: audit entity and coordinator of an organization (`null` unassigns). */
+export const organizationAssignmentSchema = z.object({
+  auditEntityId: objectIdSchema.nullable(),
+  coordinatorId: objectIdSchema.nullable(),
+});
+/** Coordinator (or superadmin): responsible auditor of an organization. */
+export const auditorAssignmentSchema = z.object({ auditorId: objectIdSchema.nullable() });
+
 export const organizationCreateSchema = z.object({
   name: z.string().trim().min(1).max(200),
   country: countrySchema,
   timeZone: timeZoneSchema,
   defaultLanguage: languageSchema,
-  adminEmail: emailSchema.optional(),
+  auditEntityId: objectIdSchema.nullable().optional(),
+  coordinatorId: objectIdSchema.nullable().optional(),
 });
 export const organizationUpdateSchema = organizationCreateSchema
-  .omit({ adminEmail: true })
+  .omit({ auditEntityId: true, coordinatorId: true })
   .partial()
   .extend({ status: z.enum(ENTITY_STATUSES).optional() });
 
@@ -128,6 +147,8 @@ export const campaignM1InputSchema = z.object({
   languages: z.array(languageSchema).min(1).max(LANGUAGES.length),
 });
 export type CampaignM1Input = z.infer<typeof campaignM1InputSchema>;
+/** Creation (and preview) also name the organization; it cannot change afterwards. */
+export const campaignCreateSchema = campaignM1InputSchema.extend({ organizationId: objectIdSchema });
 
 export const campaignStatusChangeSchema = z.object({
   to: z.enum(['suspendida', 'cancelada', 'borrador', 'muestra_cargada', 'envios_activos', 'en_curso']),

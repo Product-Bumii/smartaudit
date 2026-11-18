@@ -109,3 +109,20 @@ Aplicación del handoff `design_handoff_smartaudit_marca_efr` y del Manual de id
 |---|---|---|---|
 | 54 | **Se elimina el cálculo de festivos.** Día hábil = lunes a viernes en la zona horaria de la organización. Se retiran la pestaña «festivos», la colección `holidayCalendars`, la instantánea de festivos de las campañas, la librería `date-holidays` y su semilla. El país de la organización queda como dato informativo (código ISO de 2 letras) | No es necesario. CLAUDE.md (5.4) aún habla de festivos | Usuario |
 | 55 | **Se retira la sección «Ajustes técnicos»** de la pantalla de ajustes (confianza mínima de la IA, proveedor de IA, conservación de datos). Los valores siguen en `settings` con sus valores por defecto (0,8, mock, purga apagada) y la API los mantiene para la Fase 2 | Petición del usuario | Usuario |
+
+## Entidades de auditoría y coordinadores · 17/11/2026
+
+Propuesta de F+f: el «administrador de la organización» pasa a ser el **coordinador de auditorías de una entidad
+auditora** (ICONTEC, AENOR, SGS…). Preguntas resueltas una a una con el usuario.
+
+| # | Decisión | Motivo | Quién |
+|---|---|---|---|
+| 56 | Nueva colección **`auditEntities`**. Roles: `SUPERADMIN_*` (F+f), **`COORDINATOR`** (sustituye a `ORG_ADMIN`) y `AUDITOR`; coordinadores y auditores pertenecen a una entidad de auditoría (`users.auditEntityId`, único por correo + entidad). La organización auditada **no tiene usuarios** en la v1 | Propuesta de F+f | Usuario |
+| 57 | F+f asigna cada organización a una **entidad de auditoría y uno de sus coordinadores** (`organizations.auditEntityId/coordinatorId`); una entidad puede tener **varios coordinadores** y cada uno ve solo las organizaciones que tiene asignadas | Reparto de cartera dentro de una certificadora | Usuario |
+| 58 | El coordinador **designa y puede cambiar el auditor** de cada organización (`organizations.auditorId`, con historial). Puede **asignarse a sí mismo**: entonces actúa como auditor de esa organización | Entidades pequeñas | Usuario |
+| 59 | Al cambiar el auditor, las **campañas abiertas** (todas salvo `informe_generado` y `cancelada`) **pasan al nuevo auditor** y el anterior deja de verlas; no se puede dejar la organización sin auditor con campañas abiertas | Continuidad de la auditoría | Usuario |
+| 60 | Cada campaña guarda la **entidad de auditoría** que la hizo. Si la organización cambia de entidad, las campañas anteriores **se quedan con la entidad anterior** (la nueva no las ve; F+f ve todas). El cambio de entidad solo se permite sin campañas abiertas | Protege las respuestas individuales de auditorías ajenas | Usuario / DECISIÓN POR DEFECTO (bloqueo con campañas abiertas) |
+| 61 | Nivel de acceso por campaña calculado en `packages/shared/src/access.ts`: `manage` (auditor responsable), `aggregate` (coordinador de la organización: estado y avance, nunca muestra, códigos ni respuestas), `supervise` (superadmins), `none` (404). Visible sin permiso → 403 | Reglas deterministas y testeadas | DECISIÓN POR DEFECTO |
+| 62 | El aviso de avance agregado para la empresa (antes del `ORG_ADMIN`) pasa al **coordinador**; la empresa no tiene acceso | Pregunta 2 | Usuario |
+| 63 | La base de datos de staging se **reinicia** con la semilla nueva en lugar de migrar | Solo contiene datos sintéticos | Usuario |
+

@@ -9,7 +9,7 @@ import { ApiService } from '../core/api.service';
 import { LANGS, type Language, type UserDto } from '../core/models';
 import { NotifyService } from '../core/notify.service';
 
-/** Lists, creates and (de)activates the ORG_ADMINs or AUDITORs of an organization. */
+/** Lists, creates and (de)activates the coordinators or auditors of an audit entity. */
 @Component({
   selector: 'app-user-list',
   imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatSelectModule, TranslatePipe],
@@ -69,8 +69,8 @@ import { NotifyService } from '../core/notify.service';
   `,
 })
 export class UserListComponent {
-  readonly orgId = input.required<string>();
-  readonly kind = input.required<'admins' | 'auditors'>();
+  readonly entityId = input.required<string>();
+  readonly kind = input.required<'coordinators' | 'auditors'>();
   readonly title = input.required<string>();
   readonly defaultLanguage = input<Language>('es');
 
@@ -91,7 +91,7 @@ export class UserListComponent {
     });
   }
 
-  private base = () => `/organizations/${this.orgId()}/${this.kind()}`;
+  private base = () => `/audit-entities/${this.entityId()}/${this.kind()}`;
 
   async load(): Promise<void> {
     try {

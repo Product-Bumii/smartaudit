@@ -32,6 +32,8 @@ const campaignSchema = new Schema(
   {
     module: { type: String, enum: MODULES, required: true },
     organizationId: { type: Schema.Types.ObjectId, ref: 'Organization', required: true },
+    /** Audit entity that runs the campaign; it keeps it even if the organization changes entity. */
+    auditEntityId: { type: Schema.Types.ObjectId, ref: 'AuditEntity', required: true },
     /** Public slug for the landing `/c/<slug>` (participants without email). */
     slug: { type: String, required: true, unique: true },
     reference: { type: String, default: null },
@@ -93,6 +95,7 @@ const campaignSchema = new Schema(
 );
 campaignSchema.index({ organizationId: 1, status: 1 });
 campaignSchema.index({ 'm1Config.leadAuditorId': 1 });
+campaignSchema.index({ auditEntityId: 1, organizationId: 1 });
 export type CampaignDoc = InferSchemaType<typeof campaignSchema> & { _id: Types.ObjectId };
 export const Campaign = model('Campaign', campaignSchema);
 

@@ -3,6 +3,7 @@ import { authGuard, guestOnly, homeRedirect, roleGuard } from './core/guards';
 import { ShellComponent } from './layout/shell.component';
 
 const SUPER = ['SUPERADMIN_BUMII', 'SUPERADMIN_FUNDACION'] as const;
+const STAFF = ['COORDINATOR', 'AUDITOR'] as const;
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', canActivate: [homeRedirect], children: [] },
@@ -28,11 +29,15 @@ export const routes: Routes = [
           { path: 'settings', loadComponent: () => import('./pages/admin/settings.page').then((m) => m.SettingsPage) },
         ],
       },
-      { path: 'org/auditors', canActivate: [roleGuard('ORG_ADMIN')], loadComponent: () => import('./pages/org/auditors.page').then((m) => m.AuditorsPage) },
-      { path: 'campaigns', canActivate: [roleGuard('AUDITOR', ...SUPER)], loadComponent: () => import('./pages/campaigns/campaign-list.page').then((m) => m.CampaignListPage) },
-      { path: 'campaigns/new', canActivate: [roleGuard('AUDITOR')], loadComponent: () => import('./pages/campaigns/campaign-form.page').then((m) => m.CampaignFormPage) },
-      { path: 'campaigns/:id/edit', canActivate: [roleGuard('AUDITOR')], loadComponent: () => import('./pages/campaigns/campaign-form.page').then((m) => m.CampaignFormPage) },
-      { path: 'campaigns/:id', canActivate: [roleGuard('AUDITOR', ...SUPER)], loadComponent: () => import('./pages/campaigns/campaign-detail.page').then((m) => m.CampaignDetailPage) },
+      { path: 'admin/audit-entities', canActivate: [roleGuard(...SUPER)], loadComponent: () => import('./pages/admin/audit-entities.page').then((m) => m.AuditEntitiesPage) },
+      { path: 'admin/audit-entities/:id', canActivate: [roleGuard(...SUPER)], loadComponent: () => import('./pages/admin/audit-entity-detail.page').then((m) => m.AuditEntityDetailPage) },
+      // Coordinators and auditors (audit entity users): organizations assigned to them.
+      { path: 'my/organizations', canActivate: [roleGuard(...STAFF)], loadComponent: () => import('./pages/entity/my-organizations.page').then((m) => m.MyOrganizationsPage) },
+      { path: 'my/auditors', canActivate: [roleGuard('COORDINATOR')], loadComponent: () => import('./pages/entity/auditors.page').then((m) => m.AuditorsPage) },
+      { path: 'campaigns', canActivate: [roleGuard(...STAFF, ...SUPER)], loadComponent: () => import('./pages/campaigns/campaign-list.page').then((m) => m.CampaignListPage) },
+      { path: 'campaigns/new', canActivate: [roleGuard(...STAFF)], loadComponent: () => import('./pages/campaigns/campaign-form.page').then((m) => m.CampaignFormPage) },
+      { path: 'campaigns/:id/edit', canActivate: [roleGuard(...STAFF)], loadComponent: () => import('./pages/campaigns/campaign-form.page').then((m) => m.CampaignFormPage) },
+      { path: 'campaigns/:id', canActivate: [roleGuard(...STAFF, ...SUPER)], loadComponent: () => import('./pages/campaigns/campaign-detail.page').then((m) => m.CampaignDetailPage) },
     ],
   },
   { path: '**', redirectTo: '' },

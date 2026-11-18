@@ -5,6 +5,7 @@ export * from './questionnaire';
 export * from './campaign-state';
 export * from './campaign';
 export * from './permissions';
+export * from './access';
 export * from './sample-file';
 export * from './codes';
 export * from './retention';

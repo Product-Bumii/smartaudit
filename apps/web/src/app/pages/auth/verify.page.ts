@@ -22,9 +22,9 @@ import { AuthLayoutComponent } from './auth-layout.component';
           <ul class="accounts">
             @for (a of accounts(); track a.userId; let i = $index) {
               <li>
-                <button type="button" class="account" (click)="choose(a)" [attr.data-testid]="'account-' + (a.organizationName ?? 'platform')">
+                <button type="button" class="account" (click)="choose(a)" [attr.data-testid]="'account-' + (a.auditEntityName ?? 'platform')">
                   <span class="num">{{ (i + 1).toString().padStart(2, '0') }}</span>
-                  <span class="org">{{ a.organizationName ?? ('verify.platform' | translate) }}</span>
+                  <span class="org">{{ a.auditEntityName ?? ('verify.platform' | translate) }}</span>
                   <span class="role">{{ 'roles.' + a.role | translate }}</span>
                 </button>
               </li>

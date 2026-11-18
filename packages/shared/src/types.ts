@@ -1,4 +1,5 @@
 /** Shared API DTO shapes (serialized JSON). */
+import type { CampaignAccess } from './access';
 import type { CampaignWindow } from './business-days';
 import type { CampaignStatus, EntityStatus, Language, Role } from './enums';
 import type { QuestionActivationState } from './questionnaire';
@@ -12,8 +13,9 @@ export interface ApiErrorBody {
 export interface SessionUser {
   id: string;
   role: Role;
-  organizationId: string | null;
-  organizationName: string | null;
+  /** Audit entity (certification body) of coordinators and auditors; `null` for superadmins. */
+  auditEntityId: string | null;
+  auditEntityName: string | null;
   email: string;
   preferredLanguage: Language;
 }
@@ -21,8 +23,22 @@ export interface SessionUser {
 export interface AccountChoice {
   userId: string;
   role: Role;
-  organizationId: string | null;
-  organizationName: string | null;
+  auditEntityId: string | null;
+  auditEntityName: string | null;
+}
+
+export interface UserRef {
+  id: string;
+  email: string;
+  role: Role;
+  status: EntityStatus;
+}
+
+export interface AuditEntityDto {
+  id: string;
+  name: string;
+  country: string;
+  status: EntityStatus;
 }
 
 export interface OrganizationDto {
@@ -32,13 +48,16 @@ export interface OrganizationDto {
   timeZone: string;
   defaultLanguage: Language;
   status: EntityStatus;
+  auditEntity: { id: string; name: string } | null;
+  coordinator: UserRef | null;
+  auditor: UserRef | null;
 }
 
 export interface UserDto {
   id: string;
   email: string;
   role: Role;
-  organizationId: string | null;
+  auditEntityId: string | null;
   status: EntityStatus;
   preferredLanguage: Language;
 }
@@ -47,6 +66,10 @@ export interface CampaignDto {
   id: string;
   module: 'M1';
   organizationId: string;
+  organizationName?: string | null;
+  auditEntityId: string;
+  /** What the requesting user may do with this campaign. */
+  access: CampaignAccess;
   slug: string;
   reference: string | null;
   status: CampaignStatus;

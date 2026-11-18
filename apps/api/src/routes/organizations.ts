@@ -1,34 +1,35 @@
-import { Router, type Request } from 'express';
+import { Router } from 'express';
 import {
+  auditorAssignmentSchema,
+  canAssignAuditor,
   objectIdSchema,
+  organizationAssignmentSchema,
   organizationCreateSchema,
   organizationUpdateSchema,
-  userCreateSchema,
-  userStatusSchema,
-  type OrganizationDto,
-  type Role,
+  type AccessUser,
 } from '@smartaudit/shared';
 import type { AppContext } from '../context';
 import { audit } from '../lib/audit';
 import { notFound } from '../lib/errors';
-import { requireAction, requireOrgParam } from '../middleware/auth';
-import { Organization, User, type OrganizationDoc, type UserDoc } from '../models';
-import { createUser, toUserDto } from '../services/users';
+import { requireAction, type AuthUser } from '../middleware/auth';
+import { Organization, type OrganizationDoc } from '../models';
+import { assignableAuditors, assignmentOf, changeAssignment, toOrganizationDto, toOrganizationDtos } from '../services/organizations';
+import { toUserDto } from '../services/users';
 
-export const toOrganizationDto = (o: OrganizationDoc): OrganizationDto => ({
-  id: String(o._id),
-  name: o.name,
-  country: o.country,
-  timeZone: o.timeZone,
-  defaultLanguage: o.defaultLanguage as OrganizationDto['defaultLanguage'],
-  status: o.status as OrganizationDto['status'],
-});
-
-async function findOrg(id: string) {
+async function findOrg(id: string): Promise<OrganizationDoc> {
   const parsed = objectIdSchema.safeParse(id);
   if (!parsed.success) throw notFound();
   const org = await Organization.findById(parsed.data).lean();
   if (!org) throw notFound();
+  return org as OrganizationDoc;
+}
+
+export const accessUser = (u: AuthUser): AccessUser => ({ id: u.id, role: u.role, auditEntityId: u.auditEntityId });
+
+/** Organization the user may change the auditor of (superadmins, or its coordinator); 404 otherwise. */
+async function findOrgForAuditorAssignment(user: AuthUser, id: string): Promise<OrganizationDoc> {
+  const org = await findOrg(id);
+  if (!canAssignAuditor(accessUser(user), assignmentOf(org))) throw notFound();
   return org;
 }
 
@@ -37,31 +38,28 @@ export function organizationsRouter(ctx: AppContext): Router {
 
   // ---------- Organizations (superadmins)
   r.get('/', requireAction('organization.manage'), async (_req, res) => {
-    const orgs = await Organization.find().sort({ name: 1 }).lean();
-    res.json({ items: orgs.map(toOrganizationDto) });
+    const orgs = (await Organization.find().sort({ name: 1 }).lean()) as OrganizationDoc[];
+    res.json({ items: await toOrganizationDtos(ctx, orgs) });
   });
 
   r.post('/', requireAction('organization.manage'), async (req, res) => {
-    const input = organizationCreateSchema.parse(req.body);
-    const org = await Organization.create({ ...input, adminEmail: undefined, createdBy: req.user!.id });
-    await audit(req, { action: 'organization.create', resourceType: 'organization', resourceId: String(org._id), organizationId: String(org._id) });
-    let admin = null;
-    if (input.adminEmail) {
-      admin = await createUser(ctx, {
-        email: input.adminEmail,
-        role: 'ORG_ADMIN',
-        organizationId: org._id,
-        organizationName: org.name,
-        preferredLanguage: input.defaultLanguage,
-        createdBy: req.user!.id,
-      });
-      await audit(req, { action: 'user.create', resourceType: 'user', resourceId: String(admin._id), organizationId: String(org._id), meta: { role: 'ORG_ADMIN' } });
+    const { auditEntityId, coordinatorId, ...input } = organizationCreateSchema.parse(req.body);
+    const created = await Organization.create({ ...input, createdBy: req.user!.id });
+    await audit(req, { action: 'organization.create', resourceType: 'organization', resourceId: String(created._id), organizationId: String(created._id) });
+    let org = created.toObject() as OrganizationDoc;
+    if (auditEntityId || coordinatorId) {
+      try {
+        org = await changeAssignment(req, org, { auditEntityId: auditEntityId ?? null, coordinatorId: coordinatorId ?? null });
+      } catch (e) {
+        await created.deleteOne();
+        throw e;
+      }
     }
-    res.status(201).json({ organization: toOrganizationDto(org.toObject()), admin: admin ? toUserDto(ctx, admin.toObject()) : null });
+    res.status(201).json({ organization: await toOrganizationDto(ctx, org) });
   });
 
   r.get('/:orgId', requireAction('organization.manage'), async (req, res) => {
-    res.json({ organization: toOrganizationDto(await findOrg(String(req.params.orgId))) });
+    res.json({ organization: await toOrganizationDto(ctx, await findOrg(String(req.params.orgId))) });
   });
 
   r.patch('/:orgId', requireAction('organization.manage'), async (req, res) => {
@@ -69,52 +67,47 @@ export function organizationsRouter(ctx: AppContext): Router {
     const org = await findOrg(String(req.params.orgId));
     const updated = await Organization.findByIdAndUpdate(org._id, { $set: input }, { new: true }).lean();
     await audit(req, { action: 'organization.update', resourceType: 'organization', resourceId: String(org._id), organizationId: String(org._id), meta: { fields: Object.keys(input) } });
-    res.json({ organization: toOrganizationDto(updated!) });
+    res.json({ organization: await toOrganizationDto(ctx, updated as OrganizationDoc) });
   });
 
-  // ---------- Org users: ORG_ADMIN (managed by superadmins) and AUDITOR (superadmins + ORG_ADMIN)
-  const userRoutes = (path: 'admins' | 'auditors', role: Role, action: 'orgAdmin.manage' | 'auditor.manage') => {
-    const guard = [requireAction(action), requireOrgParam];
+  /** Superadmins: audit entity and coordinator. */
+  r.put('/:orgId/assignment', requireAction('assignment.coordinator'), async (req, res) => {
+    const input = organizationAssignmentSchema.parse(req.body);
+    const org = await findOrg(String(req.params.orgId));
+    res.json({ organization: await toOrganizationDto(ctx, await changeAssignment(req, org, input)) });
+  });
 
-    r.get(`/:orgId/${path}`, ...guard, async (req, res) => {
-      const org = await findOrg(String(req.params.orgId));
-      const users = await User.find({ organizationId: org._id, role }).sort({ createdAt: 1 }).lean();
-      res.json({ items: users.map((u) => toUserDto(ctx, u as UserDoc)) });
+  /** Coordinator of the organization (or superadmins): responsible auditor. */
+  r.get('/:orgId/assignable-auditors', requireAction('assignment.auditor'), async (req, res) => {
+    const org = await findOrgForAuditorAssignment(req.user as AuthUser, String(req.params.orgId));
+    res.json({ items: (await assignableAuditors(org)).map((u) => toUserDto(ctx, u)) });
+  });
+
+  r.put('/:orgId/auditor', requireAction('assignment.auditor'), async (req, res) => {
+    const { auditorId } = auditorAssignmentSchema.parse(req.body);
+    const org = await findOrgForAuditorAssignment(req.user as AuthUser, String(req.params.orgId));
+    res.json({ organization: await toOrganizationDto(ctx, await changeAssignment(req, org, { auditorId })) });
+  });
+
+  return r;
+}
+
+/** Coordinators and auditors: the organizations assigned to them. */
+export function assignedOrganizationsRouter(ctx: AppContext): Router {
+  const r = Router();
+  r.get('/', requireAction('organization.viewAssigned'), async (req, res) => {
+    const user = req.user as AuthUser;
+    const or: Record<string, unknown>[] = [{ auditorId: user.id }];
+    if (user.role === 'COORDINATOR') or.push({ coordinatorId: user.id });
+    const orgs = (await Organization.find({ auditEntityId: user.auditEntityId, $or: or }).sort({ name: 1 }).lean()) as OrganizationDoc[];
+    const dtos = await toOrganizationDtos(ctx, orgs);
+    res.json({
+      items: dtos.map((o, i) => ({
+        ...o,
+        coordinates: user.role === 'COORDINATOR' && String(orgs[i].coordinatorId) === user.id,
+        audits: String(orgs[i].auditorId) === user.id,
+      })),
     });
-
-    r.post(`/:orgId/${path}`, ...guard, async (req, res) => {
-      const org = await findOrg(String(req.params.orgId));
-      const input = userCreateSchema.parse(req.body);
-      const user = await createUser(ctx, {
-        email: input.email,
-        role,
-        organizationId: org._id,
-        organizationName: org.name,
-        preferredLanguage: input.preferredLanguage ?? (org.defaultLanguage as 'es'),
-        createdBy: req.user!.id,
-      });
-      await audit(req, { action: 'user.create', resourceType: 'user', resourceId: String(user._id), organizationId: String(org._id), meta: { role } });
-      res.status(201).json({ user: toUserDto(ctx, user.toObject()) });
-    });
-
-    r.patch(`/:orgId/${path}/:userId`, ...guard, async (req: Request, res) => {
-      const org = await findOrg(String(req.params.orgId));
-      const { status } = userStatusSchema.parse(req.body);
-      const userId = objectIdSchema.safeParse(req.params.userId);
-      if (!userId.success) throw notFound();
-      const user = await User.findOneAndUpdate(
-        { _id: userId.data, organizationId: org._id, role },
-        { $set: { status } },
-        { new: true },
-      ).lean();
-      if (!user) throw notFound();
-      await audit(req, { action: 'user.status', resourceType: 'user', resourceId: String(user._id), organizationId: String(org._id), meta: { role, status } });
-      res.json({ user: toUserDto(ctx, user as UserDoc) });
-    });
-  };
-
-  userRoutes('admins', 'ORG_ADMIN', 'orgAdmin.manage');
-  userRoutes('auditors', 'AUDITOR', 'auditor.manage');
-
+  });
   return r;
 }

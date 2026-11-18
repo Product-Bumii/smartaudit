@@ -21,7 +21,8 @@
     "auditors": "Auditores",
     "campaigns": "Campanhas",
     "organizations": "Organizações",
-    "config": "Configuração"
+    "config": "Configuração",
+    "auditEntities": "Entidades de auditoria"
   },
   "lang": {
     "es": "Espanhol",
@@ -33,8 +34,8 @@
   "roles": {
     "SUPERADMIN_BUMII": "Superadmin Bumii",
     "SUPERADMIN_FUNDACION": "Superadmin Fundação",
-    "ORG_ADMIN": "Administração da organização",
-    "AUDITOR": "Auditor/a"
+    "AUDITOR": "Auditor/a",
+    "COORDINATOR": "Coordenação de auditorias"
   },
   "login": {
     "title": "Acesso à plataforma",
@@ -53,8 +54,8 @@
     }
   },
   "verify": {
-    "chooseOrg": "Escolha a organização",
-    "chooseOrgHelp": "O seu e-mail tem contas em várias organizações. Em qual pretende entrar?",
+    "chooseOrg": "Escolha a entidade de auditoria",
+    "chooseOrgHelp": "O seu e-mail tem contas em várias entidades de auditoria. Em qual pretende entrar?",
     "platform": "Plataforma",
     "failedTitle": "Não foi possível iniciar sessão",
     "backToLogin": "Pedir uma nova ligação",
@@ -81,16 +82,13 @@
     "country": "País",
     "timeZone": "Fuso horário",
     "defaultLanguage": "Idioma predefinido",
-    "adminEmail": "E-mail do administrador/a (opcional)",
-    "adminEmailHint": "Será criada a respetiva conta ORG_ADMIN e enviado um aviso por e-mail",
     "empty": "Não há organizações.",
     "created": "Organização criada",
     "details": "Dados da organização",
-    "admins": "Administradores da organização",
-    "auditors": "Auditores",
     "deactivate": "Desativar organização",
     "activate": "Ativar organização",
-    "eyebrow": "Plataforma"
+    "eyebrow": "Plataforma",
+    "assignmentHint": "Opcional: pode ser atribuído mais tarde a partir da ficha da organização"
   },
   "countries": {
     "ES": "Espanha",
@@ -101,10 +99,6 @@
     "AR": "Argentina",
     "EC": "Equador",
     "PT": "Portugal"
-  },
-  "orgAdmin": {
-    "title": "Auditores da organização",
-    "intro": "Crie e desative os perfis de auditoria da sua organização. Por confidencialidade, a empresa não vê a amostra nem as respostas das pessoas."
   },
   "config": {
     "title": "Configuração",
@@ -209,7 +203,9 @@
     "history": "Histórico de estados",
     "confirmStatus": "Alterar o estado para «{{status}}»?",
     "eyebrow": "M1 · auditoria",
-    "questionnaire": "Questionário"
+    "questionnaire": "Questionário",
+    "aggregateOnly": "só progresso",
+    "aggregateHint": "Como coordenação vê o estado e o progresso agregado. A amostra, os códigos e as respostas são só do auditor/a responsável."
   },
   "auditTypes": {
     "inicial": "Inicial",
@@ -246,7 +242,9 @@
     "previewEmpty": "Preencha a data, a dimensão e a norma para ver o mínimo, o período e as perguntas.",
     "created": "Campanha criada",
     "howTitle": "o mínimo e o período são calculados pelo sistema",
-    "howText": "Aplicam-se a tabela de mínimos em vigor e os dias úteis de segunda a sexta-feira, no fuso horário da organização. A IA não intervém nestes cálculos."
+    "howText": "Aplicam-se a tabela de mínimos em vigor e os dias úteis de segunda a sexta-feira, no fuso horário da organização. A IA não intervém nestes cálculos.",
+    "organizationHint": "Só as organizações que lhe estão atribuídas como auditor/a",
+    "noOrganizations": "Não tem organizações atribuídas. O seu coordenador/a de auditorias deve atribuir-lhe uma antes de criar a campanha."
   },
   "questionStates": {
     "active": "Será perguntada",
@@ -316,7 +314,7 @@
     "ROUTE_NOT_FOUND": "Não encontrado.",
     "INVALID_OR_EXPIRED_LINK": "A ligação não é válida, já foi utilizada ou expirou.",
     "SELECTION_EXPIRED": "A seleção expirou. Peça uma nova ligação.",
-    "USER_ALREADY_EXISTS": "Já existe um utilizador com esse e-mail nesta organização.",
+    "USER_ALREADY_EXISTS": "Já existe um utilizador com esse e-mail nesta entidade de auditoria.",
     "PUBLISHED_VERSION_IS_IMMUTABLE": "Uma versão publicada não pode ser alterada: crie uma nova.",
     "DRAFT_ALREADY_EXISTS": "Já existe um rascunho.",
     "INVALID_SAMPLING_TABLE": "A tabela tem erros.",
@@ -343,7 +341,13 @@
     "UPLOAD_LIMIT_FILE_SIZE": "O ficheiro excede 5 MB.",
     "INVALID_ACCESS_CODE": "O código não é válido. Verifique-o e tente novamente.",
     "TOO_MANY_ATTEMPTS": "Demasiadas tentativas falhadas. Aguarde 15 minutos antes de tentar novamente.",
-    "CAMPAIGN_NOT_FOUND": "Esta ligação não corresponde a nenhuma entrevista."
+    "CAMPAIGN_NOT_FOUND": "Esta ligação não corresponde a nenhuma entrevista.",
+    "ORG_HAS_OPEN_CAMPAIGNS": "A organização tem campanhas abertas: não pode mudar de entidade de auditoria nem ficar sem auditor/a.",
+    "INVALID_COORDINATOR": "O coordenador/a deve estar ativo e pertencer à entidade de auditoria escolhida.",
+    "INVALID_AUDITOR": "O auditor/a deve estar ativo e pertencer à entidade de auditoria da organização.",
+    "INVALID_AUDIT_ENTITY": "A entidade de auditoria não existe ou está inativa.",
+    "COORDINATOR_REQUIRES_AUDIT_ENTITY": "Para atribuir um coordenador/a escolha primeiro a entidade de auditoria.",
+    "AUDITOR_REQUIRES_AUDIT_ENTITY": "Para atribuir um auditor/a a organização deve ter entidade de auditoria."
   },
   "brand": {
     "sideNote": "Para organizações com certificado efr em vigor."
@@ -377,5 +381,45 @@
     "closedText": "O prazo para responder a esta entrevista terminou.",
     "unavailableTitle": "entrevista indisponível",
     "unavailableText": "A entrevista não está disponível neste momento. Consulte a pessoa auditora."
+  },
+  "entities": {
+    "eyebrow": "Plataforma",
+    "title": "Entidades de auditoria",
+    "intro": "Entidades de certificação que auditam as empresas efr. Cada uma tem coordenadores/as, que atribuem auditores/as às organizações.",
+    "new": "Nova entidade de auditoria",
+    "name": "Nome da entidade",
+    "coordinatorEmail": "E-mail do coordenador/a (opcional)",
+    "coordinatorEmailHint": "Será criada a sua conta de coordenação e será avisado por e-mail",
+    "coordinators": "Coordenadores/as",
+    "auditors": "Auditores/as",
+    "organizations": "Organizações",
+    "empty": "Não há entidades de auditoria.",
+    "created": "Entidade de auditoria criada"
+  },
+  "entityAuditors": {
+    "title": "Auditores/as da entidade",
+    "intro": "Crie e desative os perfis de auditoria da sua entidade. Depois atribua-os às suas organizações."
+  },
+  "myOrgs": {
+    "title": "As minhas organizações",
+    "introCoordinator": "Organizações que a Fundación Másfamilia lhe atribuiu. Designe o auditor/a responsável de cada uma; pode atribuir-se a si próprio/a.",
+    "introAuditor": "Organizações que lhe estão atribuídas. A partir daqui pode criar a campanha de cada uma.",
+    "auditor": "Auditor/a responsável",
+    "coordinator": "Coordenação",
+    "noAuditor": "Por atribuir",
+    "me": "eu",
+    "empty": "Não tem organizações atribuídas.",
+    "reassignHint": "Ao mudar o auditor/a, as campanhas abertas passam para o novo auditor/a e a alteração fica registada.",
+    "assigned": "Auditor/a atribuído"
+  },
+  "assignment": {
+    "title": "Atribuição",
+    "intro": "Entidade de auditoria e coordenador/a responsáveis por esta organização. O coordenador/a designa o auditor/a.",
+    "auditEntity": "Entidade de auditoria",
+    "coordinator": "Coordenador/a",
+    "auditor": "Auditor/a",
+    "none": "Por atribuir",
+    "auditorHint": "Normalmente é designado pelo coordenador/a",
+    "saved": "Atribuição guardada"
   }
 }

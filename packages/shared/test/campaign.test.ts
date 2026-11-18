@@ -61,12 +61,16 @@ describe('campaign state machine', () => {
 });
 
 describe('permissions matrix', () => {
-  it('ORG_ADMIN never sees samples or responses', () => {
-    for (const a of ['sample.view', 'sample.manage', 'responses.viewIndividual', 'respondent.viewStatus', 'campaign.view'] as const) {
-      expect(can('ORG_ADMIN', a)).toBe(false);
+  it('coordinators manage auditors and assignments, not organizations or configuration', () => {
+    for (const a of ['organization.manage', 'auditEntity.manage', 'coordinator.manage', 'assignment.coordinator', 'config.manage'] as const) {
+      expect(can('COORDINATOR', a)).toBe(false);
     }
-    expect(can('ORG_ADMIN', 'auditor.manage')).toBe(true);
-    expect(can('ORG_ADMIN', 'progress.viewAggregate')).toBe(true);
+    expect(can('COORDINATOR', 'auditor.manage')).toBe(true);
+    expect(can('COORDINATOR', 'assignment.auditor')).toBe(true);
+    // Audit actions apply only where they are the lead auditor (campaignAccess = 'manage').
+    expect(can('COORDINATOR', 'sample.manage')).toBe(true);
+    expect(can('AUDITOR', 'assignment.auditor')).toBe(false);
+    expect(can('AUDITOR', 'auditor.manage')).toBe(false);
   });
 
   it('only SUPERADMIN_BUMII has technical settings', () => {

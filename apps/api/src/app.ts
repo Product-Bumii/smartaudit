@@ -9,7 +9,8 @@ import { authenticate, requireAuth } from './middleware/auth';
 import { authRouter } from './routes/auth';
 import { campaignsRouter } from './routes/campaigns';
 import { configRouter } from './routes/config';
-import { organizationsRouter } from './routes/organizations';
+import { auditEntitiesRouter } from './routes/audit-entities';
+import { assignedOrganizationsRouter, organizationsRouter } from './routes/organizations';
 import { participantRouter } from './routes/participant';
 
 function cors(origins: string[]): RequestHandler {
@@ -46,7 +47,9 @@ export function createApp(ctx: AppContext) {
 
   app.use('/api', authenticate(ctx));
   app.use('/api/auth', authRouter(ctx));
+  app.use('/api/audit-entities', requireAuth, auditEntitiesRouter(ctx));
   app.use('/api/organizations', requireAuth, organizationsRouter(ctx));
+  app.use('/api/assigned-organizations', requireAuth, assignedOrganizationsRouter(ctx));
   app.use('/api/config', requireAuth, configRouter(ctx));
   app.use('/api/campaigns', requireAuth, campaignsRouter(ctx));
   // Public: participants have no account.

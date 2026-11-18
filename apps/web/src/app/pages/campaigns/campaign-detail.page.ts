@@ -5,7 +5,6 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiService, toApiFailure } from '../../core/api.service';
-import { AuthService } from '../../core/auth.service';
 import { I18nService } from '../../core/i18n.service';
 import type { CampaignDto, CampaignStatus, SampleError, SampleSummary } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
@@ -27,7 +26,7 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
           <div><span class="chip solid" data-testid="campaign-status">{{ 'campaignStatus.' + c.status | translate }}</span></div>
         </div>
         <div class="row-actions">
-          @if (isAuditor() && editable()) {
+          @if (canManage() && editable()) {
             <a mat-stroked-button [routerLink]="['/campaigns', c.id, 'edit']">{{ 'common.edit' | translate }}</a>
           }
           @if (canSuspend() || canResume() || canCancel()) {
@@ -40,6 +39,9 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
           }
         </div>
       </div>
+      @if (c.access === 'aggregate') {
+        <div class="alert info" role="status" data-testid="aggregate-notice">{{ 'campaigns.aggregateHint' | translate }}</div>
+      }
 
       <div class="stats">
         <div class="stat">
@@ -91,7 +93,7 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
           </section>
         </div>
 
-        @if (isAuditor()) {
+        @if (canManage()) {
           <section class="card alt" data-testid="sample-section">
             <h2 class="section-title">{{ 'sample.title' | translate }}</h2>
             <p class="intro">{{ 'sample.intro' | translate }}</p>
@@ -224,7 +226,6 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
 export class CampaignDetailPage implements OnInit {
   readonly id = input.required<string>();
   private readonly api = inject(ApiService);
-  private readonly auth = inject(AuthService);
   private readonly notify = inject(NotifyService);
   private readonly i18n = inject(I18nService);
 
@@ -235,12 +236,15 @@ export class CampaignDetailPage implements OnInit {
   readonly uploading = signal(false);
   readonly previousStatus = signal<CampaignStatus | null>(null);
 
-  readonly isAuditor = computed(() => this.auth.user()?.role === 'AUDITOR');
+  /** Lead auditor: configuration, sample and codes. The access level comes from the API. */
+  readonly canManage = computed(() => this.campaign()?.access === 'manage');
+  /** Lead auditor or superadmins: suspend, resume, cancel. Coordinators only see aggregates. */
+  readonly canChangeStatus = computed(() => this.campaign()?.access === 'manage' || this.campaign()?.access === 'supervise');
   readonly status = computed(() => this.campaign()?.status);
   readonly editable = computed(() => EDITABLE.includes(this.status()!));
-  readonly canSuspend = computed(() => SUSPENDABLE.includes(this.status()!));
-  readonly canCancel = computed(() => SUSPENDABLE.includes(this.status()!) || this.status() === 'suspendida');
-  readonly canResume = computed(() => this.status() === 'suspendida' && !!this.previousStatus());
+  readonly canSuspend = computed(() => this.canChangeStatus() && SUSPENDABLE.includes(this.status()!));
+  readonly canCancel = computed(() => this.canChangeStatus() && (SUSPENDABLE.includes(this.status()!) || this.status() === 'suspendida'));
+  readonly canResume = computed(() => this.canChangeStatus() && this.status() === 'suspendida' && !!this.previousStatus());
   readonly sampleMode = computed<'replace' | 'append' | null>(() => {
     const s = this.status();
     if (!s) return null;
@@ -261,7 +265,7 @@ export class CampaignDetailPage implements OnInit {
       const hist = res.campaign.statusHistory;
       const last = hist[hist.length - 1];
       this.previousStatus.set(res.campaign.status === 'suspendida' ? (last?.from ?? null) : null);
-      if (this.isAuditor()) this.summary.set(await this.api.get<SampleSummary>(`/campaigns/${this.id()}/sample/summary`));
+      if (this.canManage()) this.summary.set(await this.api.get<SampleSummary>(`/campaigns/${this.id()}/sample/summary`));
     } catch (e) {
       this.notify.error(e);
     }

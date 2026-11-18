@@ -2,11 +2,12 @@ export * from './core';
 export * from './configuration';
 export * from './campaign';
 
-import { AuditLog, MagicLinkToken, Organization, Settings, User } from './core';
+import { AuditEntity, AuditLog, MagicLinkToken, Organization, Settings, User } from './core';
 import { Questionnaire, SamplingTable } from './configuration';
 import { Campaign, Interview, ParticipantContact, Report, Respondent } from './campaign';
 
 export const ALL_MODELS = [
+  AuditEntity,
   Organization,
   User,
   MagicLinkToken,

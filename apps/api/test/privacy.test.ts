@@ -17,16 +17,16 @@ const EMAIL_RE = /[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/;
 let env: TestEnv;
 beforeAll(async () => {
   env = await startTestEnv();
-  const auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.orgs.CO);
-  const admin = await sessionFor(env, SEED_USERS.adminCO, env.orgs.CO);
-  await request(env.app).post(`/api/organizations/${env.orgs.CO}/auditors`).set('Cookie', admin).send({ email: 'privacidad@auditoria.example' }).expect(201);
+  const auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.entities.CO);
+  const coordinator = await sessionFor(env, SEED_USERS.coordinatorCO, env.entities.CO);
+  await request(env.app).post(`/api/audit-entities/${env.entities.CO}/auditors`).set('Cookie', coordinator).send({ email: 'privacidad@auditoria.example' }).expect(201);
   const c = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput()).expect(201);
   await request(env.app)
     .post(`/api/campaigns/${c.body.campaign.id}/sample`)
     .set('Cookie', auditor)
     .attach('file', readFileSync(join(__dirname, '../../../seed/samples/muestra-valida-30.csv')), 'm.csv')
     .expect(200);
-  await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.adminCO }).expect(202);
+  await request(env.app).post('/api/auth/magic-link').send({ email: SEED_USERS.coordinatorCO }).expect(202);
 });
 afterAll(() => env?.stop());
 
@@ -34,7 +34,7 @@ describe('privacy', () => {
   it('stores no clear-text email in any collection', async () => {
     const db = mongoose.connection.db!;
     const collections = await db.listCollections().toArray();
-    expect(collections.length).toBeGreaterThanOrEqual(12);
+    expect(collections.length).toBeGreaterThanOrEqual(13);
     for (const { name } of collections) {
       const docs = await db.collection(name).find().toArray();
       for (const d of docs) {

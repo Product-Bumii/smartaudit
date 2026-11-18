@@ -1,5 +1,5 @@
 import { Component, inject, OnInit, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -7,7 +7,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { Router, RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiService } from '../../core/api.service';
-import { LANGS, type OrganizationDto } from '../../core/models';
+import { LANGS, type AuditEntityListItem, type OrganizationDto, type UserDto } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
 import { buildOrgForm, COUNTRIES, supportedTimeZones } from '../../shared/org-form';
 
@@ -57,13 +57,27 @@ import { buildOrgForm, COUNTRIES, supportedTimeZones } from '../../shared/org-fo
               </mat-select>
             </mat-form-field>
             <mat-form-field appearance="outline">
-              <mat-label>{{ 'orgs.adminEmail' | translate }}</mat-label>
-              <input matInput type="email" [formControl]="adminEmail" data-testid="org-admin-email" />
-              <mat-hint>{{ 'orgs.adminEmailHint' | translate }}</mat-hint>
+              <mat-label>{{ 'assignment.auditEntity' | translate }}</mat-label>
+              <mat-select [formControl]="auditEntityId" (selectionChange)="onEntity($event.value)" data-testid="org-entity">
+                <mat-option [value]="null">{{ 'assignment.none' | translate }}</mat-option>
+                @for (e of entities(); track e.id) {
+                  @if (e.status === 'active') { <mat-option [value]="e.id"><span class="keep-case">{{ e.name }}</span></mat-option> }
+                }
+              </mat-select>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>{{ 'assignment.coordinator' | translate }}</mat-label>
+              <mat-select [formControl]="coordinatorId" data-testid="org-coordinator">
+                <mat-option [value]="null">{{ 'assignment.none' | translate }}</mat-option>
+                @for (u of coordinators(); track u.id) {
+                  @if (u.status === 'active') { <mat-option [value]="u.id">{{ u.email }}</mat-option> }
+                }
+              </mat-select>
+              <mat-hint>{{ 'orgs.assignmentHint' | translate }}</mat-hint>
             </mat-form-field>
           </div>
           <div class="row-actions">
-            <button mat-flat-button type="submit" [disabled]="form.invalid || adminEmail.invalid || busy()" data-testid="org-submit">{{ 'common.create' | translate }}</button>
+            <button mat-flat-button type="submit" [disabled]="form.invalid || busy()" data-testid="org-submit">{{ 'common.create' | translate }}</button>
             <button mat-button type="button" (click)="showForm.set(false)">{{ 'common.cancel' | translate }}</button>
           </div>
         </form>
@@ -77,8 +91,9 @@ import { buildOrgForm, COUNTRIES, supportedTimeZones } from '../../shared/org-fo
             <tr>
               <th>{{ 'orgs.name' | translate }}</th>
               <th>{{ 'orgs.country' | translate }}</th>
-              <th>{{ 'orgs.timeZone' | translate }}</th>
-              <th>{{ 'orgs.defaultLanguage' | translate }}</th>
+              <th>{{ 'assignment.auditEntity' | translate }}</th>
+              <th>{{ 'assignment.coordinator' | translate }}</th>
+              <th>{{ 'assignment.auditor' | translate }}</th>
               <th>{{ 'users.status' | translate }}</th>
             </tr>
           </thead>
@@ -87,12 +102,13 @@ import { buildOrgForm, COUNTRIES, supportedTimeZones } from '../../shared/org-fo
               <tr>
                 <td><a class="strong" [routerLink]="['/admin/organizations', o.id]">{{ o.name }}</a></td>
                 <td>{{ o.country }}</td>
-                <td>{{ o.timeZone }}</td>
-                <td>{{ 'lang.' + o.defaultLanguage | translate }}</td>
+                <td class="keep-case">{{ o.auditEntity?.name ?? '—' }}</td>
+                <td>{{ o.coordinator?.email ?? '—' }}</td>
+                <td>{{ o.auditor?.email ?? '—' }}</td>
                 <td><span class="chip" [class.neutral]="o.status !== 'active'">{{ 'status.' + o.status | translate }}</span></td>
               </tr>
             } @empty {
-              <tr><td colspan="5" class="muted">{{ 'orgs.empty' | translate }}</td></tr>
+              <tr><td colspan="6" class="muted">{{ 'orgs.empty' | translate }}</td></tr>
             }
           </tbody>
         </table>
@@ -113,10 +129,29 @@ export class OrganizationsPage implements OnInit {
   readonly showForm = signal(false);
   readonly busy = signal(false);
   readonly form = buildOrgForm(this.fb);
-  readonly adminEmail = this.fb.nonNullable.control('', [Validators.email]);
+  readonly auditEntityId = this.fb.control<string | null>(null);
+  readonly coordinatorId = this.fb.control<string | null>(null);
+  readonly entities = signal<AuditEntityListItem[]>([]);
+  readonly coordinators = signal<UserDto[]>([]);
 
   async ngOnInit(): Promise<void> {
     await this.load();
+    try {
+      this.entities.set((await this.api.get<{ items: AuditEntityListItem[] }>('/audit-entities')).items);
+    } catch (e) {
+      this.notify.error(e);
+    }
+  }
+
+  async onEntity(entityId: string | null): Promise<void> {
+    this.coordinatorId.setValue(null);
+    this.coordinators.set([]);
+    if (!entityId) return;
+    try {
+      this.coordinators.set((await this.api.get<{ items: UserDto[] }>(`/audit-entities/${entityId}/coordinators`)).items);
+    } catch (e) {
+      this.notify.error(e);
+    }
   }
 
   async load(): Promise<void> {
@@ -135,7 +170,7 @@ export class OrganizationsPage implements OnInit {
   async create(): Promise<void> {
     this.busy.set(true);
     try {
-      const body = { ...this.form.getRawValue(), ...(this.adminEmail.value ? { adminEmail: this.adminEmail.value } : {}) };
+      const body = { ...this.form.getRawValue(), auditEntityId: this.auditEntityId.value, coordinatorId: this.coordinatorId.value };
       const res = await this.api.post<{ organization: OrganizationDto }>('/organizations', body);
       this.notify.ok('orgs.created');
       await this.router.navigate(['/admin/organizations', res.organization.id]);

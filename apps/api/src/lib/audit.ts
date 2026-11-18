@@ -6,6 +6,7 @@ export interface AuditEntry {
   resourceType: string;
   resourceId?: string | null;
   organizationId?: string | null;
+  auditEntityId?: string | null;
   /** Non-personal metadata only. */
   meta?: Record<string, unknown>;
 }
@@ -15,7 +16,8 @@ export async function audit(req: Request, entry: AuditEntry): Promise<void> {
   await AuditLog.create({
     actorId: req.user?.id ?? null,
     actorRole: req.user?.role ?? null,
-    organizationId: entry.organizationId ?? req.user?.organizationId ?? null,
+    organizationId: entry.organizationId ?? null,
+    auditEntityId: entry.auditEntityId ?? req.user?.auditEntityId ?? null,
     action: entry.action,
     resourceType: entry.resourceType,
     resourceId: entry.resourceId ?? null,

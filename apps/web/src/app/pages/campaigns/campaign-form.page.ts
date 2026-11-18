@@ -37,7 +37,17 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
     <div class="layout numbered">
       <form class="card" [formGroup]="form" (ngSubmit)="submit()">
         <h2 class="section-title">{{ 'campaignForm.data' | translate }}</h2>
+        @if (!id() && options() && !options()!.organizations.length) {
+          <div class="alert warn" role="status" data-testid="cf-no-orgs">{{ 'campaignForm.noOrganizations' | translate }}</div>
+        }
         <div class="grid-2">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'campaigns.organization' | translate }}</mat-label>
+            <mat-select formControlName="organizationId" data-testid="cf-organization">
+              @for (o of organizations(); track o.id) { <mat-option [value]="o.id"><span class="keep-case">{{ o.name }}</span></mat-option> }
+            </mat-select>
+            @if (!id()) { <mat-hint>{{ 'campaignForm.organizationHint' | translate }}</mat-hint> }
+          </mat-form-field>
           <mat-form-field appearance="outline">
             <mat-label>{{ 'campaigns.reference' | translate }}</mat-label>
             <input matInput formControlName="reference" data-testid="cf-reference" />
@@ -160,6 +170,8 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
 })
 export class CampaignFormPage implements OnInit {
   readonly id = input<string>();
+  /** Query parameter `?org=` preselects an organization (from "mis organizaciones"). */
+  readonly org = input<string>();
   private readonly api = inject(ApiService);
   private readonly router = inject(Router);
   private readonly notify = inject(NotifyService);
@@ -172,7 +184,11 @@ export class CampaignFormPage implements OnInit {
   readonly selectedLangs = signal<Language[]>([...LANGS]);
   readonly busy = signal(false);
 
+  /** Assigned organizations (new) or the campaign's organization (edit; it cannot change). */
+  readonly organizations = signal<{ id: string; name: string }[]>([]);
+
   readonly form = inject(FormBuilder).group({
+    organizationId: ['', Validators.required],
     reference: [''],
     norm: ['', Validators.required],
     auditType: ['inicial', Validators.required],
@@ -189,12 +205,16 @@ export class CampaignFormPage implements OnInit {
       this.options.set(opts);
       const id = this.id();
       if (id) {
-        const { campaign } = await this.api.get<{ campaign: CampaignDto }>(`/campaigns/${id}`);
+        const { campaign, organization } = await this.api.get<{ campaign: CampaignDto; organization: { id: string; name: string } }>(`/campaigns/${id}`);
         const m = campaign.m1Config;
-        this.form.patchValue({ ...m, reference: campaign.reference ?? '', efrManagerName: m.efrManagerName ?? '' });
+        this.organizations.set([{ id: organization.id, name: organization.name }]);
+        this.form.patchValue({ ...m, organizationId: organization.id, reference: campaign.reference ?? '', efrManagerName: m.efrManagerName ?? '' });
+        this.form.controls.organizationId.disable();
         this.selectedLangs.set(m.languages);
       } else {
-        this.form.patchValue({ norm: opts.norms[0] ?? '' });
+        this.organizations.set(opts.organizations);
+        const preset = opts.organizations.find((o) => o.id === this.org()) ?? (opts.organizations.length === 1 ? opts.organizations[0] : null);
+        this.form.patchValue({ norm: opts.norms[0] ?? '', organizationId: preset?.id ?? '' });
       }
     } catch (e) {
       this.notify.error(e);
@@ -221,6 +241,7 @@ export class CampaignFormPage implements OnInit {
   private body() {
     const v = this.form.getRawValue();
     return {
+      organizationId: v.organizationId ?? '',
       reference: v.reference || undefined,
       norm: v.norm,
       auditType: v.auditType,
@@ -235,7 +256,7 @@ export class CampaignFormPage implements OnInit {
 
   async refreshPreview(): Promise<void> {
     const v = this.form.getRawValue();
-    if (!v.visitDate || !v.scopeSize || !v.norm || this.selectedLangs().length === 0) {
+    if (!v.organizationId || !v.visitDate || !v.scopeSize || !v.norm || this.selectedLangs().length === 0) {
       this.preview.set(null);
       return;
     }

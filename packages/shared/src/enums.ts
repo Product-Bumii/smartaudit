@@ -1,6 +1,10 @@
 /** Domain enumerations. Values are stable internal codes (never translated). */
 
-export const ROLES = ['SUPERADMIN_BUMII', 'SUPERADMIN_FUNDACION', 'ORG_ADMIN', 'AUDITOR'] as const;
+/**
+ * `COORDINATOR` = audit coordinator of an audit entity (certification body such as ICONTEC, AENOR, SGS).
+ * `AUDITOR` belongs to an audit entity too. The audited company (organization) has no users (decision 56).
+ */
+export const ROLES = ['SUPERADMIN_BUMII', 'SUPERADMIN_FUNDACION', 'COORDINATOR', 'AUDITOR'] as const;
 export type Role = (typeof ROLES)[number];
 export const SUPERADMIN_ROLES: readonly Role[] = ['SUPERADMIN_BUMII', 'SUPERADMIN_FUNDACION'];
 export const isSuperadmin = (role: Role): boolean => SUPERADMIN_ROLES.includes(role);

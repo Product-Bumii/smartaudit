@@ -4,6 +4,9 @@
 **Fecha de las capturas:** 13 de noviembre de 2026.
 **Servidor de pruebas:** https://efr-staging.bumii.ai
 
+> **Desactualizada desde el 18/11/2026:** la plataforma ha cambiado después de estas capturas. Los cambios que faltan
+> están numerados en [`cambios-pendientes.md`](cambios-pendientes.md) y se aplicarán al rehacer las capturas.
+
 Las imágenes están en [`img/`](img/) y muestran la plataforma real con **datos sintéticos**: organizaciones,
 personas y correos ficticios. Siguen el orden de un recorrido completo: acceso, superadministración,
 administración de la organización, trabajo del auditor y acceso de una persona participante.

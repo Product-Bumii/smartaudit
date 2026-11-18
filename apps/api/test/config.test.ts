@@ -14,7 +14,7 @@ afterAll(() => env?.stop());
 
 describe('sampling tables (versioned)', () => {
   it('creates a draft, rejects invalid publish, publishes and freezes campaigns', async () => {
-    const auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.orgs.CO);
+    const auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.entities.CO);
     const before = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput()).expect(201);
 
     const list = await request(env.app).get('/api/config/sampling-tables').set('Cookie', admin).expect(200);

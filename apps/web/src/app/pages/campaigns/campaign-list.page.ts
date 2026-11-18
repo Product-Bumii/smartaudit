@@ -17,7 +17,7 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
         <div class="eyebrow">{{ 'campaigns.eyebrow' | translate }}</div>
         <h1>{{ 'campaigns.title' | translate }}</h1>
       </div>
-      @if (auth.user()?.role === 'AUDITOR') {
+      @if (!auth.isSuperadmin()) {
         <a mat-flat-button routerLink="/campaigns/new" data-testid="new-campaign">{{ 'campaigns.new' | translate }}</a>
       }
     </div>
@@ -27,7 +27,7 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
           <thead>
             <tr>
               <th>{{ 'campaigns.reference' | translate }}</th>
-              @if (auth.isSuperadmin()) { <th>{{ 'campaigns.organization' | translate }}</th> }
+              <th>{{ 'campaigns.organization' | translate }}</th>
               <th>{{ 'campaigns.visitDate' | translate }}</th>
               <th>{{ 'campaigns.auditType' | translate }}</th>
               <th>{{ 'campaigns.minimum' | translate }}</th>
@@ -39,12 +39,15 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
             @for (c of items(); track c.id) {
               <tr>
                 <td><a class="strong" [routerLink]="['/campaigns', c.id]">{{ c.reference || c.organizationName }}</a></td>
-                @if (auth.isSuperadmin()) { <td>{{ c.organizationName }}</td> }
+                <td class="keep-case">{{ c.organizationName }}</td>
                 <td>{{ c.m1Config.visitDate | tzDate: 'UTC' : 'date' }}</td>
                 <td>{{ 'auditTypes.' + c.m1Config.auditType | translate }}</td>
                 <td class="num">{{ c.sampling?.minimum ?? '—' }}</td>
                 <td class="num">{{ c.sampleSize }}</td>
-                <td><span class="chip">{{ 'campaignStatus.' + c.status | translate }}</span></td>
+                <td>
+                  <span class="chip">{{ 'campaignStatus.' + c.status | translate }}</span>
+                  @if (c.access === 'aggregate') { <span class="chip neutral" [title]="'campaigns.aggregateHint' | translate">{{ 'campaigns.aggregateOnly' | translate }}</span> }
+                </td>
               </tr>
             } @empty {
               <tr><td colspan="7" class="muted">{{ 'campaigns.empty' | translate }}</td></tr>
