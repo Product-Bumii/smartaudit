@@ -6,7 +6,8 @@ import { FieldCrypto } from '../apps/api/src/lib/crypto';
 import { runSeed } from './seed-lib';
 
 async function main() {
-  const config = loadConfig();
+  // The seed never calls the AI: it does not need (nor get) the Gemini key.
+  const config = loadConfig({ ...process.env, LLM_PROVIDER: 'mock' });
   await connectDb(config.mongoUrl);
   await runSeed(new FieldCrypto(config.fieldEncryptionKey, config.emailHashKey));
   await mongoose.disconnect();

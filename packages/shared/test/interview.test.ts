@@ -179,6 +179,9 @@ describe('what the AI may see', () => {
     expect(safePhrasing(official, 'Visite www.ejemplo.com ¿se excede?')).toBe(official);
     expect(safePhrasing(official, `¿${'muy '.repeat(80)}larga?`)).toBe(official);
     expect(safePhrasing('Más del 10 % ¿lo supera?', '¿Supera el 10 %?')).toBe('¿Supera el 10 %?');
+    // Cut-off outputs (seen with Gemini when its reasoning used up the output budget).
+    expect(safePhrasing('¿Conoce quién es el Mánager efr de su entidad?', '¿Sabe quién ocupa el puesto de M')).toBe('¿Conoce quién es el Mánager efr de su entidad?');
+    expect(safePhrasing('¿Conoce quién es el Mánager efr de su entidad?', '¿Lo sabe?')).toBe('¿Conoce quién es el Mánager efr de su entidad?');
     expect(safePhrasing('Comentarios abiertos sobre la conciliación', 'Si quiere, puede dejar un comentario')).toBe('Si quiere, puede dejar un comentario');
   });
 
@@ -209,10 +212,12 @@ describe('what the AI may see', () => {
   });
 
   it('keeps a clarification only when short and without links', () => {
-    expect(safeClarification('fallback', '¿Podría precisarlo?')).toBe('¿Podría precisarlo?');
+    expect(safeClarification('fallback', '¿Podría precisarlo un poco?')).toBe('¿Podría precisarlo un poco?');
     expect(safeClarification('fallback', '')).toBe('fallback');
     expect(safeClarification('fallback', undefined)).toBe('fallback');
     expect(safeClarification('fallback', 'Escriba a soporte@x.com')).toBe('fallback');
     expect(safeClarification('fallback', 'x'.repeat(801))).toBe('fallback');
+    expect(safeClarification('fallback', 'Por favor, responda de nuevo a la pregunta: "¿')).toBe('fallback');
+    expect(safeClarification('fallback', '¿Y bien?')).toBe('fallback');
   });
 });

@@ -265,7 +265,10 @@ export function safePhrasing(official: string, phrased: string | null | undefine
   const numbers = (s: string) => s.match(/\d+/g) ?? [];
   const officialNumbers = new Set(numbers(official));
   const officialLabels = new Set(mentionedLabels(official, optionLabels));
+  // A cut-off output (e.g. «¿Sabe quién ocupa el puesto de M») must never reach the participant.
+  const complete = p.length >= official.length * 0.4 && (!official.trim().endsWith('?') || p.endsWith('?'));
   const ok =
+    complete &&
     p.length <= Math.max(official.length * 2, official.length + 200) &&
     questionMarks(p) <= Math.max(1, questionMarks(official)) &&
     !/@|https?:\/\/|www\./i.test(p) &&
@@ -283,5 +286,6 @@ export function safeClarification(fallback: string, phrased: string | null | und
   const named = mentionedLabels(p, optionLabels).length;
   const nameable = optionLabels.filter((l) => fold(l).replace(/[^a-z0-9]+/g, ' ').trim().length >= 4).length;
   const neutral = named === 0 || named === nameable;
-  return p && p.length <= 800 && !/@|https?:\/\/|www\./i.test(p) && neutral ? p : fallback;
+  const complete = p.length >= 15 && /[?.!)»"”]$/.test(p);
+  return p && complete && p.length <= 800 && !/@|https?:\/\/|www\./i.test(p) && neutral ? p : fallback;
 }

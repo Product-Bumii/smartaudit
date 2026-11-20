@@ -5,7 +5,8 @@ import { getSettings, syncAllIndexes } from './models';
 import mongoose from 'mongoose';
 
 async function main() {
-  const config = loadConfig();
+  // Migrations never call the AI: they do not need (nor get) the Gemini key.
+  const config = loadConfig({ ...process.env, LLM_PROVIDER: 'mock' });
   await connectDb(config.mongoUrl);
   await syncAllIndexes();
   await getSettings();

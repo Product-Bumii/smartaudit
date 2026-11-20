@@ -79,6 +79,9 @@ export class GeminiLlmProvider implements LlmProvider {
             temperature: 0,
             candidateCount: 1,
             maxOutputTokens: opts.maxOutputTokens,
+            // Gemini 2.5 «thinks» by default and those tokens count against maxOutputTokens, which truncated the
+            // JSON. Phrasing and classifying need no reasoning: off for Flash models (Pro cannot disable it).
+            ...(/pro/i.test(this.options.model) ? {} : { thinkingConfig: { thinkingBudget: 0 } }),
             ...(opts.json ? { responseMimeType: 'application/json', responseSchema: CLASSIFICATION_SCHEMA } : {}),
           },
         }),
@@ -96,7 +99,7 @@ export class GeminiLlmProvider implements LlmProvider {
   }
 
   async phraseQuestion(q: QuestionPayload) {
-    const text = await this.generate(fill(PHRASE_QUESTION, { language: LANGUAGE_NAMES[q.language], question: q.text }), { maxOutputTokens: 300 });
+    const text = await this.generate(fill(PHRASE_QUESTION, { language: LANGUAGE_NAMES[q.language], question: q.text }), { maxOutputTokens: 1024 });
     return { text, ...this.meta };
   }
 
@@ -107,7 +110,7 @@ export class GeminiLlmProvider implements LlmProvider {
       options: q.options.map((o) => `${o.code}: ${o.label}`).join('; '),
       answer,
     });
-    const raw = await this.generate(prompt, { json: true, maxOutputTokens: 400 });
+    const raw = await this.generate(prompt, { json: true, maxOutputTokens: 1024 });
     let parsed: unknown;
     try {
       parsed = JSON.parse(raw);
@@ -119,7 +122,7 @@ export class GeminiLlmProvider implements LlmProvider {
   }
 
   async phraseClarification(q: QuestionPayload, answer: string) {
-    const text = await this.generate(fill(CLARIFICATION, { language: LANGUAGE_NAMES[q.language], question: q.text, answer }), { maxOutputTokens: 300 });
+    const text = await this.generate(fill(CLARIFICATION, { language: LANGUAGE_NAMES[q.language], question: q.text, answer }), { maxOutputTokens: 1024 });
     return { text, ...this.meta };
   }
 

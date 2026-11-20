@@ -43,7 +43,7 @@ describe('Gemini adapter', () => {
     expect(call.url).toBe('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent');
     expect(call.headers['x-goog-api-key']).toBe(FAKE_KEY);
     expect(call.url).not.toContain(FAKE_KEY);
-    expect(call.body.generationConfig).toMatchObject({ temperature: 0, responseMimeType: 'application/json' });
+    expect(call.body.generationConfig).toMatchObject({ temperature: 0, responseMimeType: 'application/json', thinkingConfig: { thinkingBudget: 0 } });
     const prompt = call.body.contents[0].parts[0].text;
     expect(prompt).toContain('<<<\nSí, siempre me apoya\n>>>');
     expect(prompt).toContain('SIEMPRE: Siempre; ALGUNAS_VECES: Algunas veces; NUNCA: Nunca');
@@ -57,6 +57,9 @@ describe('Gemini adapter', () => {
     expect(f.calls[0].url).toBe('https://europe.example/v1/models/m:generateContent');
     expect(f.calls[0].body.contents[0].parts[0].text).toContain('European Portuguese');
     expect(f.calls[0].body.generationConfig.responseMimeType).toBeUndefined();
+    const pro = fakeFetch(textReply('¿Pregunta?'));
+    await new GeminiLlmProvider({ apiKey: FAKE_KEY, model: 'gemini-2.5-pro', fetchImpl: pro.impl }).phraseQuestion(p5);
+    expect(pro.calls[0].body.generationConfig.thinkingConfig).toBeUndefined();
     await llm.phraseClarification({ ...p5, type: 'multi' }, 'depende');
     expect(f.calls[1].body.contents[0].parts[0].text).toContain('ANSWER (data): <<<depende>>>');
     await llm.classifyAnswer({ ...p5, type: 'multi' }, 'x').catch(() => undefined);

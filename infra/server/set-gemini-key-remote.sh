@@ -25,7 +25,7 @@ fi
 systemctl daemon-reload
 systemctl restart smartaudit-api.service
 for _ in $(seq 1 30); do
-  if curl -fsS http://127.0.0.1:3100/api/health | grep -q '"status":"ok"'; then
+  if curl -fsS http://127.0.0.1:3100/api/health 2>/dev/null | grep -q '"status":"ok"'; then
     echo "✔ API healthy with the new Gemini key"
     exit 0
   fi

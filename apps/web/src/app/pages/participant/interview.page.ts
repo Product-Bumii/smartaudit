@@ -43,7 +43,7 @@ type Input =
         } @else if (state(); as s) {
           <ol class="messages" aria-live="polite" data-testid="chat-messages">
             @for (m of s.messages; track $index) {
-              <li class="msg" [class.me]="m.role === 'participant'" [class.clar]="m.kind === 'clarification'" data-testid="chat-message">{{ m.kind === 'abstain' ? ('interview.abstain' | translate) : m.text }}</li>
+              <li class="msg" [class.me]="m.role === 'participant'" data-testid="chat-message">{{ m.kind === 'abstain' ? ('interview.abstain' | translate) : m.text }}</li>
             }
           </ol>
 
@@ -111,7 +111,6 @@ type Input =
     .messages { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 12px; }
     .msg { max-width: 85%; padding: 12px 16px; background: var(--efr-surface-alt); font-size: 16px; line-height: 1.5; white-space: pre-wrap; }
     .msg.me { align-self: flex-end; background: #fff0e5; }
-    .msg.clar { border-left: 4px solid var(--efr-orange); }
     .answer { display: flex; flex-direction: column; gap: 14px; padding-top: 16px; border-top: 1px solid var(--efr-border); }
     .help { margin: 0; font-size: 14px; color: var(--efr-gray-dark); }
     .options { display: flex; flex-wrap: wrap; gap: 8px; }
