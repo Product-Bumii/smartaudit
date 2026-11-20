@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { z } from 'zod';
 
 const bool = z
@@ -27,8 +29,18 @@ const envSchema = z.object({
   ENABLE_DEV_OUTBOX: bool.default(false),
   /** Test environments without email: the magic link is returned to the browser. Never in production. */
   DEV_SHOW_MAGIC_LINK: bool.default(false),
-  /** AI provider adapter (section 5.5). `mock` until the real provider is decided (CLAUDE.md §8, 1). */
-  LLM_PROVIDER: z.enum(['mock']).default('mock'),
+  /** AI provider adapter (section 5.5): `mock` (development, tests) or `gemini` (decision 83). */
+  LLM_PROVIDER: z.enum(['mock', 'gemini']).default('mock'),
+  /**
+   * Gemini API key. Prefer NOT to put it in the environment: in the servers it is an encrypted systemd
+   * credential (`gemini_api_key`, read from $CREDENTIALS_DIRECTORY) or a file (`GEMINI_API_KEY_FILE`).
+   */
+  GEMINI_API_KEY: z.string().optional(),
+  GEMINI_API_KEY_FILE: z.string().optional(),
+  CREDENTIALS_DIRECTORY: z.string().optional(),
+  GEMINI_MODEL: z.string().min(1).default('gemini-2.5-flash'),
+  GEMINI_BASE_URL: z.string().url().optional(),
+  LLM_TIMEOUT_MS: z.coerce.number().int().min(1000).max(120_000).default(15_000),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });
 
@@ -51,7 +63,8 @@ export interface AppConfig {
   enableDevOutbox: boolean;
   devShowMagicLink: boolean;
   logLevel: string;
-  llmProvider: 'mock';
+  llmProvider: 'mock' | 'gemini';
+  gemini: { apiKey: string; model: string; baseUrl?: string; timeoutMs: number } | null;
   /** Session lifetime and magic link expiry. */
   sessionHours: number;
   magicLinkMinutes: number;
@@ -85,7 +98,20 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     devShowMagicLink: !isProd && e.DEV_SHOW_MAGIC_LINK,
     logLevel: e.LOG_LEVEL,
     llmProvider: e.LLM_PROVIDER,
+    gemini: e.LLM_PROVIDER === 'gemini' ? { apiKey: geminiApiKey(e), model: e.GEMINI_MODEL, baseUrl: e.GEMINI_BASE_URL, timeoutMs: e.LLM_TIMEOUT_MS } : null,
     sessionHours: 8,
     magicLinkMinutes: 15,
   };
+}
+
+/**
+ * Gemini API key: env var, explicit file, or the systemd credential `gemini_api_key`
+ * (LoadCredentialEncrypted= in smartaudit-api.service). Fails at start-up if Gemini is chosen without a key.
+ */
+function geminiApiKey(e: z.infer<typeof envSchema>): string {
+  if (e.GEMINI_API_KEY?.trim()) return e.GEMINI_API_KEY.trim();
+  const file = e.GEMINI_API_KEY_FILE ?? (e.CREDENTIALS_DIRECTORY ? join(e.CREDENTIALS_DIRECTORY, 'gemini_api_key') : null);
+  const key = file && existsSync(file) ? readFileSync(file, 'utf8').trim() : '';
+  if (!key) throw new Error('LLM_PROVIDER=gemini requires an API key (systemd credential gemini_api_key, GEMINI_API_KEY_FILE or GEMINI_API_KEY)');
+  return key;
 }

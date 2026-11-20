@@ -1,3 +1,6 @@
+import { mkdtempSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { SEED_USERS } from '../../../seed/seed-lib';
@@ -134,6 +137,19 @@ describe('magic link authentication', () => {
     const c = loadConfig({ ...TEST_ENV, NODE_ENV: 'staging', MAIL_PROVIDER: 'disabled', DEV_SHOW_MAGIC_LINK: 'true' });
     expect(c).toMatchObject({ devShowMagicLink: true, cookieSecure: true, enableDevOutbox: false });
     expect(() => loadConfig({ ...TEST_ENV, NODE_ENV: 'staging', MAIL_PROVIDER: 'memory', ENABLE_DEV_OUTBOX: 'true' })).toThrow(/not allowed in staging/);
+  });
+
+  it('Gemini: the key comes from the env, a file or the systemd credential; without it the API does not start', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'creds-'));
+    writeFileSync(join(dir, 'gemini_api_key'), 'AIzaFICTICIA-desde-credencial\n');
+    expect(loadConfig({ ...TEST_ENV, LLM_PROVIDER: 'gemini', CREDENTIALS_DIRECTORY: dir }).gemini).toEqual({
+      apiKey: 'AIzaFICTICIA-desde-credencial', model: 'gemini-2.5-flash', baseUrl: undefined, timeoutMs: 15000,
+    });
+    writeFileSync(join(dir, 'other'), 'AIzaFICTICIA-desde-fichero');
+    expect(loadConfig({ ...TEST_ENV, LLM_PROVIDER: 'gemini', GEMINI_API_KEY_FILE: join(dir, 'other') }).gemini!.apiKey).toBe('AIzaFICTICIA-desde-fichero');
+    expect(loadConfig({ ...TEST_ENV, LLM_PROVIDER: 'gemini', GEMINI_API_KEY: ' AIzaFICTICIA-env ', GEMINI_MODEL: 'gemini-x' }).gemini).toMatchObject({ apiKey: 'AIzaFICTICIA-env', model: 'gemini-x' });
+    expect(() => loadConfig({ ...TEST_ENV, LLM_PROVIDER: 'gemini' })).toThrow(/requires an API key/);
+    expect(loadConfig({ ...TEST_ENV }).gemini).toBeNull();
   });
 
   it('reports health', async () => {

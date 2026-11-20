@@ -9,6 +9,9 @@ User=smartaudit
 Group=smartaudit
 WorkingDirectory=/opt/smartaudit/current/api
 EnvironmentFile=/opt/smartaudit/shared/.env
+# Gemini API key: encrypted systemd credential (/etc/credstore.encrypted/gemini_api_key), decrypted only for
+# this service into $CREDENTIALS_DIRECTORY. Never in .env. Set/rotate it with infra/scripts/set-gemini-key.sh.
+ImportCredential=gemini_api_key
 ExecStart=/usr/bin/node --max-old-space-size=160 server.cjs
 Restart=always
 RestartSec=3

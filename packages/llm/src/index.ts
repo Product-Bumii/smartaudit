@@ -2,8 +2,8 @@
  * LLM provider interface (section 5.5). The AI is bounded: it only phrases questions, asks at most
  * one clarification and classifies answers. Order, conditions and calculations are deterministic code.
  *
- * Adapters: `mock` (deterministic, development and tests). The real adapter is chosen with the
- * `LLM_PROVIDER` env var once the provider is decided (CLAUDE.md §8, pending decision 1).
+ * Adapters: `mock` (deterministic, development and tests) and `gemini` (Google Gemini, decision 83),
+ * chosen with the `LLM_PROVIDER` env var.
  * Prompts are versioned in ./prompts.
  */
 import { z } from 'zod';
@@ -41,7 +41,9 @@ export interface LlmProvider {
   anonymizeComment(comment: string, language: Language): Promise<{ text: string } & LlmCallMeta>;
 }
 
+import { GeminiLlmProvider, type GeminiOptions } from './gemini';
 import { MockLlmProvider } from './mock';
+export { GeminiError, GeminiLlmProvider, type GeminiOptions } from './gemini';
 export { MockLlmProvider, matchOptions, normalize } from './mock';
 export { RecordingLlmProvider, type RecordedCall } from './recording';
 export { defaultClarification } from './clarification';
@@ -53,14 +55,19 @@ export function parseClassification(raw: unknown): Classification | null {
   return r.success ? r.data : null;
 }
 
-export const LLM_PROVIDERS = ['mock'] as const;
+export const LLM_PROVIDERS = ['mock', 'gemini'] as const;
 export type LlmProviderName = (typeof LLM_PROVIDERS)[number];
 
-/**
- * Provider chosen by the `LLM_PROVIDER` env var (default `mock`).
- * TODO(Fase 2): real adapter once the provider is decided (no retention or training, EU processing).
- */
-export function createLlmProvider(name: string = 'mock'): LlmProvider {
+export interface LlmProviderOptions {
+  gemini?: GeminiOptions;
+}
+
+/** Provider chosen by the `LLM_PROVIDER` env var (default `mock`). */
+export function createLlmProvider(name: string = 'mock', options: LlmProviderOptions = {}): LlmProvider {
   if (name === 'mock') return new MockLlmProvider();
+  if (name === 'gemini') {
+    if (!options.gemini) throw new Error('Gemini options are required');
+    return new GeminiLlmProvider(options.gemini);
+  }
   throw new Error(`Unknown LLM provider: ${name}`);
 }

@@ -144,12 +144,12 @@ Se regeneran con `npx tsx seed/generate-samples.ts`.
   máximo. El orden, las condiciones (P7.1, P8, P9), el umbral de confianza y la revisión humana son código
   determinista. Guardas: reformulaciones que inventen preguntas o nombren opciones, aclaraciones que sugieran una
   respuesta y respuestas que intenten dar instrucciones a la IA se descartan; los datos personales que escriba una
-  persona se eliminan antes de llamar a la IA. Hoy funciona con un **adaptador mock determinista**; el proveedor real
-  está pendiente de decisión.
+  persona se eliminan antes de llamar a la IA. El proveedor real es **Google Gemini** (`LLM_PROVIDER=gemini`); en
+  desarrollo y tests se usa un **adaptador mock determinista**.
 
 ### Lo que todavía no existe (fases siguientes)
 
-El **proveedor real de IA** (pendiente de decisión), la revisión de respuestas dudosas, el cálculo de resultados y la
+La revisión de respuestas dudosas, el cálculo de resultados y la
 exportación del informe (Word/Excel/PDF), en la Fase 3. Ver [hoja de ruta](#19-hoja-de-ruta-y-pendientes).
 
 ---
@@ -444,6 +444,20 @@ infra/scripts/deploy-server.sh test2
 Compila localmente API, worker y web, sube el paquete, aplica migraciones (y la semilla solo la primera vez), cambia
 `current`, reinicia los servicios y comprueba `/api/health`.
 
+### Clave de la IA (Gemini)
+
+La clave **no está en `.env` ni en el repositorio**: es una credencial cifrada de systemd
+(`/etc/credstore.encrypted/gemini_api_key`, solo root) que systemd descifra únicamente para `smartaudit-api`
+(`ImportCredential=gemini_api_key`). Para ponerla o cambiarla:
+
+```bash
+infra/scripts/set-gemini-key.sh test2
+```
+
+Pide la clave sin mostrarla (no queda en el historial), la cifra en el servidor con `systemd-creds`, deja
+`LLM_PROVIDER=gemini` y reinicia la API comprobando su salud. Si la clave no es válida, la entrevista sigue
+funcionando: las preguntas se muestran con el texto oficial y las respuestas libres pasan a revisión del auditor.
+
 ### Operación
 
 ```bash
@@ -498,7 +512,11 @@ Plantilla sin secretos: [.env.example](.env.example).
 | `TRUST_PROXY` | `false` | `true` detrás de nginx/Caddy (IP real para límites de peticiones) |
 | `DEV_SHOW_MAGIC_LINK` | `false` | Muestra el enlace de acceso en pantalla. **Prohibido en producción** (la API no arranca) |
 | `ENABLE_DEV_OUTBOX` | `false` | Buzón `/api/dev/outbox` (solo con `MAIL_PROVIDER=memory` y fuera de staging/producción) |
-| `LLM_PROVIDER` | `mock` | Proveedor de IA. Hoy solo `mock` (determinista); el real se añadirá cuando se decida |
+| `LLM_PROVIDER` | `mock` | Proveedor de IA: `mock` (determinista, desarrollo y tests) o `gemini` (Google Gemini) |
+| `GEMINI_API_KEY` / `GEMINI_API_KEY_FILE` | — | Clave de Gemini. **En los servidores no se usan**: la clave es una credencial cifrada de systemd (ver §9) |
+| `GEMINI_MODEL` | `gemini-2.5-flash` | Modelo de Gemini |
+| `GEMINI_BASE_URL` | API pública de Gemini | Otro endpoint compatible (p. ej. regional) |
+| `LLM_TIMEOUT_MS` | `15000` | Tiempo máximo por llamada a la IA |
 | `LOG_LEVEL` | `info` | Nivel de logs (pino) |
 
 Generar secretos:
@@ -738,14 +756,14 @@ Más información en [docs/datos-sinteticos.md](docs/datos-sinteticos.md).
 | Fase | Contenido | Estado |
 |---|---|---|
 | **1** · Base, configuración y muestra | Monorepo, modelo de datos, auth, permisos, configuración, auditorías, muestra, códigos, i18n, marca | ✅ Hecha |
-| **2** · Invitaciones y motor conversacional | Envío de invitaciones, enlace `/i/<token>`, chat con IA, clasificación, recordatorios, transiciones automáticas, panel de avance | ✅ Hecha con el adaptador mock; **falta el proveedor real de IA** (pendiente de decisión) |
+| **2** · Invitaciones y motor conversacional | Envío de invitaciones, enlace `/i/<token>`, chat con IA, clasificación, recordatorios, transiciones automáticas, panel de avance | ✅ Hecha. IA: Google Gemini (falta poner la clave real) |
 | **3** · Codificación, revisión e informes | Revisión de dudosas, resultados, síntesis IA, Word/Excel/PDF | ⏳ |
 | **4** · Piloto y producción | Concordancia IA–auditor, endurecimiento, carga, restauración de backup, `efr.bumii.ai` | ⏳ |
 
 Pendientes y decisiones abiertas (detalle en [docs/decisiones.md](docs/decisiones.md)):
 
-- **Proveedor de IA definitivo** (cierra la Fase 2): sin retención ni entrenamiento con los datos y, preferiblemente,
-  procesando en la UE.
+- **Clave real de Gemini** en el servidor (hoy hay una ficticia) y revisar las condiciones de uso de datos del plan
+  contratado (sin entrenamiento con los datos; para procesar en la UE, Gemini en Vertex AI con región europea).
 - Logotipos oficiales efr y sello técnico.
 - Contraste del naranja frente a WCAG AA.
 - Traducciones oficiales del cuestionario (en, pt, fr).

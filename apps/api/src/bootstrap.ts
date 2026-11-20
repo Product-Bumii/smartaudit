@@ -17,7 +17,7 @@ export function createContext(config: AppConfig = loadConfig(), overrides: Parti
     config,
     crypto: new FieldCrypto(config.fieldEncryptionKey, config.emailHashKey),
     mail: createMailProvider(config),
-    llm: createLlmProvider(config.llmProvider),
+    llm: createLlmProvider(config.llmProvider, { gemini: config.gemini ?? undefined }),
     logger: createLogger(config.logLevel),
     now: () => new Date(),
     rateLimits: DEFAULT_RATE_LIMITS,

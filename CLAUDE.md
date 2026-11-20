@@ -390,7 +390,7 @@ Ciclos semanales con demo los viernes. Cada fase termina con sus criterios de ac
 
 | # | Pendiente | Default mientras tanto |
 |---|---|---|
-| 1 | Proveedor de IA definitivo | Adaptador mock; se elige al iniciar la Fase 2 |
+| 1 | Proveedor de IA definitivo | **Decidido (20/11/2026): Google Gemini** (decisión 83). Mock en desarrollo y tests |
 | 2 | Traducciones oficiales del cuestionario al inglés, portugués y francés | Borrador generado por Bumii, pendiente de aprobación de la Fundación |
 | 3 | Plazo de conservación de datos (el RGPD exige plazos definidos) | Indefinido; purga configurable construida y apagada |
 | 4 | Remitente con dominio de la Fundación | bumii.ai; configurable en `settings` |

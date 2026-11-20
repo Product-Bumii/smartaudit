@@ -20,7 +20,8 @@ async function main() {
   const agenda = new Agenda({ db: { address: mongoUrl, collection: 'agendaJobs' }, processEvery: '1 minute' });
 
   // Same configuration as the API (mail provider, encryption keys, app URL for the invitation links).
-  const ctx = createContext(loadConfig({ ...process.env, MONGO_URL: mongoUrl }));
+  // The worker never calls the AI, so it does not need the Gemini key.
+  const ctx = createContext(loadConfig({ ...process.env, MONGO_URL: mongoUrl, LLM_PROVIDER: 'mock' }));
   agenda.define('campaign-scheduler', async () => {
     await runScheduler(ctx);
   });
