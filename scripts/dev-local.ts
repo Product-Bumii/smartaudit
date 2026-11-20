@@ -10,6 +10,7 @@ import mongoose from 'mongoose';
 import { createApp } from '../apps/api/src/app';
 import { createContext } from '../apps/api/src/bootstrap';
 import { loadConfig } from '../apps/api/src/config';
+import { runScheduler } from '../apps/api/src/services/scheduler';
 import { runSeed } from '../seed/seed-lib';
 
 async function main() {
@@ -37,7 +38,10 @@ async function main() {
     console.log(`SmartAudit efr API (in-memory) on http://localhost:${port}`);
     console.log(`Dev outbox (magic links): http://localhost:${port}/api/dev/outbox`);
   });
+  // No worker in this mode: run the campaign scheduler every 30 s (invitations, reminders, status changes).
+  const tick = setInterval(() => void runScheduler(ctx).catch((err) => console.error('scheduler', err.message)), 30_000);
   const stop = async () => {
+    clearInterval(tick);
     server.close();
     await mongoose.disconnect();
     await replSet.stop();

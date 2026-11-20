@@ -19,7 +19,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "npm run test:coverage -w packages/shared && npm run test -w packages/mail -w apps/api -w apps/worker && npm run check:i18n",
+    "test": "npm run test:coverage -w packages/shared && npm run test -w packages/mail -w packages/llm -w apps/api -w apps/worker && npm run check:i18n",
     "test:shared": "npm run test:coverage -w packages/shared",
     "seed": "tsx seed/seed.ts",
     "dev:local": "tsx scripts/dev-local.ts",

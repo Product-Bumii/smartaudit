@@ -1,15 +1,16 @@
 # SmartAudit efr · avances de la plataforma
 
-**Estado:** Fase 1 completada (base, configuración y muestra) y página de acceso con código adelantada de la Fase 2.
-**Fecha de las capturas:** 13 de noviembre de 2026.
+**Estado:** Fase 1 completada (base, configuración y muestra), con los cambios 1 y 2 pedidos por la Fundación
+(perfiles por entidad de auditoría, auditorías, máximo de entrevistas y listados con búsqueda) y la página de acceso con
+código adelantada de la Fase 2.
+**Fecha de las capturas:** 19 de noviembre de 2026.
 **Servidor de pruebas:** https://efr-staging.bumii.ai
+**Qué ha cambiado desde la versión anterior:** [informe de cambios](informe-cambios-1-y-2.md).
 
-> **Desactualizada desde el 18/11/2026:** la plataforma ha cambiado después de estas capturas. Los cambios que faltan
-> están numerados en [`cambios-pendientes.md`](cambios-pendientes.md) y se aplicarán al rehacer las capturas.
-
-Las imágenes están en [`img/`](img/) y muestran la plataforma real con **datos sintéticos**: organizaciones,
-personas y correos ficticios. Siguen el orden de un recorrido completo: acceso, superadministración,
-administración de la organización, trabajo del auditor y acceso de una persona participante.
+Las imágenes están en [`img/`](img/) y muestran la plataforma real con **datos sintéticos**: las organizaciones, las
+personas y los correos son ficticios. Las **entidades de auditoría** sí son las reales (AENOR, APCER, AUDELCO, CMD, DNV,
+EDUQATIA, ICONTEC, LOT y SGS), porque forman parte de la configuración. Las capturas siguen el recorrido completo:
+acceso, superadministración, coordinación, trabajo del auditor y acceso de una persona participante.
 
 ---
 
@@ -17,13 +18,24 @@ administración de la organización, trabajo del auditor y acceso de una persona
 
 | Qué ya funciona | Qué viene después |
 |---|---|
-| Acceso sin contraseñas por enlace de un solo uso, en 5 idiomas | Envío de invitaciones y recordatorios por correo (Fase 2) |
-| Gestión de organizaciones, administradores y auditores | Entrevista escrita conducida por IA (Fase 2) |
+| Acceso sin contraseñas por enlace de un solo uso, en español, inglés, portugués y francés | Envío de invitaciones y recordatorios por correo (Fase 2) |
+| Entidades de auditoría con sus coordinadores, que designan el auditor de cada organización | Entrevista escrita conducida por IA (Fase 2) |
+| Listados con búsqueda, filtros, orden y páginas, pensados para cientos de organizaciones | Cierre automático al alcanzar el máximo de entrevistas (se activa con la Fase 2) |
 | Configuración versionada: tabla de mínimos y cuestionario M1 | Revisión de respuestas dudosas y resultados (Fase 3) |
-| Campañas con cálculo automático del mínimo, la ventana y las preguntas | Informe de auditoría en Word, Excel y PDF (Fase 3) |
+| Auditorías con cálculo automático del mínimo, el máximo, la ventana y las preguntas | Informe de auditoría en Word, Excel y PDF (Fase 3) |
 | Carga de la muestra con validación fila a fila y códigos para personas sin correo | Piloto real y puesta en producción (Fase 4) |
 | Página pública para que las personas sin correo entren con su código | |
-| Marca efr aplicada en toda la interfaz, los correos y los Excel | |
+
+### Quién hace qué
+
+| Perfil | Quién es | Qué hace en la plataforma |
+|---|---|---|
+| **Superadministración** | Fundación Másfamilia y Bumii | Da de alta las entidades de auditoría y sus coordinadores, crea las organizaciones y las asigna a una entidad y un coordinador, y mantiene la configuración |
+| **Coordinación** | Coordinador/a de auditorías de una entidad (por ejemplo, ICONTEC) | Ve las organizaciones que le asigna la Fundación, da de alta a sus auditores y designa el auditor de cada organización (puede ser él o ella) |
+| **Auditor/a** | Auditor/a de una entidad | Crea la auditoría de cada organización que tiene asignada, carga la muestra y, en las fases siguientes, sigue las entrevistas y genera el informe |
+| **Persona participante** | Persona de la muestra | Responde a su entrevista, sin cuenta |
+
+La **empresa auditada no tiene acceso** a la plataforma.
 
 ---
 
@@ -34,8 +46,8 @@ administración de la organización, trabajo del auditor y acceso de una persona
 ![Pantalla de acceso](img/01-acceso.png)
 
 Portada con el claim de la marca **«efr es conciliación.»**. No hay contraseñas: la persona escribe su correo y recibe
-un **enlace de acceso de un solo uso, válido 15 minutos**. Arriba se elige el idioma de la interfaz: español, inglés,
-catalán, portugués de Portugal o francés.
+un **enlace de acceso de un solo uso, válido 15 minutos**. Arriba se elige el idioma de la interfaz: **español,
+inglés, portugués de Portugal o francés**.
 
 ### 02 · Enlace de acceso en pantalla (entorno de pruebas)
 
@@ -44,116 +56,167 @@ catalán, portugués de Portugal o francés.
 Como el entorno de pruebas aún no está conectado al correo, el enlace aparece directamente en pantalla con el botón
 **«entrar con el enlace»**. En producción llegará por correo electrónico y esta opción no existirá.
 
-### 03 · Elección de organización
+### 03 · Elección de la entidad de auditoría
 
-![Elección de organización](img/03-eleccion-de-organizacion.png)
+![Elección de entidad](img/03-eleccion-de-entidad.png)
 
-Una misma persona puede trabajar para varias organizaciones; por ejemplo, un auditor que audita dos empresas. Al
-entrar elige en cuál trabajar, y la plataforma **mantiene la información de cada organización separada**.
+Un mismo auditor puede trabajar para **varias entidades de auditoría** (en el ejemplo, ICONTEC y AENOR). Al entrar
+elige con cuál trabaja, y la plataforma **mantiene separada la información de cada entidad**: desde ICONTEC no se ve
+nada de lo que hace en AENOR.
 
 ---
 
-## 2. Superadministración (Bumii y Fundación Másfamilia)
+## 2. Superadministración (Fundación Másfamilia y Bumii)
 
-### 04 · Organizaciones
+### 04 · Entidades de auditoría
 
-![Organizaciones](img/04-superadmin-organizaciones.png)
+![Entidades de auditoría](img/04-superadmin-entidades-de-auditoria.png)
 
-Listado de las empresas efr dadas de alta, con país, zona horaria e idioma por defecto. La zona horaria marca **a qué
-hora local** abren y cierran las entrevistas. Desde aquí se crea una
-nueva organización junto con su administrador.
+La **tabla maestra de entidades de auditoría**, con las nueve entidades actuales y, para cada una, cuántos
+coordinadores, auditores y organizaciones tiene. La Fundación puede **añadir** nuevas entidades, **editar** su nombre y
+país, y **desactivarlas** (se conserva su histórico).
 
-### 05 · Ficha de una organización
+### 05 · Ficha de una entidad
 
-![Ficha de organización](img/05-superadmin-ficha-organizacion.png)
+![Ficha de entidad](img/05-superadmin-ficha-entidad.png)
 
-Datos de la organización y gestión de sus **administradores** y **auditores**: alta por correo, idioma preferido, y
-activar o desactivar. La persona dada de alta recibe un aviso por correo.
+Datos de la entidad y sus **coordinadores** y **auditores**: alta por correo, idioma preferido y activar o desactivar.
+La persona dada de alta recibe un aviso por correo.
 
-### 06 · Tabla de mínimos de entrevistas
+### 06 · Organizaciones
 
-![Tabla de mínimos](img/06-config-tabla-de-minimos.png)
+![Organizaciones](img/06-superadmin-organizaciones.png)
+
+Listado de las empresas efr con su país, su **entidad de auditoría**, su **coordinador/a** y su **auditor/a**. Pensado
+para 300–400 organizaciones:
+
+- **Buscador** por nombre, que no distingue mayúsculas ni acentos.
+- **Filtros** por entidad de auditoría (incluidas las organizaciones «sin entidad asignada») y por estado.
+- **Columnas ordenables** (nombre, país, estado).
+- **Páginas** de 25 filas (se puede elegir 10, 25, 50 o 100).
+
+### 07 · Búsqueda de una organización
+
+![Búsqueda de organizaciones](img/07-superadmin-organizaciones-busqueda.png)
+
+Al escribir «andina» aparecen al momento las dos organizaciones que lo contienen. La búsqueda se conserva al abrir una
+organización y volver atrás.
+
+### 08 · Ficha de una organización
+
+![Ficha de organización](img/08-superadmin-ficha-organizacion.png)
+
+Datos de la organización (país, zona horaria e idioma) y su **asignación**: la entidad de auditoría y el coordinador
+que la llevan. El auditor lo designa normalmente el coordinador, pero la Fundación también puede cambiarlo. La zona
+horaria marca **a qué hora local** abren y cierran las entrevistas.
+
+### 09 · Tabla de mínimos de entrevistas
+
+![Tabla de mínimos](img/09-config-tabla-de-minimos.png)
 
 La tabla oficial (*Tablas entrevistas.xlsx*) que fija el **mínimo de entrevistas completadas** según la población
 total: de 14 (hasta 90 personas) a 91 (hasta 16.000). Por encima de 16.000, el auditor fija la cifra entre 91 y 143.
-Está **versionada**: una versión publicada no se modifica y cada campaña conserva la versión con la que se creó.
+Está **versionada**: una versión publicada no se modifica y cada auditoría conserva la versión con la que se creó.
 
-### 07 · Cuestionario oficial M1
+### 10 · Cuestionario oficial M1
 
-![Cuestionario M1](img/07-config-cuestionario-m1.png)
+![Cuestionario M1](img/10-config-cuestionario-m1.png)
 
-El cuestionario oficial (P1 a P10) con sus textos en los cinco idiomas. El español está **aprobado**; inglés, catalán,
-portugués y francés están **pendientes de aprobación por la Fundación** y no se ofrecerán a las personas participantes
-hasta que se aprueben con el botón «aprobar». Más abajo se ven las preguntas, sus opciones y sus **reglas de
-activación**: por ejemplo, P8 solo en renovaciones y P9 solo si se postula a la excelencia.
-
-### 08 · Ajustes
-
-![Ajustes](img/08-config-ajustes.png)
-
-Ajustes generales de la plataforma: el nombre y la dirección del remitente de los correos, y las normas disponibles
-al crear una campaña (efr 1000-1 y 1000-2).
+El cuestionario oficial (P1 a P10) con sus textos por idioma. El español está **aprobado**; inglés, portugués y francés
+están **pendientes de aprobación por la Fundación** y no se ofrecerán a las personas participantes hasta que se
+aprueben. Más abajo se ven las preguntas, sus opciones y sus **reglas de activación**: por ejemplo, P8 solo en
+renovaciones y P9 solo si se postula a la excelencia.
 
 ---
 
-## 3. Administración de la organización (empresa efr)
+## 3. Coordinación de la entidad de auditoría
 
-### 09 · Auditores de la organización
+### 11 · Mis organizaciones
 
-![Auditores de la organización](img/09-admin-organizacion-auditores.png)
+![Mis organizaciones del coordinador](img/11-coordinador-mis-organizaciones.png)
 
-El administrador de la empresa da de alta y desactiva a sus auditores. **Por confidencialidad, la empresa no ve
-nunca la muestra ni las respuestas de las personas**, solo gestiona quién audita.
+El coordinador de ICONTEC ve **solo las organizaciones que la Fundación le ha asignado**, con buscador, orden y
+páginas (un coordinador puede llevar 50–60 empresas). En cada fila elige el **auditor responsable**.
+
+### 12 · Designar el auditor
+
+![Designar auditor](img/12-coordinador-designar-auditor.png)
+
+El desplegable ofrece los auditores activos de su entidad y al propio coordinador («yo»), que puede **asignarse a sí
+mismo**. Si cambia el auditor de una organización, sus auditorías abiertas **pasan al nuevo auditor** y el cambio queda
+registrado.
+
+### 13 · Auditores de la entidad
+
+![Auditores de la entidad](img/13-coordinador-auditores.png)
+
+El coordinador da de alta y desactiva a los auditores de su entidad.
+
+### 14 · Auditoría vista por el coordinador: solo avance
+
+![Auditoría solo avance](img/14-coordinador-auditoria-solo-avance.png)
+
+El coordinador ve el **estado y el avance** de las auditorías de sus organizaciones, pero **nunca la muestra, los
+códigos ni las respuestas**: eso es solo del auditor responsable. El aviso gris lo explica en la propia pantalla.
 
 ---
 
 ## 4. Trabajo del auditor
 
-### 10 · Campañas del auditor
+### 15 · Mis organizaciones
 
-![Campañas](img/10-auditor-campanas.png)
+![Mis organizaciones del auditor](img/15-auditor-mis-organizaciones.png)
 
-Cada auditoría es una **campaña**. El listado muestra la fecha de la visita, el tipo de auditoría, el **mínimo de
-entrevistas completadas** exigido, las personas cargadas en la muestra y el estado.
+El auditor ve las organizaciones que su coordinador le ha asignado y, en cada fila, el botón **«nueva auditoría»**.
 
-### 11 · Nueva campaña con cálculo automático
+### 16 · Nueva auditoría con cálculo automático
 
-![Nueva campaña](img/11-nueva-campana-calculo-automatico.png)
+![Nueva auditoría](img/16-nueva-auditoria-calculo-automatico.png)
 
 El auditor rellena los datos de la auditoría y el panel **«2. cálculo automático»** se actualiza al instante. En el
 ejemplo, una renovación con 320 personas que postula a la excelencia:
 
 - **Mínimo de completadas: 26** (tramo 250–500 de la tabla oficial).
-- **Ventana de participación:** abre el 25 de noviembre a las 09:00 y cierra el 8 de diciembre a las 23:59, hora de
-  Colombia. Son los 10 días hábiles (de lunes a viernes) previos a la visita. Los recordatorios caen en los días
-  hábiles 4 y 8 (30 de noviembre y 4 de diciembre).
+- **Máximo de completadas: 30.** Por defecto es el mínimo; el auditor puede subirlo. Al alcanzarlo, la auditoría
+  **se cierra automáticamente**.
+- **Ventana de participación:** abre el **día de comienzo de las entrevistas** (25 de noviembre, 09:00) y dura **10 días
+  hábiles**, hasta el 8 de diciembre a las 23:59, hora de Colombia. Los recordatorios caen en los días hábiles 4 y 8
+  (30 de noviembre y 4 de diciembre).
 - **Preguntas activadas:** P8 aparece porque es una renovación y P9 porque postula a la excelencia; P7.1 depende de la
   respuesta a P7.
 - **Idiomas para participantes:** solo español, porque es el único aprobado.
 
 Todos estos cálculos los hace la plataforma con reglas fijas y verificadas; **la IA no interviene**.
 
-### 12 · Ficha de la campaña en borrador
+### 17 · Máximo no válido
 
-![Ficha de campaña en borrador](img/12-ficha-campana-borrador.png)
+![Máximo no válido](img/17-nueva-auditoria-maximo-no-valido.png)
 
-Resumen de la campaña con cifras destacadas, los datos de la auditoría, la ventana con todos los días hábiles, las
-preguntas que se harán, la sección de **muestra** (todavía vacía) y el **historial de estados**.
+El máximo nunca puede quedar por debajo del mínimo (ni por encima de la población total o de la muestra cargada). Si
+el auditor escribe 20 cuando el mínimo es 26, la plataforma lo avisa antes de crear la auditoría.
 
-### 13 · Muestra con errores
+### 18 · Ficha de la auditoría en borrador
 
-![Muestra con errores](img/13-muestra-con-errores.png)
+![Ficha de auditoría en borrador](img/18-ficha-auditoria-borrador.png)
+
+Resumen de la auditoría con cifras destacadas (mínimo, máximo, personas en la muestra, población total y comienzo de
+las entrevistas), los datos de la auditoría, la ventana con todos los días hábiles, las preguntas que se harán, la
+sección de **muestra** (todavía vacía) y el **historial de estados**.
+
+### 19 · Muestra con errores
+
+![Muestra con errores](img/19-muestra-con-errores.png)
 
 El auditor descarga la plantilla de muestra (Excel o CSV), la rellena **sin nombres ni datos identificativos** y la
 sube. Si hay errores, la plataforma los muestra **fila a fila** y **no carga nada**: correo no válido o repetido, valores
 fuera de las categorías permitidas, campos obligatorios vacíos… También rechaza columnas con datos prohibidos, como
 nombre, DNI, salario o salud.
 
-### 14 · Muestra cargada
+### 20 · Muestra cargada
 
-![Muestra cargada](img/14-ficha-campana-muestra-cargada.png)
+![Muestra cargada](img/20-ficha-auditoria-muestra-cargada.png)
 
-Con el archivo corregido, la campaña pasa a **«Muestra cargada»**. El auditor ve:
+Con el archivo corregido, la auditoría pasa a **«Muestra cargada»**. El auditor ve:
 
 - **Personas:** 30 en total, 25 con correo y 5 sin correo.
 - **Códigos de acceso:** el botón para descargarlos e imprimirlos para las personas sin correo.
@@ -163,20 +226,28 @@ Con el archivo corregido, la campaña pasa a **«Muestra cargada»**. El auditor
 
 Si un grupo tiene menos de 3 personas, la plataforma avisa del riesgo de reidentificación.
 
+### 21 · Auditorías abiertas
+
+![Auditorías abiertas](img/21-auditor-auditorias-abiertas.png)
+
+El listado de auditorías tiene buscador (por referencia u organización), **filtro de estado** («abiertas», «cerradas»
+o un estado concreto), columnas ordenables y páginas. En el ejemplo, el filtro «abiertas» oculta las canceladas y las
+que ya tienen informe.
+
 ---
 
 ## 5. Persona participante sin correo electrónico
 
-### 15 · Introducir el código
+### 22 · Introducir el código
 
-![Introducir código](img/15-participante-introducir-codigo.png)
+![Introducir código](img/22-participante-introducir-codigo.png)
 
-La persona abre el enlace que recibe impreso junto a su código y escribe el **código de 8 caracteres**. Da igual si usa mayúsculas o minúsculas. Tras varios intentos fallidos, el acceso se bloquea unos
-minutos.
+La persona abre el enlace que recibe impreso junto a su código y escribe el **código de 8 caracteres**. Da igual si
+usa mayúsculas o minúsculas. Tras varios intentos fallidos, el acceso se bloquea unos minutos.
 
-### 16 · Código correcto y aviso previo
+### 23 · Código correcto y aviso previo
 
-![Código correcto](img/16-participante-codigo-correcto.png)
+![Código correcto](img/23-participante-codigo-correcto.png)
 
 Con un código válido, la persona ve:
 
@@ -187,9 +258,9 @@ Con un código válido, la persona ve:
 La empresa nunca sabrá quién ha respondido ni qué. El botón «empezar la entrevista» se activará en la **Fase 2**, cuando
 esté lista la entrevista con IA.
 
-### 17 · Vista en el móvil
+### 24 · Vista en el móvil
 
-![Participante en móvil](img/17-participante-movil.png)
+![Participante en móvil](img/24-participante-movil.png)
 
 La misma pantalla en un teléfono. El área del participante está pensada para responder desde el móvil.
 
@@ -197,23 +268,23 @@ La misma pantalla en un teléfono. El área del participante está pensada para 
 
 ## 6. Otras capacidades
 
-### 18 · Superadmin: todas las campañas
+### 25 · Superadmin: todas las auditorías
 
-![Todas las campañas](img/18-superadmin-todas-las-campanas.png)
+![Todas las auditorías](img/25-superadmin-todas-las-auditorias.png)
 
-Los superadministradores ven las campañas de todas las organizaciones, con una columna adicional de organización, y
-pueden suspenderlas o cancelarlas.
+Los superadministradores ven las auditorías de **todas las organizaciones y entidades**, con el mismo buscador, filtro de
+estado y páginas, y pueden suspenderlas o cancelarlas.
 
-### 19 · Plataforma en francés
+### 26 · Plataforma en francés
 
-![Plataforma en francés](img/19-multiidioma-frances.png)
+![Plataforma en francés](img/26-multiidioma-frances.png)
 
-La misma ficha de campaña con la interfaz en francés: textos, fechas («mer. 09 déc. 2026») y estados («Échantillon
-chargé»). Ningún texto está escrito directamente en el código, así que añadir idiomas no requiere reprogramar.
+La misma ficha de auditoría con la interfaz en francés: textos, fechas y estados («Échantillon chargé»). Ningún texto
+está escrito directamente en el código, así que añadir o retirar idiomas no requiere reprogramar.
 
-### 20 · Correo de acceso con la marca efr
+### 27 · Correo de acceso con la marca efr
 
-![Correo de acceso](img/20-correo-enlace-de-acceso.png)
+![Correo de acceso](img/27-correo-enlace-de-acceso.png)
 
 El correo con el enlace de acceso, con la identidad visual efr: naranja corporativo, títulos en minúsculas,
 «powered by Bumii», el claim «efr es conciliación» y el enlace a www.soyefr.org. Se envía en el idioma de cada
@@ -229,5 +300,6 @@ Con la plataforma en local recién arrancada (`npm run dev:local` y `npm start -
 npm run screenshots
 ```
 
-El guion (`e2e/presentation/screenshots.spec.ts`) crea los datos de demostración y vuelve a generar todas las imágenes
-de `docs/presentacion/img/`.
+El guion (`e2e/presentation/screenshots.spec.ts`) crea los datos de demostración (28 organizaciones y unas 30
+auditorías sintéticas) y vuelve a generar todas las imágenes de `docs/presentacion/img/`. Los cambios de la plataforma
+que todavía no estén en las capturas se numeran en [`cambios-pendientes.md`](cambios-pendientes.md).

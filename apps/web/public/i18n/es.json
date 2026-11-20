@@ -211,7 +211,10 @@
     "interviewStartDate": "Comienzo de las entrevistas",
     "maximum": "Máximo de completadas",
     "maximumHint": "Al alcanzar esta cifra de entrevistas completadas, la auditoría se cierra automáticamente.",
-    "maximumAboveSample": "El máximo ({{max}}) supera las personas de la muestra ({{n}}): la auditoría no podrá cerrarse por máximo y se cerrará al terminar la ventana."
+    "maximumAboveSample": "El máximo ({{max}}) supera las personas de la muestra ({{n}}): la auditoría no podrá cerrarse por máximo y se cerrará al terminar la ventana.",
+    "launch": "Lanzar auditoría",
+    "confirmLaunch": "¿Lanzar la auditoría? Las invitaciones saldrán cuando abra la ventana y ya no se podrá editar la configuración.",
+    "launched": "Auditoría lanzada"
   },
   "auditTypes": {
     "inicial": "Inicial",
@@ -309,7 +312,9 @@
   "historyReasons": {
     "created": "creada",
     "sample_loaded": "muestra cargada",
-    "maximum_reached": "se alcanzó el máximo de completadas"
+    "maximum_reached": "se alcanzó el máximo de completadas",
+    "launched": "lanzada por el auditor/a",
+    "scheduled": "automático (ventana)"
   },
   "errors": {
     "GENERIC": "Se ha producido un error ({{code}}).",
@@ -360,7 +365,22 @@
     "INVALID_START_DATE": "La fecha de comienzo de las entrevistas no es válida.",
     "MAXIMUM_BELOW_MINIMUM": "El máximo no puede ser menor que el mínimo de completadas.",
     "MAXIMUM_ABOVE_SCOPE": "El máximo no puede superar la población total.",
-    "MAXIMUM_ABOVE_SAMPLE": "El máximo no puede superar las personas de la muestra cargada."
+    "MAXIMUM_ABOVE_SAMPLE": "El máximo no puede superar las personas de la muestra cargada.",
+    "INTERVIEW_NOT_AVAILABLE": "La entrevista no está abierta en este momento.",
+    "LANGUAGE_NOT_OFFERED": "Ese idioma no está disponible para esta entrevista.",
+    "QUESTION_MISMATCH": "La pregunta ha cambiado; te mostramos la actual.",
+    "INTERVIEW_COMPLETED": "La entrevista ya está completada.",
+    "INTERVIEW_NOT_STARTED": "La entrevista todavía no ha empezado.",
+    "NO_PARTICIPANT_SESSION": "Vuelve a abrir tu enlace o a escribir tu código.",
+    "INVALID_INVITATION": "El enlace no es válido o ya no está disponible.",
+    "CAMPAIGN_NOT_READY": "Carga la muestra antes de lanzar la auditoría.",
+    "CAMPAIGN_NOT_RUNNING": "Solo se puede ampliar la ventana de una auditoría lanzada y abierta.",
+    "EXTENSION_NOT_LATER": "La nueva fecha de cierre debe ser posterior a la actual.",
+    "INVALID_DATE": "La fecha no es válida.",
+    "INVALID_OPTIONS": "Elige una opción válida.",
+    "FREE_TEXT_REQUIRED": "Indica cuál, por favor.",
+    "EMPTY_ANSWER": "Escribe tu respuesta o elige una opción.",
+    "ABSTAIN_NOT_ALLOWED": "Esta pregunta necesita una respuesta."
   },
   "brand": {
     "sideNote": "Para organizaciones con certificado efr en vigor."
@@ -387,13 +407,14 @@
     "chooseLanguage": "idioma de la entrevista",
     "start": "Empezar la entrevista",
     "startWhenOpen": "Podrás empezar cuando se abra la entrevista, con este mismo código.",
-    "startPhase2": "La entrevista estará disponible en la próxima versión de la plataforma (entorno de pruebas).",
     "completedTitle": "entrevista completada",
     "completedText": "Ya has respondido la entrevista. ¡Gracias por tu participación!",
     "closedTitle": "plazo terminado",
     "closedText": "El plazo para responder esta entrevista ha terminado.",
     "unavailableTitle": "entrevista no disponible",
-    "unavailableText": "La entrevista no está disponible en este momento. Consulta a la persona auditora."
+    "unavailableText": "La entrevista no está disponible en este momento. Consulta a la persona auditora.",
+    "welcomeTitle": "bienvenida",
+    "resume": "Continuar la entrevista"
   },
   "entities": {
     "eyebrow": "Plataforma",
@@ -452,5 +473,50 @@
     "firstPage": "Primera página",
     "lastPage": "Última página",
     "range": "{{start}}–{{end}} de {{total}}"
+  },
+  "progress": {
+    "title": "avance",
+    "completed": "Entrevistas completadas",
+    "ofMinimum": "{{pct}} % del mínimo ({{minimum}})",
+    "started": "Empezadas sin terminar",
+    "invited": "Personas invitadas",
+    "alerts": {
+      "SAMPLE_BELOW_MINIMUM": "La muestra tiene menos personas que el mínimo de entrevistas completadas ({{minimum}}).",
+      "PROJECTION_BELOW_MINIMUM": "Al ritmo actual se llegaría a unas {{projection}} entrevistas al cierre, por debajo del mínimo ({{minimum}}). Valora enviar un aviso o ampliar la ventana."
+    },
+    "people": "estado por persona",
+    "peopleHint": "Cada persona se identifica por su fila en tu archivo de muestra; nunca se muestra su correo ni lo que ha respondido.",
+    "row": "Fila del archivo",
+    "channel": "Acceso",
+    "status": "Estado",
+    "invitedAt": "Invitación enviada",
+    "reminders": "Recordatorios",
+    "paperCode": "Código en papel",
+    "email": "Correo",
+    "extendTitle": "ampliar la ventana",
+    "newCloseDate": "Nueva fecha de cierre",
+    "reason": "Motivo (opcional)",
+    "extend": "Ampliar",
+    "extended": "Ventana ampliada"
+  },
+  "respondentStatus": {
+    "pending": "Pendiente",
+    "invited": "Invitada",
+    "started": "Empezada",
+    "completed": "Completada"
+  },
+  "interview": {
+    "progress": "{{answered}} de unas {{planned}} preguntas",
+    "expiredTitle": "vuelve a abrir tu enlace",
+    "expiredText": "La sesión ha caducado. Abre de nuevo el enlace de tu correo o escribe tu código: continuarás donde lo dejaste.",
+    "abstain": "Prefiero no responder",
+    "noComments": "No tengo comentarios",
+    "answerArea": "Tu respuesta",
+    "send": "Enviar",
+    "ownWords": "O responde con tus palabras",
+    "comment": "Tu comentario",
+    "doneTitle": "¡gracias por participar!",
+    "doneText": "Tus respuestas se han guardado de forma confidencial. Ya puedes cerrar esta página.",
+    "multiHint": "Puedes elegir varias opciones; luego pulsa «enviar»."
   }
 }

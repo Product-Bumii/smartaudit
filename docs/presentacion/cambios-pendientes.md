@@ -4,10 +4,14 @@ Lista numerada de los cambios de la plataforma que todavía no están en las cap
 [`README.md`](README.md). Se aplicarán todos juntos cuando se decida rehacer las capturas. Al aplicar uno, márcalo
 como hecho; no se borra ni se renumera nada.
 
+**Situación (19/11/2026):** las capturas se rehicieron con los cambios 1 y 2 (27 capturas nuevas; resumen en
+[informe-cambios-1-y-2.md](informe-cambios-1-y-2.md)). Desde entonces se ha añadido el cambio 3 (Fase 2).
+
 | # | Fecha | Cambio | Estado |
 |---|---|---|---|
-| 1 | 18/11/2026 | Nuevos perfiles: entidades de auditoría, coordinador y auditor asignado (decisiones 56–63) | Pendiente |
-| 2 | 18/11/2026 | «Auditorías» en vez de «campañas», fecha de comienzo de las entrevistas, máximo de completadas, sin catalán, entidades reales y listados con búsqueda (decisiones 64–69) | Pendiente |
+| 1 | 18/11/2026 | Nuevos perfiles: entidades de auditoría, coordinador y auditor asignado (decisiones 56–63) | Hecho (19/11/2026) |
+| 2 | 18/11/2026 | «Auditorías» en vez de «campañas», fecha de comienzo de las entrevistas, máximo de completadas, sin catalán, entidades reales y listados con búsqueda (decisiones 64–69) | Hecho (19/11/2026) |
+| 3 | 19/11/2026 | Fase 2: lanzar la auditoría, avance y ampliación de ventana, enlace personal, entrevista en el chat (móvil), invitación y recordatorio por correo (decisiones 70–82) | Pendiente |
 
 ---
 
@@ -88,3 +92,34 @@ entrevistas»**.
 - Explicar la regla de la ventana (abre el día de comienzo y dura 10 días hábiles) y el cierre automático por máximo.
 - Quitar el catalán de la lista de idiomas (quedan español, inglés, portugués y francés).
 - Mencionar la búsqueda y la paginación en los listados.
+
+---
+
+## 3 · Fase 2: lanzamiento, avance y entrevista con IA
+
+**Script `e2e/presentation/screenshots.spec.ts`:** lanzar una auditoría (botón `launch`), abrir la ventana con
+`POST /api/dev/campaigns/:id/open-now`, sacar el enlace personal del buzón `GET /api/dev/outbox` y recorrer la
+entrevista (área `chat-answer`, con el código de la pregunta en `data-question`). Varias personas sintéticas
+respondiendo para que el avance tenga cifras.
+
+**Capturas que cambian:**
+
+| Captura | Qué cambia |
+|---|---|
+| 20 · Ficha con la muestra cargada | Botón **«lanzar auditoría»** |
+| 22–24 · Participante | Ya se puede **empezar**: el botón está activo cuando la entrevista está abierta, y aparece «continuar la entrevista» al volver |
+| 14 · Coordinador, solo avance | Ahora muestra la sección **avance** (agregado) |
+
+**Capturas nuevas:**
+- Ficha de la auditoría **en curso** con la sección **avance**: completadas frente al mínimo y al máximo, barra,
+  alertas, **estado por persona** (fila del archivo) y **ampliar la ventana**.
+- Correo de **invitación** y de **recordatorio** con la marca efr.
+- Landing del **enlace personal** (`/i/<token>`): bienvenida, aviso previo, idioma y «empezar la entrevista».
+- **Chat en el móvil**: pregunta con botones, respuesta múltiple (P2), respuesta con sus palabras, la **aclaración**
+  (repregunta) y «Prefiero no responder».
+- **Fin de la entrevista** («¡gracias por participar!»).
+- Historial de estados con *Envíos activos* → *En curso* (automático) y, si se quiere, el cierre por **máximo**.
+
+**Textos de la presentación:** explicar el ciclo (lanzar → invitaciones al abrir → recordatorios días 4 y 8 → cierre
+por fecha o por máximo), la IA acotada y sus guardas, y la pausa y reanudación.
+

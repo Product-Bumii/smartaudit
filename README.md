@@ -58,6 +58,9 @@ control**: elige la muestra, valida lo dudoso y aprueba el informe.
 | Local con Docker | http://localhost:8080 | Enlace en pantalla o en Mailpit: http://localhost:8025 |
 | Salud de la API (pruebas) | https://efr-staging.bumii.ai/api/health | — |
 
+**Presentación con capturas:** [docs/presentacion/README.md](docs/presentacion/README.md) (27 capturas, 19/11/2026) ·
+**qué cambió con los cambios 1 y 2:** [informe de cambios](docs/presentacion/informe-cambios-1-y-2.md).
+
 ### Usuarios de prueba (semilla sintética)
 
 Todos son ficticios y usan dominios `.example` reservados (RFC 2606): ningún correo llega a personas reales.
@@ -76,7 +79,7 @@ Organizaciones (empresas efr, **sin usuarios**): Andina Servicios S.A.S. y Costa
 Logística S.L. y Montaña Textil S.L. (España), todas sintéticas.
 
 **Participantes sin correo:** no tienen cuenta. Entran por `https://<dominio>/c/<auditoría>` con un **código de 8
-caracteres** que el auditor descarga tras subir la muestra (ver [paso 4.6](#46-acceso-de-una-persona-sin-correo)).
+caracteres** que el auditor descarga tras subir la muestra (ver [paso 4.7](#47-persona-participante)).
 
 ### Archivos de muestra de prueba (`seed/samples/`)
 
@@ -122,18 +125,32 @@ Se regeneran con `npx tsx seed/generate-samples.ts`.
   - Ve el resumen de la muestra: valores distintos de centro y tipo de puesto, distribución por sexo y edad, avisos de
     muestra insuficiente y de grupos pequeños (riesgo de reidentificación).
   - Descarga los **códigos de acceso** de las personas sin correo.
+  - **Lanza la auditoría** (Fase 2): las invitaciones salen solas al abrir la ventana; recordatorios en los días
+    hábiles 4 y 8 a quien no ha completado; la auditoría pasa a *En curso* al abrir y a *Finalizada* al cerrar (o al
+    alcanzar el máximo).
+  - Sigue el **avance**: completadas frente al mínimo y al máximo, alertas de muestra insuficiente y de proyección por
+    debajo del mínimo, y el **estado de cada persona** identificada por su fila en el archivo (nunca por su nombre).
+  - **Amplía la ventana** si hace falta (queda registrado).
   - Suspende, reanuda o cancela auditorías.
 - **Listados con búsqueda, filtros, orden y páginas** (pensados para cientos de organizaciones y miles de
   auditorías): búsqueda por nombre sin distinguir mayúsculas ni acentos, filtro por entidad de auditoría y estado,
   filtro de auditorías abiertas/cerradas o por estado, 25 filas por página (10, 25, 50 o 100). La búsqueda se conserva al
   volver atrás.
-- **Participante sin correo:** página pública `/c/<auditoría>` que pide el código, muestra el aviso previo, la elección de
-  idioma y cuándo abre la entrevista.
+- **Participante** (Fase 2): entra con su **enlace personal** `/i/<token>` (invitación por correo) o con su **código** en
+  `/c/<auditoría>` (personas sin correo); ve el aviso previo, elige idioma y responde una **entrevista escrita en el
+  móvil**: botones con las opciones, respuesta con sus palabras (la IA la clasifica) o «Prefiero no responder». Puede
+  pausar y continuar con el mismo enlace o código, sin repetir ni perder respuestas.
+- **IA acotada** (Fase 2): la IA solo reformula la pregunta, clasifica el texto libre y pide **una** aclaración como
+  máximo. El orden, las condiciones (P7.1, P8, P9), el umbral de confianza y la revisión humana son código
+  determinista. Guardas: reformulaciones que inventen preguntas o nombren opciones, aclaraciones que sugieran una
+  respuesta y respuestas que intenten dar instrucciones a la IA se descartan; los datos personales que escriba una
+  persona se eliminan antes de llamar a la IA. Hoy funciona con un **adaptador mock determinista**; el proveedor real
+  está pendiente de decisión.
 
 ### Lo que todavía no existe (fases siguientes)
 
-Envío de invitaciones y recordatorios por correo, la **entrevista con IA** (chat), la revisión de respuestas dudosas,
-el cálculo de resultados y la exportación del informe (Word/Excel/PDF). Ver [hoja de ruta](#19-hoja-de-ruta-y-pendientes).
+El **proveedor real de IA** (pendiente de decisión), la revisión de respuestas dudosas, el cálculo de resultados y la
+exportación del informe (Word/Excel/PDF), en la Fase 3. Ver [hoja de ruta](#19-hoja-de-ruta-y-pendientes).
 
 ---
 
@@ -227,15 +244,28 @@ se crea una nueva (solo puede haber un borrador a la vez). Las auditorías guard
 6. Revisa el resumen y pulsa **«descargar códigos de acceso»** (Excel o CSV): fila del archivo original, código, centro,
    tipo de puesto y enlace. Mientras la auditoría está en *Borrador* o *Muestra cargada* se puede **reemplazar** la muestra.
 
-### 4.6 Acceso de una persona sin correo
+### 4.6 Auditor: lanzar la auditoría y seguir el avance
 
-1. Abre el enlace del archivo de códigos (`https://<dominio>/c/<auditoría>`).
-2. Escribe el código (da igual mayúsculas, minúsculas, espacios o guiones) → **continuar**.
-3. Código correcto: se muestra cuándo abre y cierra la entrevista, el aviso previo (uso de IA, finalidad,
-   confidencialidad, derecho a no responder, contacto) y la elección de idioma.
-4. El botón **«empezar la entrevista»** está deshabilitado: la entrevista es de la Fase 2. En las pruebas verás siempre
-   «aún no está abierta» porque las auditorías todavía no se pueden lanzar.
-5. Tras **10 intentos fallidos en 15 minutos** desde la misma IP, se bloquea temporalmente.
+1. Con la auditoría en *Muestra cargada*, pulsa **«lanzar auditoría»** → *Envíos activos*. Ya no se puede editar la
+   configuración (solo añadir personas a la muestra).
+2. Cuando abre la ventana (9:00 del día de comienzo, hora de la organización) pasa a *En curso* y salen las
+   invitaciones. **En local** no hay worker: el planificador corre cada 30 s, y para no esperar a la fecha basta con
+   `curl -X POST localhost:3000/api/dev/campaigns/<id>/open-now`. Los correos se ven en `localhost:3000/api/dev/outbox`.
+   En el servidor de pruebas, crea la auditoría con fecha de comienzo **hoy** y se abrirá en el minuto siguiente.
+3. La sección **«avance»** muestra completadas frente al mínimo y al máximo, las alertas y el estado de cada persona;
+   desde ahí se **amplía la ventana**.
+
+### 4.7 Persona participante
+
+1. Abre su **enlace personal** (correo de invitación, `https://<dominio>/i/<token>`) o el enlace del archivo de códigos
+   (`https://<dominio>/c/<auditoría>`) y escribe su **código** (da igual mayúsculas, minúsculas, espacios o guiones).
+2. Lee el aviso previo (uso de IA, finalidad, confidencialidad, derecho a no responder, contacto), elige idioma y pulsa
+   **«empezar la entrevista»**.
+3. Responde con los **botones**, con **sus palabras** o con **«Prefiero no responder»**. Si la respuesta libre no encaja
+   con ninguna opción, la IA repregunta una vez; si sigue sin encajar, queda para revisión del auditor.
+4. Puede cerrar y volver con el mismo enlace o código: **«continuar la entrevista»** retoma la pregunta pendiente.
+5. Al terminar ve el agradecimiento; el enlace ya no permite empezar otra entrevista.
+6. Tras **10 intentos fallidos de código en 15 minutos** desde la misma IP, se bloquea temporalmente.
 
 ---
 
@@ -306,7 +336,7 @@ seed/
 scripts/          dev-local.ts (modo sin Docker), check-i18n.ts, smoke-bundle.ts
 e2e/              Playwright (presentation/ genera las capturas de docs/presentacion)
 docs/             decisiones.md, datos-sinteticos.md, marca.md
-  presentacion/   Presentación con capturas; cambios-pendientes.md numera lo que falta por actualizar
+  presentacion/   Presentación con 27 capturas, informe de cambios 1 y 2, y cambios-pendientes.md (numera lo que falta por capturar)
 design_handoff_smartaudit_marca_efr/   Manual de marca efr y referencia de diseño
 ```
 
@@ -365,12 +395,13 @@ npm run check:i18n         # mismas claves en es/en/ca/pt/fr y claves usadas exi
 
 | Suite | Contenido | Resultado actual |
 |---|---|---|
-| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles (lunes a viernes) y ventanas desde la fecha de comienzo (fin de semana, fin de año, cambio de hora), **máximo de completadas**, búsqueda sin acentos, idiomas disponibles, validación de muestra, activación de preguntas, estados de auditoría, permisos, **acceso por asignación** (entidad, coordinador, auditor, traspaso de auditorías), códigos, retención, disponibilidad del participante | 152 tests · **100 % de ramas** |
-| `packages/mail` | Plantillas por idioma, marca, escape HTML, proveedores | 6 tests |
-| `apps/api` | Enlace mágico, selección de entidad, límites de peticiones, aislamiento entre entidades de auditoría, coordinador solo con agregado, asignación y traspaso de auditorías, auditorías (máximo y **cierre automático al alcanzarlo**), **listados paginados con búsqueda, filtros y orden**, carga de muestra, configuración versionada, **ningún correo en claro en la BD**, acceso con código | 68 tests |
+| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles (lunes a viernes) y ventanas desde la fecha de comienzo (fin de semana, fin de año, cambio de hora), **máximo de completadas**, búsqueda sin acentos, idiomas disponibles, **motor de entrevista** (siguiente pregunta, botones, texto libre, una aclaración, umbral y revisión), **guardas de la IA** (reformulación, aclaración, instrucciones, datos personales), **planificación** (invitaciones, recordatorios, transiciones), avance y alertas, ampliación de ventana, validación de muestra, activación de preguntas, estados de auditoría, permisos, **acceso por asignación** (entidad, coordinador, auditor, traspaso de auditorías), códigos, retención, disponibilidad del participante | 186 tests · **100 % de ramas** |
+| `packages/mail` | Plantillas por idioma (acceso, alta, **invitación**, **recordatorio**), marca, escape HTML, proveedores | 6 tests |
+| `packages/llm` | Adaptador mock (clasificación por opciones y sinónimos en varios idiomas, aclaración neutral), registro de llamadas, validación del esquema | 6 tests |
+| `apps/api` | Enlace mágico, selección de entidad, límites de peticiones, aislamiento entre entidades de auditoría, coordinador solo con agregado, asignación y traspaso de auditorías, auditorías (máximo y **cierre automático al alcanzarlo**), **listados paginados con búsqueda, filtros y orden**, carga de muestra, configuración versionada, **ningún correo en claro en la BD**, acceso con código; **Fase 2**: lanzar, invitaciones al abrir la ventana, enlace personal, entrevista completa (botones, abstención, P7.1/P8/P9), pausa y reanudación, aclaración y revisión, instrucciones a la IA nunca clasificadas, **ningún identificador enviado a la IA**, recordatorios, ampliación, cierre, límite diario y reintentos, proveedor «malicioso» neutralizado; **40 personas sintéticas** | 88 tests |
 | `apps/worker` | Purga de retención (apagada / activada) | 2 tests |
-| E2E (Playwright) | Superadmin crea entidad de auditoría con coordinador y organización asignada → coordinador crea auditor y lo designa → el superadmin la encuentra con la búsqueda y el filtro por entidad → auditor crea auditoría con máximo, sube muestra con errores, la corrige → `muestra_cargada` con mínimo, máximo y ventana correctos → el coordinador la encuentra con la búsqueda → coordinador solo ve el agregado; selección de entidad; acceso con código | 3 tests |
-| i18n | 378 claves × 5 ficheros (4 idiomas ofrecidos; el catalán se conserva oculto) | OK |
+| E2E (Playwright) | Superadmin crea entidad de auditoría con coordinador y organización asignada → coordinador crea auditor y lo designa → el superadmin la encuentra con la búsqueda y el filtro por entidad → auditor crea auditoría con máximo, sube muestra con errores, la corrige → `muestra_cargada` con mínimo, máximo y ventana correctos → el coordinador la encuentra con la búsqueda → coordinador solo ve el agregado; selección de entidad; acceso con código; **Fase 2**: el auditor lanza la auditoría, se abre la ventana, una persona entra con su enlace personal en un **móvil**, responde toda la entrevista (con pausa y reanudación) y el auditor ve el avance | 4 tests |
+| i18n | 436 claves × 5 ficheros (4 idiomas ofrecidos; el catalán se conserva oculto) | OK |
 
 E2E contra el servidor de pruebas:
 
@@ -467,6 +498,7 @@ Plantilla sin secretos: [.env.example](.env.example).
 | `TRUST_PROXY` | `false` | `true` detrás de nginx/Caddy (IP real para límites de peticiones) |
 | `DEV_SHOW_MAGIC_LINK` | `false` | Muestra el enlace de acceso en pantalla. **Prohibido en producción** (la API no arranca) |
 | `ENABLE_DEV_OUTBOX` | `false` | Buzón `/api/dev/outbox` (solo con `MAIL_PROVIDER=memory` y fuera de staging/producción) |
+| `LLM_PROVIDER` | `mock` | Proveedor de IA. Hoy solo `mock` (determinista); el real se añadirá cuando se decida |
 | `LOG_LEVEL` | `info` | Nivel de logs (pino) |
 
 Generar secretos:
@@ -598,7 +630,15 @@ Prefijo `/api`. Sesión por cookie `httpOnly` (`sa_session`). Errores: `{ "error
 | `POST /campaigns/:id/sample?mode=replace\|append` | Auditor | Subir muestra (multipart `file`) |
 | `GET /campaigns/:id/sample/summary` | Auditor | Resumen de la muestra |
 | `GET /campaigns/:id/access-codes?format=xlsx\|csv` | Auditor | Códigos de acceso (registrado en `auditLogs`) |
-| `GET /participant/c/:slug` · `POST /participant/c/:slug/access` | Público | Página del participante y validación del código |
+| `GET /participant/c/:slug` · `POST /participant/c/:slug/access` | Público | Landing con código; abre la sesión del participante |
+| `POST /participant/i/:token` | Público | Enlace personal de invitación; abre la sesión del participante |
+| `GET /participant/session` | Participante | Disponibilidad, idiomas, ventana y estado de su entrevista |
+| `POST /participant/interview/start` · `GET /participant/interview` | Participante | Empezar (aviso aceptado + idioma) o reanudar |
+| `POST /participant/interview/answer` | Participante | Responder: `options`, `abstain` o `text` |
+| `POST /campaigns/:id/launch` | Auditor | `muestra_cargada` → `envios_activos` |
+| `GET /campaigns/:id/progress` | Auditor, coordinador (agregado), superadmins | Avance, alertas y estado por persona (fila del archivo) |
+| `POST /campaigns/:id/window/extend` | Auditor | Ampliar la ventana (`closeDate`, `reason`) |
+| `POST /dev/tick` · `POST /dev/campaigns/:id/open-now` | Solo modo local en memoria | Ejecutar el planificador / abrir la ventana ya |
 | `GET /dev/outbox` | Solo modo local en memoria | Correos enviados (desarrollo) |
 
 **Listados paginados** (`GET /organizations`, `GET /assigned-organizations`, `GET /campaigns`) responden
@@ -698,13 +738,14 @@ Más información en [docs/datos-sinteticos.md](docs/datos-sinteticos.md).
 | Fase | Contenido | Estado |
 |---|---|---|
 | **1** · Base, configuración y muestra | Monorepo, modelo de datos, auth, permisos, configuración, auditorías, muestra, códigos, i18n, marca | ✅ Hecha |
-| **2** · Invitaciones y motor conversacional | Envío de invitaciones, enlace `/i/<token>`, chat con IA, clasificación, recordatorios, transiciones automáticas, panel de avance | ⏳ Página `/c/<auditoría>` adelantada; el resto pendiente |
+| **2** · Invitaciones y motor conversacional | Envío de invitaciones, enlace `/i/<token>`, chat con IA, clasificación, recordatorios, transiciones automáticas, panel de avance | ✅ Hecha con el adaptador mock; **falta el proveedor real de IA** (pendiente de decisión) |
 | **3** · Codificación, revisión e informes | Revisión de dudosas, resultados, síntesis IA, Word/Excel/PDF | ⏳ |
 | **4** · Piloto y producción | Concordancia IA–auditor, endurecimiento, carga, restauración de backup, `efr.bumii.ai` | ⏳ |
 
 Pendientes y decisiones abiertas (detalle en [docs/decisiones.md](docs/decisiones.md)):
 
-- Proveedor de IA definitivo (Fase 2).
+- **Proveedor de IA definitivo** (cierra la Fase 2): sin retención ni entrenamiento con los datos y, preferiblemente,
+  procesando en la UE.
 - Logotipos oficiales efr y sello técnico.
 - Contraste del naranja frente a WCAG AA.
 - Traducciones oficiales del cuestionario (en, pt, fr).
@@ -712,7 +753,6 @@ Pendientes y decisiones abiertas (detalle en [docs/decisiones.md](docs/decisione
 - Plazo de conservación de datos (RGPD).
 - Integración de correo (SMTP Google Workspace).
 - Verificar los Compose de Docker en un equipo con Docker.
-- `CLAUDE.md` aún menciona «marca del certificado» y «auditores colaboradores», ya retirados del producto.
 
 ---
 

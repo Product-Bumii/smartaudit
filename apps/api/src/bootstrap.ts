@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { createLlmProvider } from '@smartaudit/llm';
 import { DisabledMailProvider, MemoryMailProvider, SmtpMailProvider, type MailProvider } from '@smartaudit/mail';
 import { loadConfig, type AppConfig } from './config';
 import { DEFAULT_RATE_LIMITS, type AppContext } from './context';
@@ -16,6 +17,7 @@ export function createContext(config: AppConfig = loadConfig(), overrides: Parti
     config,
     crypto: new FieldCrypto(config.fieldEncryptionKey, config.emailHashKey),
     mail: createMailProvider(config),
+    llm: createLlmProvider(config.llmProvider),
     logger: createLogger(config.logLevel),
     now: () => new Date(),
     rateLimits: DEFAULT_RATE_LIMITS,

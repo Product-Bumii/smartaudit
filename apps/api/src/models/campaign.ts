@@ -126,6 +126,8 @@ const participantContactSchema = new Schema(
     /** Row in the auditor's file, to match codes with the people in the auditor's own list. */
     sourceRow: { type: Number, required: true },
     sends: { type: [{ _id: false, kind: String, at: Date, messageId: String }], default: [] },
+    /** Failed sends (retried with growing waits, at most 5 times per kind). */
+    failures: { type: [{ _id: false, kind: String, at: Date }], default: [] },
     bounces: { type: [{ _id: false, at: Date, reason: String }], default: [] },
   },
   { timestamps: true, collection: 'participantContacts' },
@@ -198,7 +200,8 @@ const interviewSchema = new Schema(
     language: { type: String, enum: LANGUAGES, required: true },
     state: { type: String, enum: INTERVIEW_STATES, required: true, default: 'not_started' },
     currentQuestionCode: { type: String, default: null },
-    messages: { type: [{ _id: false, role: String, text: String, questionCode: String, at: Date }], default: [] },
+    /** Conversation shown to the participant (assistant questions/clarifications and participant inputs). */
+    messages: { type: [{ _id: false, role: String, kind: String, text: String, questionCode: String, at: Date }], default: [] },
     answers: { type: [answerSchema], default: [] },
     llmModel: { type: String, default: null },
     promptVersion: { type: String, default: null },

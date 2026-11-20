@@ -11,6 +11,8 @@ export const routes: Routes = [
   { path: 'auth/verify', loadComponent: () => import('./pages/auth/verify.page').then((m) => m.VerifyPage) },
   // Public participant area (no account). TODO(Fase 2): /i/:token (email invitation) and the interview chat.
   { path: 'c/:slug', loadComponent: () => import('./pages/participant/access-code.page').then((m) => m.AccessCodePage) },
+  { path: 'i/:token', loadComponent: () => import('./pages/participant/access-code.page').then((m) => m.AccessCodePage) },
+  { path: 'p/entrevista', loadComponent: () => import('./pages/participant/interview.page').then((m) => m.InterviewPage) },
   {
     path: '',
     component: ShellComponent,

@@ -3,24 +3,21 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
+import { Router } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiService, toApiFailure } from '../../core/api.service';
 import { I18nService } from '../../core/i18n.service';
-import { LANGS, type Language } from '../../core/models';
+import { LANGS, type Language, type ParticipantSessionDto } from '../../core/models';
 import { BrandComponent } from '../../layout/brand.component';
 import { TzDatePipe } from '../../shared/tz-date.pipe';
 
-type Availability = 'not_open_yet' | 'open' | 'closed' | 'completed' | 'unavailable';
-interface AccessResult {
-  availability: Availability;
-  offeredLanguages: Language[];
-  window: { opensAt: string; closesAt: string; timeZone: string } | null;
-}
+type AccessResult = ParticipantSessionDto;
 
 /**
- * Public landing for people without email (`/c/<slug>`, also printed as QR): they type the 8-character
- * code they were given on paper. Keyboard accessible; no organization data is shown.
- * TODO(Fase 2): start/resume the interview after accepting the notice.
+ * Public participant landing (section 5.4), keyboard accessible, without organization data:
+ * - `/c/<slug>` (also printed as QR): people without email type the 8-character code they got on paper.
+ * - `/i/<token>`: personal invitation link from the email.
+ * Then the notice, the language choice and «empezar» (or «continuar», resuming where it was left).
  */
 @Component({
   selector: 'app-access-code',
@@ -57,7 +54,7 @@ interface AccessResult {
               <p class="lead">{{ 'participant.unavailableText' | translate }}</p>
             }
             @default {
-              <h1 data-testid="code-ok">{{ 'participant.validTitle' | translate }}</h1>
+              <h1 data-testid="code-ok">{{ (token() ? 'participant.welcomeTitle' : 'participant.validTitle') | translate }}</h1>
               @if (r.availability === 'not_open_yet') {
                 <div class="stat" data-testid="not-open-yet">
                   @if (r.window; as w) {
@@ -86,10 +83,19 @@ interface AccessResult {
                   }
                 </div>
               </section>
-              <button mat-flat-button type="button" disabled>{{ 'participant.start' | translate }}</button>
-              <p class="note">{{ (r.availability === 'open' ? 'participant.startPhase2' : 'participant.startWhenOpen') | translate }}</p>
+              <button mat-flat-button type="button" [disabled]="r.availability !== 'open' || busy()" (click)="start()" data-testid="start-interview">
+                {{ (r.interview ? 'participant.resume' : 'participant.start') | translate }}
+              </button>
+              @if (r.availability !== 'open') {
+                <p class="note">{{ 'participant.startWhenOpen' | translate }}</p>
+              }
+              @if (error()) {
+                <div class="alert error" role="alert">{{ error() }}</div>
+              }
             }
           }
+        } @else if (token()) {
+          <p class="lead">…</p>
         } @else {
           <h1>{{ 'participant.title' | translate }}</h1>
           <p class="lead">{{ 'participant.intro' | translate }}</p>
@@ -128,8 +134,11 @@ interface AccessResult {
   `,
 })
 export class AccessCodePage implements OnInit {
-  readonly slug = input.required<string>();
+  /** Landing with code (`/c/<slug>`) or personal link (`/i/<token>`). */
+  readonly slug = input<string>();
+  readonly token = input<string>();
   private readonly api = inject(ApiService);
+  private readonly router = inject(Router);
   readonly i18n = inject(I18nService);
   readonly langs = LANGS;
   readonly form = inject(FormBuilder).nonNullable.group({ code: ['', [Validators.required, Validators.minLength(8)]] });
@@ -141,9 +150,33 @@ export class AccessCodePage implements OnInit {
 
   async ngOnInit(): Promise<void> {
     try {
-      await this.api.get(`/participant/c/${this.slug()}`);
+      const token = this.token();
+      if (token) this.show(await this.api.post<AccessResult>(`/participant/i/${token}`));
+      else await this.api.get(`/participant/c/${this.slug()}`);
     } catch {
       this.notFound.set(true);
+    }
+  }
+
+  private show(r: AccessResult): void {
+    const current = this.i18n.lang();
+    const chosen = r.interview?.language ?? (r.offeredLanguages.includes(current) ? current : (r.offeredLanguages[0] ?? 'es'));
+    this.interviewLang.set(chosen);
+    this.result.set(r);
+  }
+
+  /** Accepting the notice is pressing «empezar» after reading it. */
+  async start(): Promise<void> {
+    this.busy.set(true);
+    this.error.set(null);
+    try {
+      await this.api.post('/participant/interview/start', { language: this.interviewLang(), acceptNotice: true });
+      await this.i18n.use(this.interviewLang(), false);
+      await this.router.navigate(['/p/entrevista']);
+    } catch (e) {
+      this.error.set(this.i18n.error(toApiFailure(e).code));
+    } finally {
+      this.busy.set(false);
     }
   }
 
@@ -151,10 +184,7 @@ export class AccessCodePage implements OnInit {
     this.busy.set(true);
     this.error.set(null);
     try {
-      const r = await this.api.post<AccessResult>(`/participant/c/${this.slug()}/access`, { code: this.form.getRawValue().code });
-      const current = this.i18n.lang();
-      this.interviewLang.set(r.offeredLanguages.includes(current) ? current : (r.offeredLanguages[0] ?? 'es'));
-      this.result.set(r);
+      this.show(await this.api.post<AccessResult>(`/participant/c/${this.slug()}/access`, { code: this.form.getRawValue().code }));
     } catch (e) {
       const f = toApiFailure(e);
       if (f.code === 'CAMPAIGN_NOT_FOUND') this.notFound.set(true);

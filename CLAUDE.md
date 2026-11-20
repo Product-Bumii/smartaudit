@@ -11,7 +11,7 @@
 2. **Al terminar cada fase, te detienes.** Entregas: resumen de lo construido, cómo probarlo, resultado de los tests, decisiones tomadas por defecto y lista de pendientes. No empiezas la fase siguiente sin instrucción explícita.
 3. **IA acotada.** La IA solo formula preguntas con naturalidad, pide una aclaración como máximo y clasifica respuestas. El orden de preguntas, las condiciones, los cálculos, los porcentajes y los permisos son **código determinista** y testeado.
 4. **Privacidad desde el día 1.** Solo datos sintéticos en desarrollo. Nunca se captan nombres, documentos de identidad, salario, afiliación sindical, datos de salud ni motivos de baja.
-5. **Configuración, no código.** Cuestionarios, tabla de mínimos, festivos, textos de correo y umbrales viven en la base de datos, versionados, y se cambian sin redesplegar.
+5. **Configuración, no código.** Cuestionarios, tabla de mínimos, textos de correo y umbrales viven en la base de datos, versionados, y se cambian sin redesplegar.
 6. **Si algo no está definido aquí**, elige la opción más simple coherente con este documento, déjala marcada como `DECISIÓN POR DEFECTO` en el resumen de la fase y sigue.
 7. **Idioma del código:** identificadores, nombres de colecciones y comentarios técnicos en inglés. Textos de interfaz en archivos de traducción (es, en, pt, fr; el catalán se conserva oculto, ver 5.7). Términos de dominio en este documento se dan en español con su nombre técnico entre paréntesis.
 
@@ -71,7 +71,7 @@ Hoy el auditor elige una muestra de personas, las entrevista en persona o por te
 /docs
   decisiones.md (registro de decisiones), datos-sinteticos.md, guia-auditor.md (Fase 4)
 /seed
-  Cuestionario M1 v1, tabla de mínimos v1, festivos, usuarios y organizaciones sintéticas
+  Cuestionario M1 v1, tabla de mínimos v1, entidades de auditoría, usuarios y organizaciones sintéticas
 ```
 
 Gestión con npm workspaces (o pnpm). Un `README.md` con arranque local en un solo comando: `docker compose -f infra/docker-compose.dev.yml up`.
@@ -157,7 +157,6 @@ Todas las colecciones llevan `createdAt`, `updatedAt` y, si aplica, `organizatio
 | `users` | email, rol, auditEntityId (nulo en superadmins), estado, idioma preferido. Índice único `(email, auditEntityId)` |
 | `magicLinkTokens` | hash del token, userId(s), expiración, usado |
 | `samplingTables` | versión, estado (`draft`/`published`), tramos `[{min, max, required, rangeMax?}]` |
-| `holidayCalendars` | país, año, fechas, origen (`date-holidays` + sobrescrituras manuales) |
 | `questionnaires` | módulo, versión, estado, idiomas con estado de aprobación por idioma, preguntas (ver 5.2) |
 | `campaigns` | módulo (`M1`/`M2`/`M3`), organizationId, auditEntityId (entidad que la hace), creada por, configuración M1 (con el auditor responsable) (ver 5.1), snapshot de cuestionario y tabla, idiomas disponibles, ventana, programación de recordatorios, mínimo exigido, estado e historial de estados |
 | `participantContacts` | **colección separada**: campaignId, respondentId, email cifrado, `noEmail`, hash del token de invitación, hash del código de acceso, envíos y rebotes |
@@ -183,11 +182,11 @@ Reglas:
 > Revisado el 18/11/2026 (cambio 2, decisiones 64–69): en la interfaz y en los textos para usuarios la campaña se llama **auditoría**; en el código, la API y la base de datos sigue siendo `campaign`.
 
 Campos que diligencia el auditor:
-- Entidad (organización, fijada por contexto) y marca del certificado.
+- Entidad (organización, elegida entre las asignadas al auditor y fijada después). *(La «marca del certificado» se retiró: decisión 39.)*
 - Norma: `1000-1` o `1000-2` (la v1 solo estas; la lista vive en configuración).
 - Tipo de auditoría: `inicial`, `mantenimiento`, `renovacion`.
 - Postula o mantiene excelencia: sí/no.
-- Auditor líder (usuario que crea la campaña) y auditores colaboradores opcionales de la misma organización.
+- Auditor responsable: el auditor asignado a la organización que crea la campaña. *(Los auditores colaboradores se retiraron: decisión 41.)*
 - Nombre del mánager efr de la entidad (solo para referencia de codificación; la IA no lo menciona).
 - **Fecha de comienzo de las entrevistas** (sustituye a la fecha de la visita): la ventana abre ese día (ver 5.4).
 - **Máximo de entrevistas completadas**: por defecto, el mínimo de la tabla; el auditor puede subirlo, nunca por debajo del mínimo ni por encima de la población total o de la muestra cargada. **Al alcanzarlo, la auditoría pasa de `en_curso` a `finalizada`** automáticamente (motivo `maximum_reached`) y los enlaces y códigos pendientes dejan de servir.
@@ -199,7 +198,7 @@ Campos que diligencia el auditor:
 
 ### 5.2 Cuestionario oficial M1 v1
 
-Fuente: hoja «Cuestionario Oficial M1» del Excel *SmartAudit_efr_M1_Plan_y_Preguntas (F+f) (2) 4 nov.xlsx*. Se carga como semilla en español; las versiones en inglés y catalán se crean como borrador **pendiente de aprobación por la Fundación** y solo se ofrecen a participantes cuando están aprobadas.
+Fuente: hoja «Cuestionario Oficial M1» del Excel *SmartAudit_efr_M1_Plan_y_Preguntas (F+f) (2) 4 nov.xlsx*. Se carga como semilla en español; las versiones en inglés, portugués, francés (y catalán, oculto) se crean como borrador **pendiente de aprobación por la Fundación** y solo se ofrecen a participantes cuando están aprobadas.
 
 Cada pregunta tiene: `code`, `block`, `order`, `text` por idioma, `type` (`single`, `multi`, `yes_no`, `free_text`), `options[]` con `code` interno estable y etiqueta por idioma, `activation` (expresión declarativa evaluada en código, nunca por la IA), `mandatory`, `allowAbstain` (por defecto sí), `maxClarifications` (por defecto 1), `reportMapping`.
 
@@ -275,7 +274,7 @@ Validación: errores por fila (correo inválido, duplicado, campo obligatorio va
 - Abre el **día de comienzo de las entrevistas** a las 9:00 y dura **10 días hábiles**: cierra a las 23:59 del 10.º día hábil. Si la fecha no es hábil, abre el siguiente día hábil (con aviso al auditor).
 - Recordatorios automáticos en los días hábiles 4 y 8 de la ventana, solo a quien no ha completado.
 - Correos a las 9:00 hora local de la organización.
-- Días hábiles = lunes a viernes menos festivos del país de la organización (`date-holidays` + sobrescrituras en `holidayCalendars`), en su zona horaria.
+- Días hábiles = lunes a viernes, en la zona horaria de la organización. **Los festivos no se tienen en cuenta** (13/11/2026, decisión 54: se retiraron `holidayCalendars` y su pantalla).
 - El auditor puede ampliar la ventana; queda registrado.
 
 ### 5.5 Motor de entrevista (IA acotada)
@@ -340,17 +339,17 @@ Ciclos semanales con demo los viernes. Cada fase termina con sus criterios de ac
 2. `packages/shared` con tipos, enums, esquemas Zod y la lógica determinista de esta fase: tabla de mínimos, días hábiles y ventana, validación del archivo de muestra, evaluación de activación de preguntas.
 3. Modelo de datos completo (todas las colecciones de la sección 4, aunque algunas se usen en fases posteriores), cifrado de correos, `auditLogs`.
 4. Autenticación por enlace mágico (los correos van a Mailpit en desarrollo; `MailProvider` con adaptador SMTP ya implementado), selección de entidad de auditoría cuando un correo tiene varias cuentas, roles y middleware de permisos con aislamiento por entidad de auditoría y acceso por asignación.
-5. Superadmins: gestión de entidades de auditoría y sus coordinadores, y de organizaciones (país, zona horaria, idioma) con su asignación a entidad y coordinador; gestión de configuración (cuestionarios con versiones e idiomas, tabla de mínimos, festivos).
+5. Superadmins: gestión de entidades de auditoría y sus coordinadores, y de organizaciones (país, zona horaria, idioma) con su asignación a entidad y coordinador; gestión de configuración (cuestionarios con versiones e idiomas, tabla de mínimos; los festivos se retiraron en la decisión 54).
 6. COORDINATOR: gestión de auditores de su entidad y designación del auditor responsable de cada organización asignada (puede ser él mismo).
 7. Auditor: crear y editar campaña M1 (5.1), cálculo automático del mínimo, de la ventana y de las preguntas activadas; descarga de plantilla de muestra; carga y validación con errores por fila; listado de valores distintos de centro y tipo de puesto; generación de tokens de invitación y códigos de acceso; descarga de la lista de códigos para personas sin correo; paso a `muestra_cargada`.
-8. Interfaz Angular con Material, tema de marca «SmartAudit efr · powered by Bumii», i18n es/en/ca.
-9. Semillas: cuestionario M1 v1 (es aprobado; en y ca en borrador), tabla de mínimos v1, festivos CO y ES 2026–2027, organizaciones y usuarios sintéticos, archivos de muestra sintéticos válidos e inválidos.
+8. Interfaz Angular con Material, tema de marca «SmartAudit efr · powered by Bumii», i18n (hoy es/en/pt/fr; el catalán se conserva oculto).
+9. Semillas: cuestionario M1 v1 (es aprobado; el resto de idiomas en borrador), tabla de mínimos v1, entidades de auditoría reales (tabla maestra), organizaciones y usuarios sintéticos, archivos de muestra sintéticos válidos e inválidos.
 
 **No construir todavía:** envíos de invitaciones, landing del participante, chat, recordatorios, IA, informes.
 
 **Criterios de aceptación de la Fase 1:**
 - `docker compose up` deja todo funcionando en local con datos semilla.
-- Tests unitarios al 100 % de ramas en `packages/shared` (incluye fronteras de tramos: 90/91, 150/151, 249/250, 500/501, 16.000/16.001; ventanas que cruzan festivos y fines de semana en CO y ES).
+- Tests unitarios al 100 % de ramas en `packages/shared` (incluye fronteras de tramos: 90/91, 150/151, 249/250, 500/501, 16.000/16.001; ventanas que cruzan fines de semana, fin de año y cambio de hora en CO y ES).
 - Tests de integración de permisos: ningún rol accede a recursos de otra entidad de auditoría ni a organizaciones que no tiene asignadas; el COORDINATOR (salvo como auditor asignado) no puede leer muestras ni respuestas.
 - E2E (Playwright): superadmin crea la entidad de auditoría con su coordinador y una organización asignada a él → el coordinador crea un auditor y lo designa para la organización → el auditor entra por enlace mágico, crea campaña, sube una muestra con errores, la corrige y la campaña queda en `muestra_cargada` con el mínimo y la ventana correctos.
 - Ningún correo en claro en la base de datos.
@@ -392,7 +391,7 @@ Ciclos semanales con demo los viernes. Cada fase termina con sus criterios de ac
 | # | Pendiente | Default mientras tanto |
 |---|---|---|
 | 1 | Proveedor de IA definitivo | Adaptador mock; se elige al iniciar la Fase 2 |
-| 2 | Traducciones oficiales del cuestionario al inglés y al catalán | Borrador generado por Bumii, pendiente de aprobación de la Fundación |
+| 2 | Traducciones oficiales del cuestionario al inglés, portugués y francés | Borrador generado por Bumii, pendiente de aprobación de la Fundación |
 | 3 | Plazo de conservación de datos (el RGPD exige plazos definidos) | Indefinido; purga configurable construida y apagada |
 | 4 | Remitente con dominio de la Fundación | bumii.ai; configurable en `settings` |
 | 5 | Validación de representatividad por demográficos de la plantilla | Fuera de la v1; el modelo permite añadir totales por grupo después |

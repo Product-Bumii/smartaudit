@@ -4,9 +4,8 @@
  */
 import type { Language } from '@smartaudit/shared';
 
-export const TEMPLATE_KEYS = ['magic_link', 'account_created'] as const;
+export const TEMPLATE_KEYS = ['magic_link', 'account_created', 'invitation', 'reminder'] as const;
 export type TemplateKey = (typeof TEMPLATE_KEYS)[number];
-// TODO(Fase 2): 'invitation', 'reminder' templates for participants.
 
 export interface TemplateText {
   subject: string;
@@ -82,6 +81,100 @@ export const DEFAULT_TEMPLATES: Record<TemplateKey, Record<Language, TemplateTex
       heading: 'votre compte est prêt',
       body: ['Bonjour,', 'Un compte {{role}} a été créé pour vous dans SmartAudit efr ({{organization}}).', "Pour vous connecter, ouvrez la plateforme et saisissez votre adresse e-mail : vous recevrez un lien d'accès.", '{{button}}'],
       button: 'Ouvrir SmartAudit efr',
+    },
+  },
+  invitation: {
+    es: {
+      subject: 'Tu opinión sobre la conciliación en {{organization}}',
+      heading: 'te invitamos a una breve entrevista',
+      body: [
+        'Hola:',
+        '{{organization}} está renovando o solicitando su certificado efr (Empresa Familiarmente Responsable) y la entidad auditora quiere conocer tu opinión sobre la conciliación.',
+        'Es una entrevista escrita de unos 10 minutos, conducida por un asistente de inteligencia artificial. Es confidencial: nadie de la empresa verá tus respuestas ni sabrá si has participado. Puedes no responder a cualquier pregunta.',
+        '{{button}}',
+        'El enlace es personal y está disponible hasta el {{closes}}. Puedes pausar y continuar cuando quieras.',
+      ],
+      button: 'Empezar la entrevista',
+    },
+    en: {
+      subject: 'Your view on work-life balance at {{organization}}',
+      heading: 'you are invited to a short interview',
+      body: [
+        'Hello,',
+        '{{organization}} is renewing or applying for its efr (Family-Responsible Company) certificate and the audit body would like to hear your view on work-life balance.',
+        'It is a written interview of about 10 minutes, led by an artificial intelligence assistant. It is confidential: nobody at the company will see your answers or know whether you took part. You may skip any question.',
+        '{{button}}',
+        'The link is personal and available until {{closes}}. You can pause and continue at any time.',
+      ],
+      button: 'Start the interview',
+    },
+    ca: {
+      subject: 'La teva opinió sobre la conciliació a {{organization}}',
+      heading: 't’invitem a una breu entrevista',
+      body: [
+        'Hola:',
+        '{{organization}} està renovant o sol·licitant el seu certificat efr (Empresa Familiarment Responsable) i l’entitat auditora vol conèixer la teva opinió sobre la conciliació.',
+        'És una entrevista escrita d’uns 10 minuts, conduïda per un assistent d’intel·ligència artificial. És confidencial: ningú de l’empresa veurà les teves respostes ni sabrà si hi has participat. Pots no respondre qualsevol pregunta.',
+        '{{button}}',
+        'L’enllaç és personal i està disponible fins al {{closes}}. Pots fer una pausa i continuar quan vulguis.',
+      ],
+      button: 'Començar l’entrevista',
+    },
+    pt: {
+      subject: 'A sua opinião sobre a conciliação na {{organization}}',
+      heading: 'convidamo-lo para uma breve entrevista',
+      body: [
+        'Olá,',
+        'A {{organization}} está a renovar ou a solicitar o seu certificado efr (Empresa Familiarmente Responsável) e a entidade auditora quer conhecer a sua opinião sobre a conciliação.',
+        'É uma entrevista escrita de cerca de 10 minutos, conduzida por um assistente de inteligência artificial. É confidencial: ninguém da empresa verá as suas respostas nem saberá se participou. Pode não responder a qualquer pergunta.',
+        '{{button}}',
+        'A ligação é pessoal e está disponível até {{closes}}. Pode fazer uma pausa e continuar quando quiser.',
+      ],
+      button: 'Começar a entrevista',
+    },
+    fr: {
+      subject: 'Votre avis sur la conciliation chez {{organization}}',
+      heading: 'nous vous invitons à un bref entretien',
+      body: [
+        'Bonjour,',
+        '{{organization}} renouvelle ou demande son certificat efr (Entreprise Familialement Responsable) et l’organisme d’audit souhaite connaître votre avis sur la conciliation.',
+        'Il s’agit d’un entretien écrit d’environ 10 minutes, mené par un assistant d’intelligence artificielle. Il est confidentiel : personne dans l’entreprise ne verra vos réponses ni ne saura si vous avez participé. Vous pouvez ne pas répondre à une question.',
+        '{{button}}',
+        'Le lien est personnel et disponible jusqu’au {{closes}}. Vous pouvez faire une pause et reprendre quand vous voulez.',
+      ],
+      button: 'Commencer l’entretien',
+    },
+  },
+  reminder: {
+    es: {
+      subject: 'Recordatorio: tu opinión sobre la conciliación en {{organization}}',
+      heading: 'aún estás a tiempo',
+      body: ['Hola:', 'Te recordamos la entrevista sobre conciliación de {{organization}}. Son unos 10 minutos, es confidencial y puedes continuar donde lo dejaste.', '{{button}}', 'Disponible hasta el {{closes}}.'],
+      button: 'Continuar la entrevista',
+    },
+    en: {
+      subject: 'Reminder: your view on work-life balance at {{organization}}',
+      heading: 'there is still time',
+      body: ['Hello,', 'This is a reminder of the work-life balance interview of {{organization}}. It takes about 10 minutes, it is confidential and you can continue where you left off.', '{{button}}', 'Available until {{closes}}.'],
+      button: 'Continue the interview',
+    },
+    ca: {
+      subject: 'Recordatori: la teva opinió sobre la conciliació a {{organization}}',
+      heading: 'encara hi ets a temps',
+      body: ['Hola:', 'Et recordem l’entrevista sobre conciliació de {{organization}}. Són uns 10 minuts, és confidencial i pots continuar on ho vas deixar.', '{{button}}', 'Disponible fins al {{closes}}.'],
+      button: 'Continuar l’entrevista',
+    },
+    pt: {
+      subject: 'Lembrete: a sua opinião sobre a conciliação na {{organization}}',
+      heading: 'ainda vai a tempo',
+      body: ['Olá,', 'Lembramos a entrevista sobre conciliação da {{organization}}. São cerca de 10 minutos, é confidencial e pode continuar onde parou.', '{{button}}', 'Disponível até {{closes}}.'],
+      button: 'Continuar a entrevista',
+    },
+    fr: {
+      subject: 'Rappel : votre avis sur la conciliation chez {{organization}}',
+      heading: 'il est encore temps',
+      body: ['Bonjour,', 'Nous vous rappelons l’entretien sur la conciliation de {{organization}}. Il dure environ 10 minutes, il est confidentiel et vous pouvez reprendre là où vous vous êtes arrêté.', '{{button}}', 'Disponible jusqu’au {{closes}}.'],
+      button: 'Continuer l’entretien',
     },
   },
 };

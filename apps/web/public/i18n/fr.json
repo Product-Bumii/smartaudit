@@ -211,7 +211,10 @@
     "interviewStartDate": "Début des entretiens",
     "maximum": "Maximum de complétés",
     "maximumHint": "Une fois ce nombre d'entretiens complétés atteint, l'audit se clôture automatiquement.",
-    "maximumAboveSample": "Le maximum ({{max}}) dépasse le nombre de personnes de l'échantillon ({{n}}) : l'audit ne pourra pas se clôturer sur le maximum et se clôturera à la fin de la période."
+    "maximumAboveSample": "Le maximum ({{max}}) dépasse le nombre de personnes de l'échantillon ({{n}}) : l'audit ne pourra pas se clôturer sur le maximum et se clôturera à la fin de la période.",
+    "launch": "Lancer l'audit",
+    "confirmLaunch": "Lancer l'audit ? Les invitations partiront à l'ouverture de la période et la configuration ne pourra plus être modifiée.",
+    "launched": "Audit lancé"
   },
   "auditTypes": {
     "inicial": "Initial",
@@ -309,7 +312,9 @@
   "historyReasons": {
     "created": "créée",
     "sample_loaded": "échantillon chargé",
-    "maximum_reached": "maximum de complétés atteint"
+    "maximum_reached": "maximum de complétés atteint",
+    "launched": "lancé par l'auditeur",
+    "scheduled": "automatique (période)"
   },
   "errors": {
     "GENERIC": "Une erreur s'est produite ({{code}}).",
@@ -360,7 +365,22 @@
     "INVALID_START_DATE": "La date de début des entretiens n'est pas valide.",
     "MAXIMUM_BELOW_MINIMUM": "Le maximum ne peut pas être inférieur au minimum de complétés.",
     "MAXIMUM_ABOVE_SCOPE": "Le maximum ne peut pas dépasser l'effectif total.",
-    "MAXIMUM_ABOVE_SAMPLE": "Le maximum ne peut pas dépasser le nombre de personnes de l'échantillon chargé."
+    "MAXIMUM_ABOVE_SAMPLE": "Le maximum ne peut pas dépasser le nombre de personnes de l'échantillon chargé.",
+    "INTERVIEW_NOT_AVAILABLE": "L'entretien n'est pas ouvert pour le moment.",
+    "LANGUAGE_NOT_OFFERED": "Cette langue n'est pas disponible pour cet entretien.",
+    "QUESTION_MISMATCH": "La question a changé ; voici l'actuelle.",
+    "INTERVIEW_COMPLETED": "L'entretien est déjà complété.",
+    "INTERVIEW_NOT_STARTED": "L'entretien n'a pas encore commencé.",
+    "NO_PARTICIPANT_SESSION": "Rouvrez votre lien ou saisissez à nouveau votre code.",
+    "INVALID_INVITATION": "Le lien n'est pas valide ou n'est plus disponible.",
+    "CAMPAIGN_NOT_READY": "Chargez l'échantillon avant de lancer l'audit.",
+    "CAMPAIGN_NOT_RUNNING": "Seule la période d'un audit lancé et ouvert peut être prolongée.",
+    "EXTENSION_NOT_LATER": "La nouvelle date de clôture doit être postérieure à la date actuelle.",
+    "INVALID_DATE": "La date n'est pas valide.",
+    "INVALID_OPTIONS": "Choisissez une option valide.",
+    "FREE_TEXT_REQUIRED": "Précisez lequel, s’il vous plaît.",
+    "EMPTY_ANSWER": "Écrivez votre réponse ou choisissez une option.",
+    "ABSTAIN_NOT_ALLOWED": "Cette question nécessite une réponse."
   },
   "brand": {
     "sideNote": "Pour les organisations titulaires d'un certificat efr en vigueur."
@@ -387,13 +407,14 @@
     "chooseLanguage": "langue de l'entretien",
     "start": "Commencer l'entretien",
     "startWhenOpen": "Vous pourrez commencer à l'ouverture de l'entretien, avec ce même code.",
-    "startPhase2": "L'entretien sera disponible dans la prochaine version de la plateforme (environnement de test).",
     "completedTitle": "entretien terminé",
     "completedText": "Vous avez déjà répondu à l'entretien. Merci de votre participation !",
     "closedTitle": "délai expiré",
     "closedText": "Le délai pour répondre à cet entretien est expiré.",
     "unavailableTitle": "entretien indisponible",
-    "unavailableText": "L'entretien n'est pas disponible pour le moment. Adressez-vous à l'auditeur ou l'auditrice."
+    "unavailableText": "L'entretien n'est pas disponible pour le moment. Adressez-vous à l'auditeur ou l'auditrice.",
+    "welcomeTitle": "bienvenue",
+    "resume": "Continuer l'entretien"
   },
   "entities": {
     "eyebrow": "Plateforme",
@@ -452,5 +473,50 @@
     "firstPage": "Première page",
     "lastPage": "Dernière page",
     "range": "{{start}}–{{end}} sur {{total}}"
+  },
+  "progress": {
+    "title": "avancement",
+    "completed": "Entretiens complétés",
+    "ofMinimum": "{{pct}} % du minimum ({{minimum}})",
+    "started": "Commencés, non terminés",
+    "invited": "Personnes invitées",
+    "alerts": {
+      "SAMPLE_BELOW_MINIMUM": "L'échantillon compte moins de personnes que le minimum d'entretiens complétés ({{minimum}}).",
+      "PROJECTION_BELOW_MINIMUM": "Au rythme actuel, environ {{projection}} entretiens seraient complétés à la clôture, sous le minimum ({{minimum}}). Envisagez un rappel ou une prolongation."
+    },
+    "people": "statut par personne",
+    "peopleHint": "Chaque personne est identifiée par sa ligne dans votre fichier d'échantillon ; son e-mail et ses réponses ne sont jamais affichés.",
+    "row": "Ligne du fichier",
+    "channel": "Accès",
+    "status": "Statut",
+    "invitedAt": "Invitation envoyée",
+    "reminders": "Rappels",
+    "paperCode": "Code papier",
+    "email": "E-mail",
+    "extendTitle": "prolonger la période",
+    "newCloseDate": "Nouvelle date de clôture",
+    "reason": "Motif (facultatif)",
+    "extend": "Prolonger",
+    "extended": "Période prolongée"
+  },
+  "respondentStatus": {
+    "pending": "En attente",
+    "invited": "Invitée",
+    "started": "Commencé",
+    "completed": "Complété"
+  },
+  "interview": {
+    "progress": "{{answered}} sur environ {{planned}} questions",
+    "expiredTitle": "rouvrez votre lien",
+    "expiredText": "La session a expiré. Rouvrez le lien de votre e-mail ou saisissez votre code : vous reprendrez là où vous vous étiez arrêté.",
+    "abstain": "Je préfère ne pas répondre",
+    "noComments": "Pas de commentaire",
+    "answerArea": "Votre réponse",
+    "send": "Envoyer",
+    "ownWords": "Ou répondez avec vos mots",
+    "comment": "Votre commentaire",
+    "doneTitle": "merci de votre participation !",
+    "doneText": "Vos réponses ont été enregistrées de façon confidentielle. Vous pouvez fermer cette page.",
+    "multiHint": "Vous pouvez choisir plusieurs options ; puis appuyez sur « envoyer »."
   }
 }

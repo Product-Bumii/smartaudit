@@ -41,6 +41,8 @@
   "exports": {
     "./models": "./src/models/index.ts",
     "./lib/*": "./src/lib/*.ts",
-    "./config": "./src/config.ts"
+    "./config": "./src/config.ts",
+    "./bootstrap": "./src/bootstrap.ts",
+    "./services/*": "./src/services/*.ts"
   }
 }

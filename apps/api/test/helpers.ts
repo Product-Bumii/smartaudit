@@ -1,3 +1,4 @@
+import type { LlmProvider } from '@smartaudit/llm';
 import jwt from 'jsonwebtoken';
 import { MongoMemoryReplSet } from 'mongodb-memory-server';
 import mongoose from 'mongoose';
@@ -31,7 +32,7 @@ export interface TestEnv {
   stop: () => Promise<void>;
 }
 
-export async function startTestEnv(opts: { rateLimits?: Partial<RateLimits> } = {}): Promise<TestEnv> {
+export async function startTestEnv(opts: { rateLimits?: Partial<RateLimits>; llm?: LlmProvider } = {}): Promise<TestEnv> {
   const replSet = await MongoMemoryReplSet.create({
     replSet: { count: 1, storageEngine: 'wiredTiger' },
     instanceOpts: [{ launchTimeout: 90_000 }],
@@ -43,7 +44,8 @@ export async function startTestEnv(opts: { rateLimits?: Partial<RateLimits> } = 
   const ctx = createContext(config, {
     mail,
     now: () => new Date('2026-11-12T12:00:00Z'),
-    rateLimits: { magicLinkPerIp: 1000, magicLinkPerEmail: 1000, verifyPerIp: 1000, accessCodePerIp: 1000, ...opts.rateLimits },
+    rateLimits: { magicLinkPerIp: 1000, magicLinkPerEmail: 1000, verifyPerIp: 1000, accessCodePerIp: 1000, chatPerIp: 100_000, ...opts.rateLimits },
+    ...(opts.llm ? { llm: opts.llm } : {}),
   });
   await runSeed(ctx.crypto, () => undefined);
   const orgId = async (k: keyof typeof SEED_ORGS) => String((await Organization.findOne({ name: SEED_ORGS[k].name }).lean())!._id);

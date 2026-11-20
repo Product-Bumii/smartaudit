@@ -211,7 +211,10 @@
     "interviewStartDate": "Interviews start",
     "maximum": "Maximum completed",
     "maximumHint": "When this number of completed interviews is reached, the audit closes automatically.",
-    "maximumAboveSample": "The maximum ({{max}}) exceeds the people in the sample ({{n}}): the audit cannot close on the maximum and will close when the window ends."
+    "maximumAboveSample": "The maximum ({{max}}) exceeds the people in the sample ({{n}}): the audit cannot close on the maximum and will close when the window ends.",
+    "launch": "Launch audit",
+    "confirmLaunch": "Launch the audit? Invitations will go out when the window opens and the configuration can no longer be edited.",
+    "launched": "Audit launched"
   },
   "auditTypes": {
     "inicial": "Initial",
@@ -309,7 +312,9 @@
   "historyReasons": {
     "created": "created",
     "sample_loaded": "sample loaded",
-    "maximum_reached": "maximum of completed interviews reached"
+    "maximum_reached": "maximum of completed interviews reached",
+    "launched": "launched by the auditor",
+    "scheduled": "automatic (window)"
   },
   "errors": {
     "GENERIC": "An error occurred ({{code}}).",
@@ -360,7 +365,22 @@
     "INVALID_START_DATE": "The interview start date is not valid.",
     "MAXIMUM_BELOW_MINIMUM": "The maximum cannot be lower than the minimum of completed interviews.",
     "MAXIMUM_ABOVE_SCOPE": "The maximum cannot exceed the total population.",
-    "MAXIMUM_ABOVE_SAMPLE": "The maximum cannot exceed the people in the loaded sample."
+    "MAXIMUM_ABOVE_SAMPLE": "The maximum cannot exceed the people in the loaded sample.",
+    "INTERVIEW_NOT_AVAILABLE": "The interview is not open right now.",
+    "LANGUAGE_NOT_OFFERED": "That language is not available for this interview.",
+    "QUESTION_MISMATCH": "The question has changed; here is the current one.",
+    "INTERVIEW_COMPLETED": "The interview is already completed.",
+    "INTERVIEW_NOT_STARTED": "The interview has not started yet.",
+    "NO_PARTICIPANT_SESSION": "Open your link or type your code again.",
+    "INVALID_INVITATION": "The link is not valid or no longer available.",
+    "CAMPAIGN_NOT_READY": "Load the sample before launching the audit.",
+    "CAMPAIGN_NOT_RUNNING": "Only the window of a launched, open audit can be extended.",
+    "EXTENSION_NOT_LATER": "The new closing date must be later than the current one.",
+    "INVALID_DATE": "The date is not valid.",
+    "INVALID_OPTIONS": "Choose a valid option.",
+    "FREE_TEXT_REQUIRED": "Please say which.",
+    "EMPTY_ANSWER": "Write your answer or choose an option.",
+    "ABSTAIN_NOT_ALLOWED": "This question needs an answer."
   },
   "brand": {
     "sideNote": "For organizations with a valid efr certificate."
@@ -387,13 +407,14 @@
     "chooseLanguage": "interview language",
     "start": "Start the interview",
     "startWhenOpen": "You can start when the interview opens, using this same code.",
-    "startPhase2": "The interview will be available in the next version of the platform (test environment).",
     "completedTitle": "interview completed",
     "completedText": "You have already answered the interview. Thank you for taking part!",
     "closedTitle": "deadline passed",
     "closedText": "The deadline to answer this interview has passed.",
     "unavailableTitle": "interview unavailable",
-    "unavailableText": "The interview is not available at the moment. Please ask the auditor."
+    "unavailableText": "The interview is not available at the moment. Please ask the auditor.",
+    "welcomeTitle": "welcome",
+    "resume": "Continue the interview"
   },
   "entities": {
     "eyebrow": "Platform",
@@ -452,5 +473,50 @@
     "firstPage": "First page",
     "lastPage": "Last page",
     "range": "{{start}}–{{end}} of {{total}}"
+  },
+  "progress": {
+    "title": "progress",
+    "completed": "Completed interviews",
+    "ofMinimum": "{{pct}} % of the minimum ({{minimum}})",
+    "started": "Started, not finished",
+    "invited": "People invited",
+    "alerts": {
+      "SAMPLE_BELOW_MINIMUM": "The sample has fewer people than the minimum of completed interviews ({{minimum}}).",
+      "PROJECTION_BELOW_MINIMUM": "At the current pace about {{projection}} interviews would be completed at the close, below the minimum ({{minimum}}). Consider a reminder or extending the window."
+    },
+    "people": "status per person",
+    "peopleHint": "Each person is identified by their row in your sample file; their email and answers are never shown.",
+    "row": "File row",
+    "channel": "Access",
+    "status": "Status",
+    "invitedAt": "Invitation sent",
+    "reminders": "Reminders",
+    "paperCode": "Paper code",
+    "email": "Email",
+    "extendTitle": "extend the window",
+    "newCloseDate": "New closing date",
+    "reason": "Reason (optional)",
+    "extend": "Extend",
+    "extended": "Window extended"
+  },
+  "respondentStatus": {
+    "pending": "Pending",
+    "invited": "Invited",
+    "started": "Started",
+    "completed": "Completed"
+  },
+  "interview": {
+    "progress": "{{answered}} of about {{planned}} questions",
+    "expiredTitle": "open your link again",
+    "expiredText": "The session has expired. Open the link in your email again or type your code: you will continue where you left off.",
+    "abstain": "I prefer not to answer",
+    "noComments": "No comments",
+    "answerArea": "Your answer",
+    "send": "Send",
+    "ownWords": "Or answer in your own words",
+    "comment": "Your comment",
+    "doneTitle": "thank you for taking part!",
+    "doneText": "Your answers have been saved confidentially. You can now close this page.",
+    "multiHint": "You can choose several options; then press «send»."
   }
 }

@@ -9,13 +9,14 @@ import { I18nService } from '../../core/i18n.service';
 import type { CampaignDto, CampaignStatus, SampleError, SampleSummary } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
 import { TzDatePipe } from '../../shared/tz-date.pipe';
+import { CampaignProgressComponent } from './campaign-progress.component';
 
 const EDITABLE: CampaignStatus[] = ['borrador', 'muestra_cargada'];
 const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_activos', 'en_curso'];
 
 @Component({
   selector: 'app-campaign-detail',
-  imports: [RouterLink, MatButtonModule, MatMenuModule, MatProgressBarModule, TranslatePipe, TzDatePipe],
+  imports: [RouterLink, MatButtonModule, MatMenuModule, MatProgressBarModule, TranslatePipe, TzDatePipe, CampaignProgressComponent],
   template: `
     @if (campaign(); as c) {
       <div class="page-header">
@@ -26,6 +27,9 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
           <div><span class="chip solid" data-testid="campaign-status">{{ 'campaignStatus.' + c.status | translate }}</span></div>
         </div>
         <div class="row-actions">
+          @if (canManage() && status() === 'muestra_cargada') {
+            <button mat-flat-button (click)="launch()" data-testid="launch">{{ 'campaigns.launch' | translate }}</button>
+          }
           @if (canManage() && editable()) {
             <a mat-stroked-button [routerLink]="['/campaigns', c.id, 'edit']">{{ 'common.edit' | translate }}</a>
           }
@@ -190,6 +194,10 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
           </section>
         }
 
+        @if (launched()) {
+          <app-campaign-progress [campaign]="c" (changed)="campaign.set($event)" />
+        }
+
         <section class="card">
           <h2 class="section-title">{{ 'campaigns.history' | translate }}</h2>
           <ol class="history">
@@ -250,6 +258,8 @@ export class CampaignDetailPage implements OnInit {
   readonly canChangeStatus = computed(() => this.campaign()?.access === 'manage' || this.campaign()?.access === 'supervise');
   readonly status = computed(() => this.campaign()?.status);
   readonly editable = computed(() => EDITABLE.includes(this.status()!));
+  /** From the launch on, the progress panel is shown. */
+  readonly launched = computed(() => !EDITABLE.includes(this.status()!) && this.status() !== 'cancelada');
   readonly canSuspend = computed(() => this.canChangeStatus() && SUSPENDABLE.includes(this.status()!));
   readonly canCancel = computed(() => this.canChangeStatus() && (SUSPENDABLE.includes(this.status()!) || this.status() === 'suspendida'));
   readonly canResume = computed(() => this.canChangeStatus() && this.status() === 'suspendida' && !!this.previousStatus());
@@ -303,6 +313,18 @@ export class CampaignDetailPage implements OnInit {
   async download(url: string): Promise<void> {
     try {
       await this.api.download(url);
+    } catch (e) {
+      this.notify.error(e);
+    }
+  }
+
+  async launch(): Promise<void> {
+    if (!confirm(this.i18n.t('campaigns.confirmLaunch'))) return;
+    try {
+      const res = await this.api.post<{ campaign: CampaignDto }>(`/campaigns/${this.id()}/launch`);
+      this.campaign.set(res.campaign);
+      this.notify.ok('campaigns.launched');
+      await this.load();
     } catch (e) {
       this.notify.error(e);
     }

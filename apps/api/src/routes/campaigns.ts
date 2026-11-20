@@ -6,6 +6,12 @@ import {
   can,
   campaignCreateSchema,
   campaignListQuerySchema,
+  campaignProgress,
+  extendWindow,
+  windowExtensionSchema,
+  type CampaignProgressDto,
+  type ProgressPersonRow,
+  type RespondentStatus,
   campaignM1InputSchema,
   CLOSED_CAMPAIGN_STATUSES,
   isAvailableLanguage,
@@ -26,7 +32,7 @@ import { audit } from '../lib/audit';
 import { secureBytes } from '../lib/crypto';
 import { badRequest, conflict, forbidden, notFound, unprocessable } from '../lib/errors';
 import { requireAction, requireAuth, type AuthUser } from '../middleware/auth';
-import { Campaign, getSettings, Organization, Questionnaire, type CampaignDoc, type OrganizationDoc } from '../models';
+import { Campaign, getSettings, Organization, ParticipantContact, Questionnaire, Respondent, type CampaignDoc, type OrganizationDoc } from '../models';
 import { assignmentOf } from '../services/organizations';
 import {
   accessFor,
@@ -224,6 +230,77 @@ export function campaignsRouter(ctx: AppContext): Router {
     const { campaign } = await findCampaignForUser(req.user as AuthUser, String(req.params.id), MANAGE);
     const { format } = fileFormatQuerySchema.parse(req.query);
     sendFile(res, await accessCodesFile(ctx, req, campaign, format));
+  });
+
+  // ---------------- Launch, progress and window (Phase 2)
+
+  /** `muestra_cargada` → `envios_activos`: invitations go out when the window opens (worker). */
+  r.post('/:id/launch', requireAction('campaign.edit'), async (req, res) => {
+    const user = req.user as AuthUser;
+    const { campaign } = await findCampaignForUser(user, String(req.params.id), MANAGE);
+    const from = campaign.status as CampaignStatus;
+    if (!canTransition(from, 'envios_activos')) throw conflict('TRANSITION_NOT_ALLOWED', { from, to: 'envios_activos' });
+    if (!campaign.sampleSize || !campaign.window?.opensAt) throw conflict('CAMPAIGN_NOT_READY');
+    const now = ctx.now();
+    campaign.set({ status: 'envios_activos', statusHistory: [...campaign.statusHistory, { from, to: 'envios_activos', at: now, by: user.id, reason: 'launched' }] });
+    await campaign.save();
+    // People without email get their code on paper: they are invited from now on.
+    const noEmail = await ParticipantContact.find({ campaignId: campaign._id, noEmail: true }).distinct('respondentId');
+    await Respondent.updateMany({ _id: { $in: noEmail }, status: 'pending' }, { $set: { status: 'invited' } });
+    await audit(req, { action: 'campaign.launch', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId) });
+    res.json({ campaign: toCampaignDto(campaign.toObject(), 'manage') });
+  });
+
+  /** Progress: aggregate for everyone with access; per person (file row and status) only for the auditor and superadmins. */
+  r.get('/:id/progress', requireAction('progress.viewAggregate'), async (req, res) => {
+    const user = req.user as AuthUser;
+    const { campaign, access } = await findCampaignForUser(user, String(req.params.id), ANY_ACCESS);
+    const respondents = await Respondent.find({ campaignId: campaign._id }, { status: 1, completedAt: 1 }).lean();
+    const counts: Partial<Record<RespondentStatus, number>> = {};
+    for (const r of respondents) counts[r.status as RespondentStatus] = (counts[r.status as RespondentStatus] ?? 0) + 1;
+    const progress = campaignProgress({
+      sampleSize: campaign.sampleSize,
+      counts,
+      minimum: campaign.sampling?.minimum ?? null,
+      maximum: campaign.sampling?.maximum ?? null,
+      opensAt: campaign.window?.opensAt ?? null,
+      closesAt: campaign.window?.closesAt ?? null,
+      now: ctx.now(),
+    });
+    let people: ProgressPersonRow[] | null = null;
+    if (access !== 'aggregate' && can(user.role, 'respondent.viewStatus')) {
+      const byId = new Map(respondents.map((r) => [String(r._id), r]));
+      const contacts = await ParticipantContact.find({ campaignId: campaign._id }, { respondentId: 1, sourceRow: 1, noEmail: 1, sends: 1 }).sort({ sourceRow: 1 }).lean();
+      people = contacts.map((c) => {
+        const r = byId.get(String(c.respondentId));
+        const invitation = c.sends.find((s) => s.kind === 'invitation');
+        return {
+          sourceRow: c.sourceRow,
+          noEmail: c.noEmail,
+          status: (r?.status ?? 'pending') as RespondentStatus,
+          invitedAt: invitation?.at ? new Date(invitation.at).toISOString() : null,
+          remindersSent: c.sends.filter((s) => s.kind?.startsWith('reminder')).length,
+          completedAt: r?.completedAt ? new Date(r.completedAt).toISOString() : null,
+        };
+      });
+    }
+    res.json({ ...progress, people } satisfies CampaignProgressDto);
+  });
+
+  /** The auditor may extend the window (recorded in the campaign and the audit log). */
+  r.post('/:id/window/extend', requireAction('campaign.edit'), async (req, res) => {
+    const user = req.user as AuthUser;
+    const { campaign } = await findCampaignForUser(user, String(req.params.id), MANAGE);
+    if (!['envios_activos', 'en_curso'].includes(campaign.status)) throw conflict('CAMPAIGN_NOT_RUNNING');
+    const { closeDate, reason } = windowExtensionSchema.parse(req.body);
+    const w = campaign.window!;
+    const result = extendWindow({ closeDate: w.closeDate as string, timeZone: w.timeZone as string }, closeDate);
+    if (!result.ok) throw unprocessable(result.error);
+    const extension = { from: w.closeDate, to: result.closeDate, at: ctx.now(), by: user.id, reason: reason ?? null };
+    campaign.set({ 'window.closeDate': result.closeDate, 'window.closesAt': new Date(result.closesAt), 'window.extensions': [...(w.extensions ?? []), extension] });
+    await campaign.save();
+    await audit(req, { action: 'campaign.window.extend', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId), meta: { from: extension.from, to: extension.to } });
+    res.json({ campaign: toCampaignDto(campaign.toObject(), 'manage') });
   });
 
   return r;

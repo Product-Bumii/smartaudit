@@ -41,52 +41,52 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
           <div class="alert warn" role="status" data-testid="cf-no-orgs">{{ 'campaignForm.noOrganizations' | translate }}</div>
         }
         <div class="grid-2">
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ 'campaigns.organization' | translate }}</mat-label>
             <mat-select formControlName="organizationId" data-testid="cf-organization">
               @for (o of organizations(); track o.id) { <mat-option [value]="o.id"><span class="keep-case">{{ o.name }}</span></mat-option> }
             </mat-select>
             @if (!id()) { <mat-hint>{{ 'campaignForm.organizationHint' | translate }}</mat-hint> }
           </mat-form-field>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ 'campaigns.reference' | translate }}</mat-label>
             <input matInput formControlName="reference" data-testid="cf-reference" />
             <mat-hint>{{ 'campaignForm.referenceHint' | translate }}</mat-hint>
           </mat-form-field>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ 'campaignForm.norm' | translate }}</mat-label>
             <mat-select formControlName="norm" data-testid="cf-norm">
               @for (n of options()?.norms ?? []; track n) { <mat-option [value]="n">{{ n }}</mat-option> }
             </mat-select>
           </mat-form-field>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ 'campaigns.auditType' | translate }}</mat-label>
             <mat-select formControlName="auditType" data-testid="cf-audit-type">
               @for (t of auditTypes; track t) { <mat-option [value]="t">{{ 'auditTypes.' + t | translate }}</mat-option> }
             </mat-select>
           </mat-form-field>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ 'campaigns.interviewStartDate' | translate }}</mat-label>
             <input matInput type="date" formControlName="interviewStartDate" data-testid="cf-start-date" />
             <mat-hint>{{ 'campaignForm.interviewStartDateHint' | translate }}</mat-hint>
           </mat-form-field>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ 'campaignForm.scopeSize' | translate }}</mat-label>
             <input matInput type="number" min="1" formControlName="scopeSize" data-testid="cf-scope" />
           </mat-form-field>
           @if (needsAuditorMinimum()) {
-            <mat-form-field appearance="outline">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic">
               <mat-label>{{ 'campaignForm.auditorMinimum' | translate }}</mat-label>
               <input matInput type="number" formControlName="auditorMinimum" data-testid="cf-auditor-min" />
               <mat-hint>{{ 'campaignForm.auditorMinimumHint' | translate: rangeHint() }}</mat-hint>
             </mat-form-field>
           }
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ 'campaignForm.maxCompleted' | translate }}</mat-label>
             <input matInput type="number" min="1" formControlName="maxCompleted" [placeholder]="defaultMaximum()" data-testid="cf-max" />
             <mat-hint>{{ 'campaignForm.maxCompletedHint' | translate }}</mat-hint>
           </mat-form-field>
-          <mat-form-field appearance="outline">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic">
             <mat-label>{{ 'campaignForm.efrManager' | translate }}</mat-label>
             <input matInput formControlName="efrManagerName" />
             <mat-hint>{{ 'campaignForm.efrManagerHint' | translate }}</mat-hint>

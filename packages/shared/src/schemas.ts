@@ -163,6 +163,19 @@ export const campaignStatusChangeSchema = z.object({
 export const campaignSlugSchema = z.string().regex(/^[a-z2-9]{10}$/, 'INVALID_SLUG');
 export const accessCodeInputSchema = z.object({ code: z.string().min(1).max(40) });
 
+/** Invitation link `/i/<token>` (32 random bytes, base64url). */
+export const invitationTokenSchema = z.string().regex(/^[A-Za-z0-9_-]{20,200}$/, 'INVALID_TOKEN');
+/** The participant starts (or resumes) after reading the notice and choosing a language. */
+export const interviewStartSchema = z.object({ language: languageSchema, acceptNotice: z.literal(true) });
+export const interviewAnswerSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('options'), questionCode: z.string().min(1).max(20), optionCodes: z.array(z.string().min(1).max(40)).min(1).max(20), freeText: z.string().max(2000).nullable().optional() }),
+  z.object({ kind: z.literal('abstain'), questionCode: z.string().min(1).max(20) }),
+  z.object({ kind: z.literal('text'), questionCode: z.string().min(1).max(20), text: z.string().max(2000) }),
+]);
+export type InterviewAnswerInput = z.infer<typeof interviewAnswerSchema>;
+/** Window extension: new closing date (local). */
+export const windowExtensionSchema = z.object({ closeDate: isoDateSchema, reason: z.string().trim().max(500).optional() });
+
 export const sampleUploadQuerySchema = z.object({ mode: z.enum(['replace', 'append']).default('replace') });
 export const fileFormatQuerySchema = z.object({ format: z.enum(['xlsx', 'csv']).default('xlsx') });
 

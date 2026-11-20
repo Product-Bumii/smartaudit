@@ -211,7 +211,10 @@
     "interviewStartDate": "Inici de les entrevistes",
     "maximum": "Màxim de completades",
     "maximumHint": "En arribar a aquesta xifra d'entrevistes completades, l'auditoria es tanca automàticament.",
-    "maximumAboveSample": "El màxim ({{max}}) supera les persones de la mostra ({{n}}): l'auditoria no es podrà tancar pel màxim i es tancarà en acabar la finestra."
+    "maximumAboveSample": "El màxim ({{max}}) supera les persones de la mostra ({{n}}): l'auditoria no es podrà tancar pel màxim i es tancarà en acabar la finestra.",
+    "launch": "Llança l'auditoria",
+    "confirmLaunch": "Llançar l'auditoria? Les invitacions sortiran quan s'obri la finestra i ja no es podrà editar la configuració.",
+    "launched": "Auditoria llançada"
   },
   "auditTypes": {
     "inicial": "Inicial",
@@ -309,7 +312,9 @@
   "historyReasons": {
     "created": "creada",
     "sample_loaded": "mostra carregada",
-    "maximum_reached": "s'ha arribat al màxim de completades"
+    "maximum_reached": "s'ha arribat al màxim de completades",
+    "launched": "llançada per l'auditor/a",
+    "scheduled": "automàtic (finestra)"
   },
   "errors": {
     "GENERIC": "S'ha produït un error ({{code}}).",
@@ -360,7 +365,22 @@
     "INVALID_START_DATE": "La data d'inici de les entrevistes no és vàlida.",
     "MAXIMUM_BELOW_MINIMUM": "El màxim no pot ser inferior al mínim de completades.",
     "MAXIMUM_ABOVE_SCOPE": "El màxim no pot superar la població total.",
-    "MAXIMUM_ABOVE_SAMPLE": "El màxim no pot superar les persones de la mostra carregada."
+    "MAXIMUM_ABOVE_SAMPLE": "El màxim no pot superar les persones de la mostra carregada.",
+    "INTERVIEW_NOT_AVAILABLE": "L’entrevista no està oberta en aquest moment.",
+    "LANGUAGE_NOT_OFFERED": "Aquest idioma no està disponible per a aquesta entrevista.",
+    "QUESTION_MISMATCH": "La pregunta ha canviat; et mostrem l’actual.",
+    "INTERVIEW_COMPLETED": "L’entrevista ja està completada.",
+    "INTERVIEW_NOT_STARTED": "L’entrevista encara no ha començat.",
+    "NO_PARTICIPANT_SESSION": "Torna a obrir el teu enllaç o a escriure el teu codi.",
+    "INVALID_INVITATION": "L’enllaç no és vàlid o ja no està disponible.",
+    "CAMPAIGN_NOT_READY": "Carrega la mostra abans de llançar l’auditoria.",
+    "CAMPAIGN_NOT_RUNNING": "Només es pot ampliar la finestra d’una auditoria llançada i oberta.",
+    "EXTENSION_NOT_LATER": "La nova data de tancament ha de ser posterior a l’actual.",
+    "INVALID_DATE": "La data no és vàlida.",
+    "INVALID_OPTIONS": "Tria una opció vàlida.",
+    "FREE_TEXT_REQUIRED": "Indica quin, si us plau.",
+    "EMPTY_ANSWER": "Escriu la teva resposta o tria una opció.",
+    "ABSTAIN_NOT_ALLOWED": "Aquesta pregunta necessita una resposta."
   },
   "brand": {
     "sideNote": "Per a organitzacions amb certificat efr vigent."
@@ -387,13 +407,14 @@
     "chooseLanguage": "idioma de l'entrevista",
     "start": "Comença l'entrevista",
     "startWhenOpen": "Podràs començar quan s'obri l'entrevista, amb aquest mateix codi.",
-    "startPhase2": "L'entrevista estarà disponible a la propera versió de la plataforma (entorn de proves).",
     "completedTitle": "entrevista completada",
     "completedText": "Ja has respost l'entrevista. Gràcies per la teva participació!",
     "closedTitle": "termini acabat",
     "closedText": "El termini per respondre aquesta entrevista ha acabat.",
     "unavailableTitle": "entrevista no disponible",
-    "unavailableText": "L'entrevista no està disponible en aquest moment. Consulta la persona auditora."
+    "unavailableText": "L'entrevista no està disponible en aquest moment. Consulta la persona auditora.",
+    "welcomeTitle": "benvinguda",
+    "resume": "Continuar l’entrevista"
   },
   "entities": {
     "eyebrow": "Plataforma",
@@ -452,5 +473,50 @@
     "firstPage": "Primera pàgina",
     "lastPage": "Última pàgina",
     "range": "{{start}}–{{end}} de {{total}}"
+  },
+  "progress": {
+    "title": "avanç",
+    "completed": "Entrevistes completades",
+    "ofMinimum": "{{pct}} % del mínim ({{minimum}})",
+    "started": "Començades sense acabar",
+    "invited": "Persones convidades",
+    "alerts": {
+      "SAMPLE_BELOW_MINIMUM": "La mostra té menys persones que el mínim d’entrevistes completades ({{minimum}}).",
+      "PROJECTION_BELOW_MINIMUM": "Al ritme actual s’arribaria a unes {{projection}} entrevistes al tancament, per sota del mínim ({{minimum}}). Valora enviar un avís o ampliar la finestra."
+    },
+    "people": "estat per persona",
+    "peopleHint": "Cada persona s’identifica per la seva fila al teu fitxer de mostra; mai no es mostra el seu correu ni què ha respost.",
+    "row": "Fila del fitxer",
+    "channel": "Accés",
+    "status": "Estat",
+    "invitedAt": "Invitació enviada",
+    "reminders": "Recordatoris",
+    "paperCode": "Codi en paper",
+    "email": "Correu",
+    "extendTitle": "ampliar la finestra",
+    "newCloseDate": "Nova data de tancament",
+    "reason": "Motiu (opcional)",
+    "extend": "Ampliar",
+    "extended": "Finestra ampliada"
+  },
+  "respondentStatus": {
+    "pending": "Pendent",
+    "invited": "Convidada",
+    "started": "Començada",
+    "completed": "Completada"
+  },
+  "interview": {
+    "progress": "{{answered}} de unes {{planned}} preguntes",
+    "expiredTitle": "torna a obrir el teu enllaç",
+    "expiredText": "La sessió ha caducat. Torna a obrir l’enllaç del teu correu o escriu el teu codi: continuaràs on ho vas deixar.",
+    "abstain": "Prefereixo no respondre",
+    "noComments": "No tinc comentaris",
+    "answerArea": "La teva resposta",
+    "send": "Envia",
+    "ownWords": "O respon amb les teves paraules",
+    "comment": "El teu comentari",
+    "doneTitle": "gràcies per participar!",
+    "doneText": "Les teves respostes s’han desat de manera confidencial. Ja pots tancar aquesta pàgina.",
+    "multiHint": "Pots triar diverses opcions; després prem «envia»."
   }
 }

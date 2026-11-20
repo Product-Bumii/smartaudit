@@ -27,6 +27,8 @@ const envSchema = z.object({
   ENABLE_DEV_OUTBOX: bool.default(false),
   /** Test environments without email: the magic link is returned to the browser. Never in production. */
   DEV_SHOW_MAGIC_LINK: bool.default(false),
+  /** AI provider adapter (section 5.5). `mock` until the real provider is decided (CLAUDE.md §8, 1). */
+  LLM_PROVIDER: z.enum(['mock']).default('mock'),
   LOG_LEVEL: z.enum(['fatal', 'error', 'warn', 'info', 'debug', 'trace', 'silent']).default('info'),
 });
 
@@ -49,6 +51,7 @@ export interface AppConfig {
   enableDevOutbox: boolean;
   devShowMagicLink: boolean;
   logLevel: string;
+  llmProvider: 'mock';
   /** Session lifetime and magic link expiry. */
   sessionHours: number;
   magicLinkMinutes: number;
@@ -81,6 +84,7 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     enableDevOutbox: !isDeployed && e.ENABLE_DEV_OUTBOX && e.MAIL_PROVIDER === 'memory',
     devShowMagicLink: !isProd && e.DEV_SHOW_MAGIC_LINK,
     logLevel: e.LOG_LEVEL,
+    llmProvider: e.LLM_PROVIDER,
     sessionHours: 8,
     magicLinkMinutes: 15,
   };

@@ -4,7 +4,7 @@ import helmet from 'helmet';
 import mongoose from 'mongoose';
 import { MemoryMailProvider } from '@smartaudit/mail';
 import type { AppContext } from './context';
-import { errorHandler, notFoundHandler } from './lib/errors';
+import { errorHandler, notFound, notFoundHandler } from './lib/errors';
 import { authenticate, requireAuth } from './middleware/auth';
 import { authRouter } from './routes/auth';
 import { campaignsRouter } from './routes/campaigns';
@@ -12,6 +12,8 @@ import { configRouter } from './routes/config';
 import { auditEntitiesRouter } from './routes/audit-entities';
 import { assignedOrganizationsRouter, organizationsRouter } from './routes/organizations';
 import { participantRouter } from './routes/participant';
+import { runScheduler } from './services/scheduler';
+import { Campaign } from './models';
 
 function cors(origins: string[]): RequestHandler {
   return (req, res, next) => {
@@ -60,6 +62,17 @@ export function createApp(ctx: AppContext) {
     const outbox = ctx.mail;
     app.get('/api/dev/outbox', (_req, res) => {
       res.json({ items: outbox.outbox.map((m) => ({ to: m.to, subject: m.subject, text: m.text, sentAt: m.sentAt })) });
+    });
+    /** Runs the scheduler now (the worker does it every minute when deployed). */
+    app.post('/api/dev/tick', async (_req, res) => {
+      res.json(await runScheduler(ctx));
+    });
+    /** Opens the window of a launched campaign right now (e2e and demos). */
+    app.post('/api/dev/campaigns/:id/open-now', async (req, res) => {
+      const opensAt = new Date(ctx.now().getTime() - 60_000);
+      const r = await Campaign.updateOne({ _id: String(req.params.id), status: { $in: ['envios_activos', 'en_curso'] } }, { $set: { 'window.opensAt': opensAt } });
+      if (r.matchedCount === 0) throw notFound();
+      res.json(await runScheduler(ctx));
     });
   }
 
