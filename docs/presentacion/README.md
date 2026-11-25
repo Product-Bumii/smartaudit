@@ -6,6 +6,7 @@ código adelantada de la Fase 2.
 **Fecha de las capturas:** 19 de noviembre de 2026.
 **Servidor de pruebas:** https://efr-staging.bumii.ai
 **Qué ha cambiado desde la versión anterior:** [informe de cambios](informe-cambios-1-y-2.md).
+**Fase 2 (invitaciones y entrevista con IA):** [presentación de la Fase 2](fase-2.md), con 17 capturas más.
 
 Las imágenes están en [`img/`](img/) y muestran la plataforma real con **datos sintéticos**: las organizaciones, las
 personas y los correos son ficticios. Las **entidades de auditoría** sí son las reales (AENOR, APCER, AUDELCO, CMD, DNV,
@@ -18,13 +19,13 @@ acceso, superadministración, coordinación, trabajo del auditor y acceso de una
 
 | Qué ya funciona | Qué viene después |
 |---|---|
-| Acceso sin contraseñas por enlace de un solo uso, en español, inglés, portugués y francés | Envío de invitaciones y recordatorios por correo (Fase 2) |
-| Entidades de auditoría con sus coordinadores, que designan el auditor de cada organización | Entrevista escrita conducida por IA (Fase 2) |
-| Listados con búsqueda, filtros, orden y páginas, pensados para cientos de organizaciones | Cierre automático al alcanzar el máximo de entrevistas (se activa con la Fase 2) |
-| Configuración versionada: tabla de mínimos y cuestionario M1 | Revisión de respuestas dudosas y resultados (Fase 3) |
-| Auditorías con cálculo automático del mínimo, el máximo, la ventana y las preguntas | Informe de auditoría en Word, Excel y PDF (Fase 3) |
-| Carga de la muestra con validación fila a fila y códigos para personas sin correo | Piloto real y puesta en producción (Fase 4) |
-| Página pública para que las personas sin correo entren con su código | |
+| Acceso sin contraseñas por enlace de un solo uso, en español, inglés, portugués y francés | Revisión de respuestas dudosas por el auditor (Fase 3) |
+| Entidades de auditoría con sus coordinadores, que designan el auditor de cada organización | Cálculo de resultados y síntesis (Fase 3) |
+| Listados con búsqueda, filtros, orden y páginas, pensados para cientos de organizaciones | Informe de auditoría en Word, Excel y PDF (Fase 3) |
+| Configuración versionada: tabla de mínimos y cuestionario M1 | Piloto real y puesta en producción (Fase 4) |
+| Auditorías con cálculo automático del mínimo, el máximo, la ventana y las preguntas | |
+| Carga de la muestra con validación fila a fila y códigos para personas sin correo | |
+| **Fase 2:** invitaciones y recordatorios por correo, entrevista escrita con IA acotada en el móvil, seguimiento del avance y cierre automático ([ver la Fase 2](fase-2.md)) | |
 
 ### Quién hace qué
 
@@ -216,7 +217,8 @@ nombre, DNI, salario o salud.
 
 ![Muestra cargada](img/20-ficha-auditoria-muestra-cargada.png)
 
-Con el archivo corregido, la auditoría pasa a **«Muestra cargada»**. El auditor ve:
+Con el archivo corregido, la auditoría pasa a **«Muestra cargada»** y aparece el botón **«lanzar auditoría»** (ver la
+[Fase 2](fase-2.md)). El auditor ve:
 
 - **Personas:** 30 en total, 25 con correo y 5 sin correo.
 - **Códigos de acceso:** el botón para descargarlos e imprimirlos para las personas sin correo.
@@ -255,8 +257,8 @@ Con un código válido, la persona ve:
 - **Aviso previo:** uso de IA, finalidad, confidencialidad, derecho a no responder y a quién dirigirse.
 - **Idioma:** la elección del idioma de la entrevista.
 
-La empresa nunca sabrá quién ha respondido ni qué. El botón «empezar la entrevista» se activará en la **Fase 2**, cuando
-esté lista la entrevista con IA.
+La empresa nunca sabrá quién ha respondido ni qué. En el ejemplo la entrevista todavía no está abierta, así que el botón
+«empezar la entrevista» espera a la fecha de comienzo; cuando se abre, lleva a la entrevista (ver la [Fase 2](fase-2.md)).
 
 ### 24 · Vista en el móvil
 

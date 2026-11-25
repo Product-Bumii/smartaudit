@@ -12,14 +12,13 @@ export interface M1DerivationInput {
   auditorMinimum?: number | null;
   /** Maximum of completed interviews requested by the auditor (`null` = the minimum). */
   maxCompleted?: number | null;
-  /** People already in the loaded sample (0 before loading). */
-  sampleSize?: number;
   interviewStartDate: string;
   timeZone: string;
   brackets: readonly SamplingBracket[];
   questions: readonly Question[];
   auditType: AuditType;
   excellence: boolean;
+  wellbeing?: boolean;
   norm: string;
   now: Date;
 }
@@ -44,13 +43,12 @@ export function deriveM1Campaign(input: M1DerivationInput): M1Derivation {
     windowError = (e as Error).message;
   }
   const questions = classifyQuestions(input.questions, {
-    campaign: { auditType: input.auditType, excellence: input.excellence, norm: input.norm },
+    campaign: { auditType: input.auditType, excellence: input.excellence, wellbeing: input.wellbeing ?? false, norm: input.norm },
   });
   const maximum = resolveMaximum({
     minimum: minimum.ok ? minimum.minimum : null,
     requested: input.maxCompleted,
     scopeSize: input.scopeSize,
-    sampleSize: input.sampleSize,
   });
   return {
     minimum,

@@ -21,8 +21,9 @@ import type { ActivationContext, Question } from '../src/questionnaire';
 
 const questions = seedQuestionnaire.questions as Question[];
 const q = (code: string) => questions.find((x) => x.code === code)!;
-const inicial = { auditType: 'inicial' as const, excellence: false, norm: '1000-1' };
-const renovacionExcelencia = { auditType: 'renovacion' as const, excellence: true, norm: '1000-1' };
+const inicial = { auditType: 'inicial' as const, excellence: false, wellbeing: false, norm: '1000-1' };
+const renovacionExcelencia = { auditType: 'renovacion' as const, excellence: true, wellbeing: false, norm: '1000-1' };
+const bienestar = { auditType: 'inicial' as const, excellence: false, wellbeing: true, norm: '1000-1' };
 const ans = (questionCode: string, optionCodes: string[], status: EngineAnswer['status'] = 'classified'): EngineAnswer => ({ questionCode, optionCodes, status });
 
 /** Walks the engine answering every question with `pick` and returns the asked codes in order. */
@@ -47,6 +48,11 @@ describe('nextQuestion: order and activation', () => {
   it('renewal with excellence, P7 = SIEMPRE: P7.1, P8 and P9 are asked', () => {
     const asked = walk(renovacionExcelencia, (x) => ans(x.code, x.code === 'P7' ? ['SIEMPRE'] : x.options.slice(0, 1).map((o) => o.code)));
     expect(asked).toEqual([...base, 'P7.1', 'P8', 'P9', 'P10']);
+  });
+
+  it('Bienestar: P11–P13 (agreement) and P14–P15 (free text) before the closing comment P10', () => {
+    const asked = walk(bienestar, (x) => ans(x.code, x.code === 'P7' ? ['NUNCA'] : x.options.slice(0, 1).map((o) => o.code)));
+    expect(asked).toEqual([...base, 'P11', 'P12', 'P13', 'P14', 'P15', 'P10']);
   });
 
   it('abstaining in P7 does not trigger P7.1; P7 waiting for review does (decision 70)', () => {

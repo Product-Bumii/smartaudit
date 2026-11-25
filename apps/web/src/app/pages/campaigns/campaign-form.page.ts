@@ -93,6 +93,7 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
           </mat-form-field>
         </div>
         <mat-slide-toggle formControlName="excellence" data-testid="cf-excellence">{{ 'campaignForm.excellence' | translate }}</mat-slide-toggle>
+        <mat-slide-toggle formControlName="wellbeing" data-testid="cf-wellbeing">{{ 'campaignForm.wellbeing' | translate }}</mat-slide-toggle>
 
         <fieldset class="langs">
           <legend>{{ 'campaignForm.languages' | translate }}</legend>
@@ -204,6 +205,7 @@ export class CampaignFormPage implements OnInit {
     norm: ['', Validators.required],
     auditType: ['inicial', Validators.required],
     excellence: [false],
+    wellbeing: [false],
     interviewStartDate: ['', Validators.required],
     scopeSize: [null as number | null, [Validators.required, Validators.min(1)]],
     auditorMinimum: [null as number | null],
@@ -264,6 +266,7 @@ export class CampaignFormPage implements OnInit {
       norm: v.norm,
       auditType: v.auditType,
       excellence: !!v.excellence,
+      wellbeing: !!v.wellbeing,
       interviewStartDate: v.interviewStartDate,
       scopeSize: Number(v.scopeSize),
       auditorMinimum: v.auditorMinimum ? Number(v.auditorMinimum) : null,

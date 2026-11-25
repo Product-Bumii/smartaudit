@@ -43,6 +43,10 @@ const SYNONYMS: Record<string, string[]> = {
   SI_TIEMPO: ['tiempo', 'horas libres', 'dias libres', 'time off', 'tempo', 'temps'],
   SI_ECONOMICA: ['dinero', 'pagan', 'economica', 'nomina', 'paid', 'money', 'dinheiro', 'argent'],
   SI_AMBAS: ['ambas', 'las dos', 'both', 'ambos', 'les deux'],
+  // P11–P13 (Bienestar): agreement scale. Longer phrases win, so «ni de acuerdo ni en desacuerdo» is not «de acuerdo».
+  DE_ACUERDO: ['de acuerdo', 'totalmente de acuerdo', 'estoy de acuerdo', 'agree', 'i agree', 'concordo', 'd accord', 'tout a fait'],
+  EN_DESACUERDO: ['en desacuerdo', 'desacuerdo', 'disagree', 'discordo', 'pas d accord', 'en desacord'],
+  NI_DE_ACUERDO_NI_EN_DESACUERDO: ['ni de acuerdo ni en desacuerdo', 'neither agree nor disagree', 'nem concordo nem discordo', 'ni l un ni l autre', 'indiferente', 'neutral'],
 };
 
 const ABSTAIN = ['prefiero no', 'no quiero responder', 'no quiero contestar', 'paso', 'prefer not', 'rather not', 'prefiro nao', 'je prefere ne pas', 'prefereixo no'];

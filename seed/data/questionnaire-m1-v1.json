@@ -2,7 +2,7 @@
   "module": "M1",
   "version": 1,
   "title": "Cuestionario Oficial M1",
-  "source": "Hoja «Cuestionario Oficial M1» de SmartAudit_efr_M1_Plan_y_Preguntas (F+f) (2) 4 nov.xlsx",
+  "source": "Hoja «Cuestionario Oficial M1» de SmartAudit_efr_M1_Plan_y_Preguntas (F+f) (2) 4 nov.xlsx · P11–P15 (Bienestar): tabla facilitada por F+f el 25/11/2026",
   "languages": [
     {
       "lang": "es",
@@ -759,6 +759,224 @@
       "allowAbstain": true,
       "maxClarifications": 1,
       "reportMapping": "7.2.P9"
+    },
+    {
+      "code": "P11",
+      "block": "bienestar",
+      "order": 91,
+      "type": "single",
+      "text": {
+        "es": "¿La salud y el bienestar de las personas son un valor importante en esta organización?",
+        "en": "Are people's health and well-being an important value in this organization?",
+        "ca": "La salut i el benestar de les persones són un valor important en aquesta organització?",
+        "pt": "A saúde e o bem-estar das pessoas são um valor importante nesta organização?",
+        "fr": "La santé et le bien-être des personnes sont-ils une valeur importante dans cette organisation ?"
+      },
+      "options": [
+        {
+          "code": "EN_DESACUERDO",
+          "label": {
+            "es": "En desacuerdo",
+            "en": "Disagree",
+            "ca": "En desacord",
+            "pt": "Discordo",
+            "fr": "Pas d'accord"
+          }
+        },
+        {
+          "code": "NI_DE_ACUERDO_NI_EN_DESACUERDO",
+          "label": {
+            "es": "Ni de acuerdo ni en desacuerdo",
+            "en": "Neither agree nor disagree",
+            "ca": "Ni d'acord ni en desacord",
+            "pt": "Não concordo nem discordo",
+            "fr": "Ni d'accord ni pas d'accord"
+          }
+        },
+        {
+          "code": "DE_ACUERDO",
+          "label": {
+            "es": "De acuerdo",
+            "en": "Agree",
+            "ca": "D'acord",
+            "pt": "Concordo",
+            "fr": "D'accord"
+          }
+        }
+      ],
+      "activation": {
+        "kind": "campaign_in",
+        "field": "wellbeing",
+        "values": [
+          true
+        ]
+      },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P11"
+    },
+    {
+      "code": "P12",
+      "block": "bienestar",
+      "order": 92,
+      "type": "single",
+      "text": {
+        "es": "¿Los líderes actúan de manera coherente con los valores de bienestar que promueve la organización?",
+        "en": "Do leaders act consistently with the well-being values the organization promotes?",
+        "ca": "Els líders actuen de manera coherent amb els valors de benestar que promou l'organització?",
+        "pt": "Os líderes atuam de forma coerente com os valores de bem-estar que a organização promove?",
+        "fr": "Les responsables agissent-ils de manière cohérente avec les valeurs de bien-être que promeut l'organisation ?"
+      },
+      "options": [
+        {
+          "code": "EN_DESACUERDO",
+          "label": {
+            "es": "En desacuerdo",
+            "en": "Disagree",
+            "ca": "En desacord",
+            "pt": "Discordo",
+            "fr": "Pas d'accord"
+          }
+        },
+        {
+          "code": "NI_DE_ACUERDO_NI_EN_DESACUERDO",
+          "label": {
+            "es": "Ni de acuerdo ni en desacuerdo",
+            "en": "Neither agree nor disagree",
+            "ca": "Ni d'acord ni en desacord",
+            "pt": "Não concordo nem discordo",
+            "fr": "Ni d'accord ni pas d'accord"
+          }
+        },
+        {
+          "code": "DE_ACUERDO",
+          "label": {
+            "es": "De acuerdo",
+            "en": "Agree",
+            "ca": "D'acord",
+            "pt": "Concordo",
+            "fr": "D'accord"
+          }
+        }
+      ],
+      "activation": {
+        "kind": "campaign_in",
+        "field": "wellbeing",
+        "values": [
+          true
+        ]
+      },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P12"
+    },
+    {
+      "code": "P13",
+      "block": "bienestar",
+      "order": 93,
+      "type": "single",
+      "text": {
+        "es": "¿Siento que mi bienestar es importante para mi responsable directo?",
+        "en": "Do I feel that my well-being matters to my direct manager?",
+        "ca": "Sento que el meu benestar és important per al meu responsable directe?",
+        "pt": "Sinto que o meu bem-estar é importante para o meu responsável direto?",
+        "fr": "Est-ce que je sens que mon bien-être compte pour mon responsable direct ?"
+      },
+      "options": [
+        {
+          "code": "EN_DESACUERDO",
+          "label": {
+            "es": "En desacuerdo",
+            "en": "Disagree",
+            "ca": "En desacord",
+            "pt": "Discordo",
+            "fr": "Pas d'accord"
+          }
+        },
+        {
+          "code": "NI_DE_ACUERDO_NI_EN_DESACUERDO",
+          "label": {
+            "es": "Ni de acuerdo ni en desacuerdo",
+            "en": "Neither agree nor disagree",
+            "ca": "Ni d'acord ni en desacord",
+            "pt": "Não concordo nem discordo",
+            "fr": "Ni d'accord ni pas d'accord"
+          }
+        },
+        {
+          "code": "DE_ACUERDO",
+          "label": {
+            "es": "De acuerdo",
+            "en": "Agree",
+            "ca": "D'acord",
+            "pt": "Concordo",
+            "fr": "D'accord"
+          }
+        }
+      ],
+      "activation": {
+        "kind": "campaign_in",
+        "field": "wellbeing",
+        "values": [
+          true
+        ]
+      },
+      "mandatory": true,
+      "allowAbstain": true,
+      "maxClarifications": 1,
+      "reportMapping": "7.2.P13"
+    },
+    {
+      "code": "P14",
+      "block": "bienestar",
+      "order": 94,
+      "type": "free_text",
+      "text": {
+        "es": "¿Qué acciones de la organización contribuyen más a tu bienestar en el trabajo?",
+        "en": "Which of the organization's actions contribute most to your well-being at work?",
+        "ca": "Quines accions de l'organització contribueixen més al teu benestar a la feina?",
+        "pt": "Que ações da organização mais contribuem para o seu bem-estar no trabalho?",
+        "fr": "Quelles actions de l'organisation contribuent le plus à votre bien-être au travail ?"
+      },
+      "options": [],
+      "activation": {
+        "kind": "campaign_in",
+        "field": "wellbeing",
+        "values": [
+          true
+        ]
+      },
+      "mandatory": false,
+      "allowAbstain": true,
+      "maxClarifications": 0,
+      "reportMapping": "7.3.P14"
+    },
+    {
+      "code": "P15",
+      "block": "bienestar",
+      "order": 95,
+      "type": "free_text",
+      "text": {
+        "es": "¿Qué podría hacer la organización para mejorar el bienestar de las personas?",
+        "en": "What could the organization do to improve people's well-being?",
+        "ca": "Què podria fer l'organització per millorar el benestar de les persones?",
+        "pt": "O que poderia a organização fazer para melhorar o bem-estar das pessoas?",
+        "fr": "Que pourrait faire l'organisation pour améliorer le bien-être des personnes ?"
+      },
+      "options": [],
+      "activation": {
+        "kind": "campaign_in",
+        "field": "wellbeing",
+        "values": [
+          true
+        ]
+      },
+      "mandatory": false,
+      "allowAbstain": true,
+      "maxClarifications": 0,
+      "reportMapping": "7.3.P15"
     },
     {
       "code": "P10",

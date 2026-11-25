@@ -5,13 +5,14 @@ Lista numerada de los cambios de la plataforma que todavía no están en las cap
 como hecho; no se borra ni se renumera nada.
 
 **Situación (19/11/2026):** las capturas se rehicieron con los cambios 1 y 2 (27 capturas nuevas; resumen en
-[informe-cambios-1-y-2.md](informe-cambios-1-y-2.md)). Desde entonces se ha añadido el cambio 3 (Fase 2).
+[informe-cambios-1-y-2.md](informe-cambios-1-y-2.md)). Desde entonces se ha añadido el cambio 3 (Fase 2), aplicado el 20/11/2026 con 17 capturas en `img/fase2/` y la [presentación de la Fase 2](fase-2.md). Después se añadió el cambio 4 (grupo de cambios 3 de F+f), pendiente.
 
 | # | Fecha | Cambio | Estado |
 |---|---|---|---|
 | 1 | 18/11/2026 | Nuevos perfiles: entidades de auditoría, coordinador y auditor asignado (decisiones 56–63) | Hecho (19/11/2026) |
 | 2 | 18/11/2026 | «Auditorías» en vez de «campañas», fecha de comienzo de las entrevistas, máximo de completadas, sin catalán, entidades reales y listados con búsqueda (decisiones 64–69) | Hecho (19/11/2026) |
-| 3 | 19/11/2026 | Fase 2: lanzar la auditoría, avance y ampliación de ventana, enlace personal, entrevista en el chat (móvil), invitación y recordatorio por correo (decisiones 70–82) | Pendiente |
+| 3 | 19/11/2026 | Fase 2: lanzar la auditoría, avance y ampliación de ventana, enlace personal, entrevista en el chat (móvil), invitación y recordatorio por correo (decisiones 70–82) | Hecho (20/11/2026) |
+| 4 | 25/11/2026 | Grupo de cambios 3 de F+f: tipos de auditoría inicial/renovación, componente de Bienestar (P11–P15), máximo sin tope por la muestra, sin lanzar/suspender/cancelar (decisiones 85–89) | Pendiente |
 
 ---
 
@@ -122,4 +123,29 @@ respondiendo para que el avance tenga cifras.
 
 **Textos de la presentación:** explicar el ciclo (lanzar → invitaciones al abrir → recordatorios días 4 y 8 → cierre
 por fecha o por máximo), la IA acotada y sus guardas, y la pausa y reanudación.
+
+---
+
+## 4 · Grupo de cambios 3: tipos de auditoría, Bienestar, máximo y sin activación
+
+**Scripts:** `e2e/presentation/fase2.spec.ts` ya no lanza la auditoría; sus capturas 01 y 02 siguen con los nombres
+antiguos (`01-lanzar-auditoria`, `02-auditoria-envios-activos`) y hay que renombrarlas, por ejemplo
+`01-auditoria-programada` y `02-editar-auditoria-bienestar`. `screenshots.spec.ts` ya no cancela ni suspende auditorías
+de demostración.
+
+**Capturas que cambian:**
+
+| Captura | Qué cambia |
+|---|---|
+| Fase 1 · 16 y 17 · Nueva auditoría | Tipo de auditoría solo «Inicial» o «Renovación»; casilla **«Incluye el componente de Bienestar (P11–P15)»**; P11–P15 en «preguntas activadas» |
+| Fase 1 · 18 y 20 · Ficha de la auditoría | Sin menú «cambiar estado»; aviso **«Auditoría programada: se abrirá sola el…»** con la muestra cargada; fila «Componente de Bienestar» en los datos |
+| Fase 1 · 21 y 25 · Listados | El filtro de estado ya no ofrece «Envíos activos», «Suspendida» ni «Cancelada» |
+| Fase 2 · 01 y 02 | Ya no hay «lanzar auditoría» ni estado «Envíos activos»: sustituir por la auditoría programada y por la edición con Bienestar |
+| Fase 2 · 15 · Ficha en curso | Sin «cambiar estado»; el historial pasa de «Muestra cargada» a «En curso» directamente |
+
+**Capturas nuevas (sugeridas):** la entrevista en el móvil con P11 (escala de acuerdo) y P14 (texto libre); el aviso
+de máximo superior a la muestra.
+
+**Textos:** en `fase-2.md` y en `README.md` de la presentación, quitar «lanzar», «envíos activos», suspender y cancelar;
+explicar que la auditoría queda programada al cargar la muestra; añadir el componente de Bienestar.
 

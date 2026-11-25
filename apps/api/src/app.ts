@@ -70,7 +70,7 @@ export function createApp(ctx: AppContext) {
     /** Opens the window of a launched campaign right now (e2e and demos). */
     app.post('/api/dev/campaigns/:id/open-now', async (req, res) => {
       const opensAt = new Date(ctx.now().getTime() - 60_000);
-      const r = await Campaign.updateOne({ _id: String(req.params.id), status: { $in: ['envios_activos', 'en_curso'] } }, { $set: { 'window.opensAt': opensAt } });
+      const r = await Campaign.updateOne({ _id: String(req.params.id), status: { $in: ['muestra_cargada', 'envios_activos', 'en_curso'] } }, { $set: { 'window.opensAt': opensAt } });
       if (r.matchedCount === 0) throw notFound();
       res.json(await runScheduler(ctx));
     });

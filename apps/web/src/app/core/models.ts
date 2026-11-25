@@ -31,10 +31,10 @@ import type { AuditEntityDto, CampaignDto, Language, OrganizationDto } from '@sm
 export const LANGS = ['es', 'en', 'pt', 'fr'] as const;
 export const PAGE_SIZES = [10, 25, 50, 100];
 /** Status filter of the audit list: groups or one status. */
-export const CAMPAIGN_STATUS_VALUES = [
-  'borrador', 'muestra_cargada', 'envios_activos', 'en_curso', 'finalizada', 'informe_generado', 'suspendida', 'cancelada',
-] as const;
-export const AUDIT_TYPE_VALUES = ['inicial', 'mantenimiento', 'renovacion'] as const;
+/** Statuses offered in the list filter (no manual launch, suspension or cancellation since change group 3). */
+export const CAMPAIGN_STATUS_VALUES = ['borrador', 'muestra_cargada', 'en_curso', 'finalizada', 'informe_generado'] as const;
+/** Audit types that can be chosen (change group 3). Older audits may still show «mantenimiento». */
+export const AUDIT_TYPE_VALUES = ['inicial', 'renovacion'] as const;
 export const SUPERADMIN_ROLE_VALUES = ['SUPERADMIN_BUMII', 'SUPERADMIN_FUNDACION'] as const;
 
 export interface CampaignListItem extends CampaignDto {

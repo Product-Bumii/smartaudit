@@ -178,13 +178,15 @@ code { font-family: var(--efr-font-tech); font-size: 12px; }
 .mat-mdc-button-base .mat-mdc-button-persistent-ripple, .mat-mdc-button-base .mat-ripple { display: none; }
 /* Primario: fondo naranja, texto blanco; hover gris oscuro */
 .mat-mdc-unelevated-button:not(:disabled) { background-color: var(--efr-orange) !important; color: #fff !important; padding: 0 24px !important; height: 48px !important; }
-.mat-mdc-unelevated-button:not(:disabled):hover, .mat-mdc-unelevated-button:not(:disabled):focus-visible { background-color: var(--efr-gray-dark) !important; text-decoration: none; }
+.mat-mdc-unelevated-button:not(:disabled):focus-visible { background-color: var(--efr-gray-dark) !important; text-decoration: none; }
+@media (hover: hover) { .mat-mdc-unelevated-button:not(:disabled):hover { background-color: var(--efr-gray-dark) !important; text-decoration: none; } }
 /* Secundario: borde 2px gris oscuro; hover borde y texto naranja */
 .mat-mdc-outlined-button:not(:disabled) { border: 2px solid var(--efr-gray-dark) !important; color: var(--efr-gray-dark) !important; background: #fff !important; padding: 0 22px !important; height: 48px !important; }
-.mat-mdc-outlined-button:not(:disabled):hover { border-color: var(--efr-orange) !important; color: var(--efr-orange) !important; text-decoration: none; }
+/* Hover only with a mouse: on touch screens it «sticks» after a tap and looks like a selection */
+@media (hover: hover) { .mat-mdc-outlined-button:not(:disabled):hover { border-color: var(--efr-orange) !important; color: var(--efr-orange) !important; text-decoration: none; } }
 /* Terciario (texto): naranja, hover gris subrayado */
 .mat-mdc-button:not(:disabled) { color: var(--efr-orange) !important; padding: 0 8px !important; min-width: 0 !important; }
-.mat-mdc-button:not(:disabled):hover { color: var(--efr-gray-dark) !important; background: transparent !important; text-decoration: underline; }
+@media (hover: hover) { .mat-mdc-button:not(:disabled):hover { color: var(--efr-gray-dark) !important; background: transparent !important; text-decoration: underline; } }
 .mat-mdc-button-base:disabled { background: var(--efr-surface-alt) !important; color: var(--efr-gray-mid) !important; border-color: var(--efr-border) !important; }
 
 /* ---------- Formularios, menús y avisos emergentes */

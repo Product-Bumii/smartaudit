@@ -66,6 +66,7 @@ const questionsOf = (c: CampaignDoc) => (c.questionnaireSnapshot?.questions ?? [
 const activationOf = (c: CampaignDoc): ActivationContext['campaign'] => ({
   auditType: c.m1Config!.auditType as ActivationContext['campaign']['auditType'],
   excellence: c.m1Config!.excellence,
+  wellbeing: c.m1Config!.wellbeing ?? false,
   norm: c.m1Config!.norm,
 });
 

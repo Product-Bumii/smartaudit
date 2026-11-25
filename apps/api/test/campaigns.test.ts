@@ -6,6 +6,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { SEED_USERS } from '../../../seed/seed-lib';
 import { AuditLog, Campaign, ParticipantContact, Respondent } from '../src/models';
 import { closeIfMaximumReached } from '../src/services/campaigns';
+import { runScheduler } from '../src/services/scheduler';
 import { campaignInput, sessionFor, startTestEnv, type TestEnv } from './helpers';
 
 const SAMPLES = join(__dirname, '../../../seed/samples');
@@ -229,19 +230,28 @@ describe('sample template, upload and validation', () => {
     expect(res.body.campaign.status).toBe('muestra_cargada');
   });
 
-  it('rejects a maximum above the loaded sample', async () => {
-    const res = await request(env.app).put(`/api/campaigns/${campaignId}`).set('Cookie', auditor).send(campaignInput({ scopeSize: 600, maxCompleted: 100 })).expect(422);
-    expect(res.body.error.details.problems[0]).toMatchObject({ code: 'MAXIMUM_ABOVE_SAMPLE', details: { minimum: 52 } });
+  it('editing accepts a maximum above the loaded sample (people can be added later), never above the scope', async () => {
+    const res = await request(env.app).put(`/api/campaigns/${campaignId}`).set('Cookie', auditor).send(campaignInput({ scopeSize: 600, maxCompleted: 100 })).expect(200);
+    expect(res.body.campaign.sampling).toMatchObject({ minimum: 52, maximum: 100 });
+    const high = await request(env.app).put(`/api/campaigns/${campaignId}`).set('Cookie', auditor).send(campaignInput({ scopeSize: 600, maxCompleted: 601 })).expect(422);
+    expect(high.body.error.details.problems[0].code).toBe('MAXIMUM_ABOVE_SCOPE');
   });
 
-  it('suspends, resumes and cancels; then it is no longer editable', async () => {
-    const s = await request(env.app).post(`/api/campaigns/${campaignId}/status`).set('Cookie', auditor).send({ to: 'suspendida', reason: 'prueba' }).expect(200);
-    expect(s.body.campaign.status).toBe('suspendida');
-    await request(env.app).post(`/api/campaigns/${campaignId}/status`).set('Cookie', auditor).send({ to: 'borrador' }).expect(409);
-    const r = await request(env.app).post(`/api/campaigns/${campaignId}/status`).set('Cookie', auditor).send({ to: 'muestra_cargada' }).expect(200);
-    expect(r.body.campaign.status).toBe('muestra_cargada');
-    await request(env.app).post(`/api/campaigns/${campaignId}/status`).set('Cookie', auditor).send({ to: 'envios_activos' }).expect(409);
-    await request(env.app).post(`/api/campaigns/${campaignId}/status`).set('Cookie', auditor).send({ to: 'cancelada' }).expect(200);
+  it('audit types are initial or renewal; the Bienestar component is stored', async () => {
+    await request(env.app).put(`/api/campaigns/${campaignId}`).set('Cookie', auditor).send(campaignInput({ auditType: 'mantenimiento' })).expect(400);
+    const res = await request(env.app).put(`/api/campaigns/${campaignId}`).set('Cookie', auditor).send(campaignInput({ wellbeing: true })).expect(200);
+    expect(res.body.campaign.m1Config.wellbeing).toBe(true);
+    const states = Object.fromEntries(res.body.campaign.activatedQuestions.map((q: { code: string; state: string }) => [q.code, q.state]));
+    expect(states).toMatchObject({ P11: 'active', P14: 'active', P15: 'active' });
+    const options = await request(env.app).get('/api/campaigns/options').set('Cookie', auditor).expect(200);
+    expect(options.body.auditTypes).toEqual(['inicial', 'renovacion']);
+  });
+
+  it('no manual status changes; editable until the window opens by itself, then frozen (only appending people)', async () => {
+    await request(env.app).post(`/api/campaigns/${campaignId}/status`).set('Cookie', auditor).send({ to: 'cancelada' }).expect(404);
+    await Campaign.updateOne({ _id: campaignId }, { $set: { status: 'muestra_cargada', 'window.opensAt': new Date('2026-11-12T09:00:00Z') } });
+    await runScheduler(env.ctx);
+    expect((await Campaign.findById(campaignId).lean())!.status).toBe('en_curso');
     await request(env.app).put(`/api/campaigns/${campaignId}`).set('Cookie', auditor).send(campaignInput()).expect(409);
     await request(env.app).post(`/api/campaigns/${campaignId}/sample`).set('Cookie', auditor).attach('file', sample('muestra-valida-30.csv'), 'm.csv').expect(409);
   });

@@ -17,8 +17,6 @@ import {
   isAvailableLanguage,
   searchPattern,
   canCreateCampaignFor,
-  campaignStatusChangeSchema,
-  canTransition,
   fileFormatQuerySchema,
   generateSlug,
   isCampaignEditable,
@@ -30,8 +28,8 @@ import {
 import type { AppContext } from '../context';
 import { audit } from '../lib/audit';
 import { secureBytes } from '../lib/crypto';
-import { badRequest, conflict, forbidden, notFound, unprocessable } from '../lib/errors';
-import { requireAction, requireAuth, type AuthUser } from '../middleware/auth';
+import { badRequest, conflict, notFound, unprocessable } from '../lib/errors';
+import { requireAction, type AuthUser } from '../middleware/auth';
 import { Campaign, getSettings, Organization, ParticipantContact, Questionnaire, Respondent, type CampaignDoc, type OrganizationDoc } from '../models';
 import { assignmentOf } from '../services/organizations';
 import {
@@ -41,7 +39,6 @@ import {
   computeCampaign,
   findCampaignForUser,
   MANAGE,
-  MANAGE_OR_SUPERVISE,
   toCampaignDto,
 } from '../services/campaigns';
 import { accessCodesFile, MAX_SAMPLE_FILE_BYTES, sampleSummary, sampleTemplateFile, uploadSample } from '../services/sample';
@@ -183,7 +180,7 @@ export function campaignsRouter(ctx: AppContext): Router {
     if (!isCampaignEditable(campaign.status as CampaignStatus)) throw conflict('CAMPAIGN_NOT_EDITABLE');
     const input = campaignM1InputSchema.parse(req.body);
     // Only the lead auditor manages the campaign; the organization never changes.
-    const c = await computeCampaign(ctx, org, String(campaign.m1Config!.leadAuditorId), input, campaign.sampleSize);
+    const c = await computeCampaign(ctx, org, String(campaign.m1Config!.leadAuditorId), input);
     if (c.problems.length) throw unprocessable('INVALID_CAMPAIGN', { problems: c.problems });
     campaign.set(c.set);
     await campaign.save();
@@ -191,25 +188,8 @@ export function campaignsRouter(ctx: AppContext): Router {
     res.json({ campaign: toCampaignDto(campaign.toObject(), 'manage'), windowWarnings: c.derivation.windowWarnings });
   });
 
-  /** Manual transitions: suspend, cancel, resume. Automatic ones are done by the worker (Phase 2). */
-  r.post('/:id/status', requireAuth, async (req, res) => {
-    const user = req.user as AuthUser;
-    const { to, reason } = campaignStatusChangeSchema.parse(req.body);
-    if (!can(user.role, to === 'cancelada' ? 'campaign.cancel' : 'campaign.suspend')) throw forbidden();
-    const { campaign, access } = await findCampaignForUser(user, String(req.params.id), MANAGE_OR_SUPERVISE);
-    const from = campaign.status as CampaignStatus;
-    const previous = (campaign.previousStatus ?? null) as CampaignStatus | null;
-    const isManual = to === 'suspendida' || to === 'cancelada' || (from === 'suspendida' && to === previous);
-    if (!isManual || !canTransition(from, to, previous)) throw conflict('TRANSITION_NOT_ALLOWED', { from, to });
-    campaign.set({
-      status: to,
-      previousStatus: to === 'suspendida' ? from : null,
-      statusHistory: [...campaign.statusHistory, { from, to, at: ctx.now(), by: user.id, reason: reason ?? null }],
-    });
-    await campaign.save();
-    await audit(req, { action: 'campaign.status', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId), meta: { from, to } });
-    res.json({ campaign: toCampaignDto(campaign.toObject(), access) });
-  });
+  // No manual status changes (change group 3, decision 88): the audit is scheduled once the sample is loaded,
+  // opens by itself on the start date and closes at the end of the window or at the maximum.
 
   // ---------------- Sample
   r.post('/:id/sample', requireAction('sample.manage'), upload.single('file'), async (req, res) => {
@@ -233,23 +213,6 @@ export function campaignsRouter(ctx: AppContext): Router {
   });
 
   // ---------------- Launch, progress and window (Phase 2)
-
-  /** `muestra_cargada` → `envios_activos`: invitations go out when the window opens (worker). */
-  r.post('/:id/launch', requireAction('campaign.edit'), async (req, res) => {
-    const user = req.user as AuthUser;
-    const { campaign } = await findCampaignForUser(user, String(req.params.id), MANAGE);
-    const from = campaign.status as CampaignStatus;
-    if (!canTransition(from, 'envios_activos')) throw conflict('TRANSITION_NOT_ALLOWED', { from, to: 'envios_activos' });
-    if (!campaign.sampleSize || !campaign.window?.opensAt) throw conflict('CAMPAIGN_NOT_READY');
-    const now = ctx.now();
-    campaign.set({ status: 'envios_activos', statusHistory: [...campaign.statusHistory, { from, to: 'envios_activos', at: now, by: user.id, reason: 'launched' }] });
-    await campaign.save();
-    // People without email get their code on paper: they are invited from now on.
-    const noEmail = await ParticipantContact.find({ campaignId: campaign._id, noEmail: true }).distinct('respondentId');
-    await Respondent.updateMany({ _id: { $in: noEmail }, status: 'pending' }, { $set: { status: 'invited' } });
-    await audit(req, { action: 'campaign.launch', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId) });
-    res.json({ campaign: toCampaignDto(campaign.toObject(), 'manage') });
-  });
 
   /** Progress: aggregate for everyone with access; per person (file row and status) only for the auditor and superadmins. */
   r.get('/:id/progress', requireAction('progress.viewAggregate'), async (req, res) => {
@@ -297,7 +260,12 @@ export function campaignsRouter(ctx: AppContext): Router {
     const result = extendWindow({ closeDate: w.closeDate as string, timeZone: w.timeZone as string }, closeDate);
     if (!result.ok) throw unprocessable(result.error);
     const extension = { from: w.closeDate, to: result.closeDate, at: ctx.now(), by: user.id, reason: reason ?? null };
-    campaign.set({ 'window.closeDate': result.closeDate, 'window.closesAt': new Date(result.closesAt), 'window.extensions': [...(w.extensions ?? []), extension] });
+    campaign.set({
+      'window.closeDate': result.closeDate,
+      'window.closesAt': new Date(result.closesAt),
+      'window.businessDays': [...(w.businessDays ?? []), ...result.addedBusinessDays],
+      'window.extensions': [...(w.extensions ?? []), extension],
+    });
     await campaign.save();
     await audit(req, { action: 'campaign.window.extend', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId), meta: { from: extension.from, to: extension.to } });
     res.json({ campaign: toCampaignDto(campaign.toObject(), 'manage') });

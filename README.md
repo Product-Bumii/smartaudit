@@ -59,7 +59,8 @@ control**: elige la muestra, valida lo dudoso y aprueba el informe.
 | Salud de la API (pruebas) | https://efr-staging.bumii.ai/api/health | — |
 
 **Presentación con capturas:** [docs/presentacion/README.md](docs/presentacion/README.md) (27 capturas, 19/11/2026) ·
-**qué cambió con los cambios 1 y 2:** [informe de cambios](docs/presentacion/informe-cambios-1-y-2.md).
+**qué cambió con los cambios 1 y 2:** [informe de cambios](docs/presentacion/informe-cambios-1-y-2.md) ·
+**Fase 2:** [presentación de la Fase 2](docs/presentacion/fase-2.md) (17 capturas).
 
 ### Usuarios de prueba (semilla sintética)
 
@@ -231,7 +232,7 @@ se crea una nueva (solo puede haber un borrador a la vez). Las auditorías guard
 
 1. Entra con `auditor2@auditoria.example` (o `auditor1` eligiendo entidad) → **Organizaciones** → **nueva auditoría** en
    la fila de la organización (o **Auditorías** → **nueva auditoría** y elige la organización).
-2. Rellena: referencia (opcional), norma (`1000-1` / `1000-2`), tipo de auditoría (inicial, mantenimiento, renovación),
+2. Rellena: referencia (opcional), norma (`1000-1` / `1000-2`), tipo de auditoría (inicial o renovación), si incluye el **componente de Bienestar** (P11–P15),
    **fecha de comienzo de las entrevistas**, **población total**, **máximo de entrevistas completadas** (opcional; vacío
    = el mínimo), mánager efr (solo referencia), si postula a excelencia e idiomas.
 3. El panel **«2. cálculo automático»** muestra en vivo el mínimo y el máximo de completadas, la ventana (apertura,
@@ -244,12 +245,12 @@ se crea una nueva (solo puede haber un borrador a la vez). Las auditorías guard
 6. Revisa el resumen y pulsa **«descargar códigos de acceso»** (Excel o CSV): fila del archivo original, código, centro,
    tipo de puesto y enlace. Mientras la auditoría está en *Borrador* o *Muestra cargada* se puede **reemplazar** la muestra.
 
-### 4.6 Auditor: lanzar la auditoría y seguir el avance
+### 4.6 Auditor: la auditoría se abre sola; seguir el avance
 
-1. Con la auditoría en *Muestra cargada*, pulsa **«lanzar auditoría»** → *Envíos activos*. Ya no se puede editar la
-   configuración (solo añadir personas a la muestra).
-2. Cuando abre la ventana (9:00 del día de comienzo, hora de la organización) pasa a *En curso* y salen las
-   invitaciones. **En local** no hay worker: el planificador corre cada 30 s, y para no esperar a la fecha basta con
+1. Con la muestra cargada la auditoría queda **programada** (*Muestra cargada*): no hay que lanzarla ni se puede
+   suspender o cancelar. Hasta que abre se puede **editar** y **reemplazar** la muestra.
+2. Cuando abre la ventana (9:00 del día de comienzo, hora de la organización) pasa sola a *En curso* y salen las
+   invitaciones; desde entonces solo se pueden **añadir** personas. **En local** no hay worker: el planificador corre cada 30 s, y para no esperar a la fecha basta con
    `curl -X POST localhost:3000/api/dev/campaigns/<id>/open-now`. Los correos se ven en `localhost:3000/api/dev/outbox`.
    En el servidor de pruebas, crea la auditoría con fecha de comienzo **hoy** y se abrirá en el minuto siguiente.
 3. La sección **«avance»** muestra completadas frente al mínimo y al máximo, las alertas y el estado de cada persona;
@@ -589,17 +590,16 @@ P1–P10. Reglas declarativas evaluadas en código (nunca por la IA):
 ### Máximo de entrevistas completadas
 
 - Por defecto es el **mínimo** de la tabla; el auditor puede subirlo, nunca por debajo del mínimo ni por encima de la
-  población total o de las personas de la muestra cargada.
+  población total. No lo limita la muestra cargada (se pueden añadir personas); la ficha avisa si el máximo la supera.
 - Al alcanzarlo, la auditoría pasa de `en_curso` a **`finalizada`** (motivo `maximum_reached` en el historial) y los
-  enlaces y códigos pendientes dejan de servir. La regla y el cierre están construidos; se dispararán al completar
-  entrevistas (Fase 2).
+  enlaces y códigos pendientes dejan de servir.
 
 ### Estados de la auditoría
 
-`borrador` → `muestra_cargada` → `envios_activos` → `en_curso` → `finalizada` → `informe_generado`, más `suspendida` y
-`cancelada` desde `borrador`, `muestra_cargada`, `envios_activos` y `en_curso`. Una suspendida solo se reanuda al estado
-anterior. La configuración y la muestra solo se editan/reemplazan en `borrador` y `muestra_cargada`; en curso solo se
-pueden **añadir** personas.
+`borrador` → `muestra_cargada` (programada) → `en_curso` (sola, al abrir la ventana) → `finalizada` (sola, al cerrar la
+ventana o al alcanzar el máximo) → `informe_generado`. **Sin activación manual, suspensión ni cancelación** (grupo de
+cambios 3). La configuración y la muestra se editan/reemplazan hasta que abre la ventana; en curso solo se pueden
+**añadir** personas. `envios_activos`, `suspendida` y `cancelada` solo aparecen en auditorías anteriores a ese cambio.
 
 ### Archivo de muestra
 
@@ -643,7 +643,6 @@ Prefijo `/api`. Sesión por cookie `httpOnly` (`sa_session`). Errores: `{ "error
 | `GET/PUT /config/settings` | Superadmins (los ajustes técnicos solo Bumii, vía API) | Ajustes |
 | `GET /campaigns` · `GET /campaigns/:id` | Auditor (las suyas), coordinador (agregado), superadmins | Listado paginado y detalle con `access` (`manage`, `aggregate`, `supervise`) |
 | `GET /campaigns/options` · `POST /campaigns/preview` · `POST /campaigns` · `PUT /campaigns/:id` | Auditor de la organización | Opciones (incluye sus organizaciones), vista previa del cálculo, crear (`organizationId`), editar |
-| `POST /campaigns/:id/status` | Auditor, superadmins | Suspender, reanudar, cancelar |
 | `GET /campaigns/sample-template?format=xlsx\|csv` | Auditor | Plantilla de muestra |
 | `POST /campaigns/:id/sample?mode=replace\|append` | Auditor | Subir muestra (multipart `file`) |
 | `GET /campaigns/:id/sample/summary` | Auditor | Resumen de la muestra |
@@ -653,7 +652,6 @@ Prefijo `/api`. Sesión por cookie `httpOnly` (`sa_session`). Errores: `{ "error
 | `GET /participant/session` | Participante | Disponibilidad, idiomas, ventana y estado de su entrevista |
 | `POST /participant/interview/start` · `GET /participant/interview` | Participante | Empezar (aviso aceptado + idioma) o reanudar |
 | `POST /participant/interview/answer` | Participante | Responder: `options`, `abstain` o `text` |
-| `POST /campaigns/:id/launch` | Auditor | `muestra_cargada` → `envios_activos` |
 | `GET /campaigns/:id/progress` | Auditor, coordinador (agregado), superadmins | Avance, alertas y estado por persona (fila del archivo) |
 | `POST /campaigns/:id/window/extend` | Auditor | Ampliar la ventana (`closeDate`, `reason`) |
 | `POST /dev/tick` · `POST /dev/campaigns/:id/open-now` | Solo modo local en memoria | Ejecutar el planificador / abrir la ventana ya |

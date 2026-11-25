@@ -2,7 +2,8 @@
  * Scheduled behaviour of a launched campaign (section 5.4), evaluated by the worker on every tick:
  * automatic status changes, invitations and reminders. Pure and idempotent: the worker records what it sent.
  */
-import { parseLocalDate } from './business-days';
+import { isBusinessDay, parseLocalDate } from './business-days';
+import { SCHEDULED_STATUSES } from './campaign-state';
 import type { CampaignStatus, RespondentStatus } from './enums';
 
 export interface ScheduleInput {
@@ -14,7 +15,7 @@ export interface ScheduleInput {
 }
 
 export interface ScheduleDecision {
-  /** Automatic transition: `en_curso` when the window opens, `finalizada` when it closes. */
+  /** Automatic transition: `en_curso` when the window opens (from the scheduled states), `finalizada` when it closes. */
   transition: 'en_curso' | 'finalizada' | null;
   /** Invitations may go out (window open). */
   sendInvitations: boolean;
@@ -25,13 +26,14 @@ export interface ScheduleDecision {
 const NOTHING: ScheduleDecision = { transition: null, sendInvitations: false, dueReminders: [] };
 
 export function scheduleDecision(i: ScheduleInput): ScheduleDecision {
-  if ((i.status !== 'envios_activos' && i.status !== 'en_curso') || !i.opensAt || !i.closesAt) return NOTHING;
+  const scheduled = SCHEDULED_STATUSES.includes(i.status);
+  if ((!scheduled && i.status !== 'en_curso') || !i.opensAt || !i.closesAt) return NOTHING;
   const now = i.now.getTime();
   const opened = now >= i.opensAt.getTime();
   const closed = now > i.closesAt.getTime();
   if (!opened) return NOTHING;
-  // `envios_activos` → `en_curso` first; a later tick closes it if the window is already over.
-  const transition = i.status === 'envios_activos' ? 'en_curso' : closed ? 'finalizada' : null;
+  // Scheduled → `en_curso` first; a later tick closes it if the window is already over.
+  const transition = scheduled ? 'en_curso' : closed ? 'finalizada' : null;
   if (closed) return { transition, sendInvitations: false, dueReminders: [] };
   return {
     transition,
@@ -50,7 +52,7 @@ export const sendKind = (reminderBusinessDay?: number): string =>
 // ---------- Window extension (section 5.4: «el auditor puede ampliar la ventana; queda registrado»)
 
 export type ExtensionResult =
-  | { ok: true; closeDate: string; closesAt: string }
+  | { ok: true; closeDate: string; closesAt: string; addedBusinessDays: string[] }
   | { ok: false; error: 'INVALID_DATE' | 'EXTENSION_NOT_LATER' };
 
 /** New closing date (local); it must be later than the current one. Closes at 23:59:59.999 local time. */
@@ -62,9 +64,15 @@ export function extendWindow(current: { closeDate: string; timeZone: string }, n
     return { ok: false, error: 'INVALID_DATE' };
   }
   if (newCloseDate <= current.closeDate) return { ok: false, error: 'EXTENSION_NOT_LATER' };
+  // Business days added to the window (after the current close, up to the new one).
+  const addedBusinessDays: string[] = [];
+  for (let d = parseLocalDate(current.closeDate, 'UTC').plus({ days: 1 }); d.toISODate()! <= newCloseDate; d = d.plus({ days: 1 })) {
+    if (isBusinessDay(d.toISODate()!)) addedBusinessDays.push(d.toISODate()!);
+  }
   return {
     ok: true,
     closeDate: newCloseDate,
+    addedBusinessDays,
     closesAt: date.set({ hour: 23, minute: 59, second: 59, millisecond: 999 }).toUTC().toISO() as string,
   };
 }

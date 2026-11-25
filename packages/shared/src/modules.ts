@@ -8,6 +8,8 @@ export interface M1Config {
   norm: string;
   auditType: AuditType;
   excellence: boolean;
+  /** Bienestar component (P11–P15). */
+  wellbeing: boolean;
   leadAuditorId: string;
   /** Only a coding reference; the AI never mentions it. */
   efrManagerName?: string | null;

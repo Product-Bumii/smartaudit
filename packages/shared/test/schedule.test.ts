@@ -10,8 +10,8 @@ const reminders = [
 const at = (iso: string) => new Date(iso);
 
 describe('scheduleDecision', () => {
-  it('does nothing before launch, after closing states or without window', () => {
-    for (const status of ['borrador', 'muestra_cargada', 'finalizada', 'suspendida', 'cancelada'] as const) {
+  it('does nothing without sample, after closing states or without window', () => {
+    for (const status of ['borrador', 'finalizada', 'suspendida', 'cancelada'] as const) {
       expect(scheduleDecision({ status, opensAt, closesAt, reminders, now: at('2026-12-01T10:00:00Z') })).toEqual({ transition: null, sendInvitations: false, dueReminders: [] });
     }
     expect(scheduleDecision({ status: 'en_curso', opensAt: null, closesAt, reminders, now: at('2026-12-01T10:00:00Z') }).sendInvitations).toBe(false);
@@ -22,7 +22,10 @@ describe('scheduleDecision', () => {
     expect(scheduleDecision({ status: 'envios_activos', opensAt, closesAt, reminders, now: at('2026-11-25T07:59:00Z') })).toEqual({ transition: null, sendInvitations: false, dueReminders: [] });
   });
 
-  it('window opens: en_curso and invitations', () => {
+  it('window opens: an audit with its sample loaded goes to en_curso by itself and invitations go out', () => {
+    expect(scheduleDecision({ status: 'muestra_cargada', opensAt, closesAt, reminders, now: opensAt })).toEqual({ transition: 'en_curso', sendInvitations: true, dueReminders: [] });
+    expect(scheduleDecision({ status: 'muestra_cargada', opensAt, closesAt, reminders, now: at('2026-11-25T07:59:00Z') }).transition).toBeNull();
+    // Legacy audits launched before change group 3.
     expect(scheduleDecision({ status: 'envios_activos', opensAt, closesAt, reminders, now: opensAt })).toEqual({ transition: 'en_curso', sendInvitations: true, dueReminders: [] });
   });
 
@@ -48,7 +51,13 @@ describe('scheduleDecision', () => {
 describe('extendWindow', () => {
   const current = { closeDate: '2026-12-08', timeZone: 'Europe/Madrid' };
   it('extends to a later date, closing at 23:59 local', () => {
-    expect(extendWindow(current, '2026-12-11')).toEqual({ ok: true, closeDate: '2026-12-11', closesAt: '2026-12-11T22:59:59.999Z' });
+    expect(extendWindow(current, '2026-12-11')).toEqual({
+      ok: true,
+      closeDate: '2026-12-11',
+      closesAt: '2026-12-11T22:59:59.999Z',
+      addedBusinessDays: ['2026-12-09', '2026-12-10', '2026-12-11'],
+    });
+    expect(extendWindow(current, '2026-12-13')).toMatchObject({ addedBusinessDays: ['2026-12-09', '2026-12-10', '2026-12-11'] }); // weekend
   });
   it('rejects earlier or equal dates and invalid ones', () => {
     expect(extendWindow(current, '2026-12-08')).toEqual({ ok: false, error: 'EXTENSION_NOT_LATER' });

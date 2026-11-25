@@ -7,7 +7,8 @@ import { ABSTENTION_CODE, isAvailableLanguage, type AuditType, type Language, ty
 export type LocalizedText = Partial<Record<Language, string>>;
 
 /** Campaign fields an activation rule may reference. */
-export type CampaignActivationField = 'auditType' | 'excellence' | 'norm';
+/** `wellbeing` = the audit includes the Bienestar component (questions P11–P15, decision 86). */
+export type CampaignActivationField = 'auditType' | 'excellence' | 'wellbeing' | 'norm';
 
 export type Activation =
   | { kind: 'always' }
@@ -45,7 +46,7 @@ export interface QuestionnaireLanguage {
 }
 
 export interface ActivationContext {
-  campaign: { auditType: AuditType; excellence: boolean; norm: string };
+  campaign: { auditType: AuditType; excellence: boolean; wellbeing: boolean; norm: string };
   /** Option codes given per question code. Missing key = not answered yet (unknown). */
   answers?: Readonly<Record<string, readonly string[] | undefined>>;
 }

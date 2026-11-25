@@ -14,7 +14,7 @@ import {
 import { questionSchema } from '../src/schemas';
 
 const questions = seed.questions as Question[];
-const base: ActivationContext['campaign'] = { auditType: 'inicial', excellence: false, norm: '1000-1' };
+const base: ActivationContext['campaign'] = { auditType: 'inicial', excellence: false, wellbeing: false, norm: '1000-1' };
 const stateOf = (ctx: ActivationContext, code: string) => classifyQuestions(questions, ctx).find((q) => q.code === code)?.state;
 
 describe('seed questionnaire M1 v1', () => {

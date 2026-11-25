@@ -194,15 +194,10 @@
     },
     "questions": "Perguntas ativadas",
     "offeredLanguages": "Idiomas para participantes",
-    "changeStatus": "Alterar estado",
-    "suspend": "Suspender",
-    "resume": "Retomar",
-    "cancel": "Cancelar auditoria",
     "tableVersion": "tabela v{{v}}",
     "questionnaireVersion": "questionário v{{v}}",
     "businessDays": "Dias úteis",
     "history": "Histórico de estados",
-    "confirmStatus": "Alterar o estado para «{{status}}»?",
     "eyebrow": "M1 · auditoria",
     "questionnaire": "Questionário",
     "aggregateOnly": "só progresso",
@@ -211,10 +206,11 @@
     "interviewStartDate": "Início das entrevistas",
     "maximum": "Máximo de concluídas",
     "maximumHint": "Ao atingir este número de entrevistas concluídas, a auditoria encerra automaticamente.",
-    "maximumAboveSample": "O máximo ({{max}}) excede as pessoas da amostra ({{n}}): a auditoria não poderá encerrar pelo máximo e encerrará no fim do período.",
-    "launch": "Lançar auditoria",
-    "confirmLaunch": "Lançar a auditoria? Os convites serão enviados quando o período abrir e a configuração deixará de poder ser editada.",
-    "launched": "Auditoria lançada"
+    "maximumAboveSample": "O máximo ({{max}}) excede as pessoas da amostra ({{n}}): acrescente pessoas à amostra para o poder atingir; caso contrário, a auditoria encerrará no fim do período.",
+    "extension": "Prolongamento",
+    "extensionText": "de {{from}} para {{to}}",
+    "wellbeing": "Componente de Bem-estar",
+    "scheduledHint": "Auditoria programada: abrirá automaticamente em {{opens}} e os convites serão enviados. Até lá pode editá-la e substituir a amostra."
   },
   "auditTypes": {
     "inicial": "Inicial",
@@ -256,7 +252,8 @@
     "noOrganizations": "Não tem organizações atribuídas. O seu coordenador/a de auditorias deve atribuir-lhe uma antes de criar a auditoria.",
     "interviewStartDateHint": "O período abre nesse dia e dura 10 dias úteis",
     "maxCompleted": "Máximo de entrevistas concluídas",
-    "maxCompletedHint": "Vazio = o mínimo. Ao atingi-lo, a auditoria encerra automaticamente."
+    "maxCompletedHint": "Vazio = o mínimo. Ao atingi-lo, a auditoria encerra automaticamente.",
+    "wellbeing": "Inclui a componente de Bem-estar (perguntas P11 a P15)"
   },
   "questionStates": {
     "active": "Será perguntada",
@@ -365,7 +362,6 @@
     "INVALID_START_DATE": "A data de início das entrevistas não é válida.",
     "MAXIMUM_BELOW_MINIMUM": "O máximo não pode ser inferior ao mínimo de concluídas.",
     "MAXIMUM_ABOVE_SCOPE": "O máximo não pode exceder a população total.",
-    "MAXIMUM_ABOVE_SAMPLE": "O máximo não pode exceder as pessoas da amostra carregada.",
     "INTERVIEW_NOT_AVAILABLE": "A entrevista não está aberta neste momento.",
     "LANGUAGE_NOT_OFFERED": "Esse idioma não está disponível para esta entrevista.",
     "QUESTION_MISMATCH": "A pergunta mudou; mostramos a atual.",

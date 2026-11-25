@@ -194,15 +194,10 @@
     },
     "questions": "Activated questions",
     "offeredLanguages": "Participant languages",
-    "changeStatus": "Change status",
-    "suspend": "Suspend",
-    "resume": "Resume",
-    "cancel": "Cancel audit",
     "tableVersion": "table v{{v}}",
     "questionnaireVersion": "questionnaire v{{v}}",
     "businessDays": "Business days",
     "history": "Status history",
-    "confirmStatus": "Change the status to “{{status}}”?",
     "eyebrow": "M1 · audit",
     "questionnaire": "Questionnaire",
     "aggregateOnly": "progress only",
@@ -211,10 +206,11 @@
     "interviewStartDate": "Interviews start",
     "maximum": "Maximum completed",
     "maximumHint": "When this number of completed interviews is reached, the audit closes automatically.",
-    "maximumAboveSample": "The maximum ({{max}}) exceeds the people in the sample ({{n}}): the audit cannot close on the maximum and will close when the window ends.",
-    "launch": "Launch audit",
-    "confirmLaunch": "Launch the audit? Invitations will go out when the window opens and the configuration can no longer be edited.",
-    "launched": "Audit launched"
+    "maximumAboveSample": "The maximum ({{max}}) exceeds the people in the sample ({{n}}): add people to the sample to be able to reach it; otherwise the audit will close when the window ends.",
+    "extension": "Extension",
+    "extensionText": "from {{from}} to {{to}}",
+    "wellbeing": "Well-being component",
+    "scheduledHint": "Scheduled audit: it will open by itself on {{opens}} and the invitations will go out. Until then you can edit it and replace the sample."
   },
   "auditTypes": {
     "inicial": "Initial",
@@ -256,7 +252,8 @@
     "noOrganizations": "You have no organizations assigned. Your audit coordinator must assign one before you can create the audit.",
     "interviewStartDateHint": "The window opens that day and lasts 10 business days",
     "maxCompleted": "Maximum completed interviews",
-    "maxCompletedHint": "Empty = the minimum. When it is reached, the audit closes automatically."
+    "maxCompletedHint": "Empty = the minimum. When it is reached, the audit closes automatically.",
+    "wellbeing": "Includes the Well-being component (questions P11 to P15)"
   },
   "questionStates": {
     "active": "Will be asked",
@@ -365,7 +362,6 @@
     "INVALID_START_DATE": "The interview start date is not valid.",
     "MAXIMUM_BELOW_MINIMUM": "The maximum cannot be lower than the minimum of completed interviews.",
     "MAXIMUM_ABOVE_SCOPE": "The maximum cannot exceed the total population.",
-    "MAXIMUM_ABOVE_SAMPLE": "The maximum cannot exceed the people in the loaded sample.",
     "INTERVIEW_NOT_AVAILABLE": "The interview is not open right now.",
     "LANGUAGE_NOT_OFFERED": "That language is not available for this interview.",
     "QUESTION_MISMATCH": "The question has changed; here is the current one.",

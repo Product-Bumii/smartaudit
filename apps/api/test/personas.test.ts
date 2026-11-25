@@ -13,7 +13,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { SEED_USERS } from '../../../seed/seed-lib';
 import { Campaign, Interview } from '../src/models';
 import { sessionFor, startTestEnv, type TestEnv } from './helpers';
-import { invitationTokens, launchedCampaign, openWindow, participant, runInterview, sampleCsv, type Persona } from './phase2-helpers';
+import { invitationTokens, scheduledCampaign, openWindow, participant, runInterview, sampleCsv, type Persona } from './phase2-helpers';
 
 const recorder = new RecordingLlmProvider(new MockLlmProvider());
 let env: TestEnv;
@@ -79,8 +79,8 @@ beforeAll(async () => {
   env = await startTestEnv({ llm: recorder });
   const auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.entities.CO);
   // 30 personas in a renewal with excellence (P8, P9 apply) and 10 in an initial audit (they never apply).
-  const renewal = await launchedCampaign(env, auditor, sampleCsv(30, 'ren', 0), { auditType: 'renovacion', excellence: true, interviewStartDate: '2026-11-16', scopeSize: 400, maxCompleted: 30 });
-  const initial = await launchedCampaign(env, auditor, sampleCsv(10, 'ini', 0), { interviewStartDate: '2026-11-16', scopeSize: 400 });
+  const renewal = await scheduledCampaign(env, auditor, sampleCsv(30, 'ren', 0), { auditType: 'renovacion', excellence: true, wellbeing: true, interviewStartDate: '2026-11-16', scopeSize: 400, maxCompleted: 30 });
+  const initial = await scheduledCampaign(env, auditor, sampleCsv(10, 'ini', 0), { interviewStartDate: '2026-11-16', scopeSize: 400 });
   await openWindow(env, renewal);
   await openWindow(env, initial);
   questions = ((await Campaign.findById(renewal).lean())!.questionnaireSnapshot!.questions ?? []) as Question[];
@@ -118,12 +118,14 @@ describe('40 synthetic personas', () => {
     }
   });
 
-  it('P7.1 only after «algunas veces», «siempre» or an unresolved P7; P8 and P9 only in the renewal with excellence', async () => {
+  it('P7.1 only after «algunas veces», «siempre» or an unresolved P7; P8, P9 and P11–P15 only where they apply', async () => {
     for (const i of await Interview.find({ state: 'completed' }).lean()) {
       const asked = new Set(i.messages.filter((m) => m.kind === 'question').map((m) => m.questionCode));
       const renewal = String(i.campaignId) === String((await Campaign.findOne({ 'm1Config.auditType': 'renovacion' }, { _id: 1 }).lean())!._id);
       expect(asked.has('P8')).toBe(renewal);
       expect(asked.has('P9')).toBe(renewal);
+      // Bienestar (P11–P15) only in the audit marked with that component (the renewal one here).
+      for (const code of ['P11', 'P12', 'P13', 'P14', 'P15']) expect(asked.has(code)).toBe(renewal);
       const p7 = i.answers.find((a) => a.questionCode === 'P7')!;
       const triggers = p7.status === 'pending_review' || (p7.status === 'classified' && p7.optionCodes.some((c) => ['ALGUNAS_VECES', 'SIEMPRE'].includes(c)));
       expect(asked.has('P7.1')).toBe(triggers);

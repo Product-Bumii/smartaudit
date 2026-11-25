@@ -10,6 +10,7 @@ import { renderTemplate, type TemplateKey, type TemplateOverrides } from '@smart
 import {
   canTransition,
   isAvailableLanguage,
+  SCHEDULED_STATUSES,
   scheduleDecision,
   sendKind,
   shouldRemind,
@@ -68,7 +69,7 @@ export async function runScheduler(ctx: AppContext): Promise<SchedulerResult> {
   let budget = Math.max(0, settings.mailDailyLimit - (await sentInLastDay(now)));
   const overrides = (settings.mailTemplates ?? {}) as TemplateOverrides;
 
-  const campaigns = await Campaign.find({ module: 'M1', status: { $in: ['envios_activos', 'en_curso'] } }).lean<CampaignDoc[]>();
+  const campaigns = await Campaign.find({ module: 'M1', status: { $in: [...SCHEDULED_STATUSES, 'en_curso'] } }).lean<CampaignDoc[]>();
   for (const c of campaigns) {
     const w = c.window;
     const decision = scheduleDecision({
@@ -80,6 +81,11 @@ export async function runScheduler(ctx: AppContext): Promise<SchedulerResult> {
     });
     if (decision.transition && (await transition(ctx, c, decision.transition, 'scheduled'))) {
       result.transitions.push({ campaignId: String(c._id), to: decision.transition });
+    }
+    // People without email get their code on paper: invited as soon as the window is open.
+    if (decision.sendInvitations) {
+      const noEmail = await ParticipantContact.find({ campaignId: c._id, noEmail: true }).distinct('respondentId');
+      await Respondent.updateMany({ _id: { $in: noEmail }, status: 'pending' }, { $set: { status: 'invited' } });
     }
     const kinds = [...(decision.sendInvitations ? [undefined] : []), ...decision.dueReminders].map((d) => ({ kind: sendKind(d), template: (d === undefined ? 'invitation' : 'reminder') as TemplateKey }));
     if (kinds.length === 0) continue;

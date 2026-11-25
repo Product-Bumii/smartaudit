@@ -93,7 +93,7 @@ export function resolveMinimum(
   return { ok: true, bracketIndex, bracket, minimum: auditorChoice, requiresAuditorChoice: true, auditorChosen: true };
 }
 
-export type MaximumError = 'MAXIMUM_BELOW_MINIMUM' | 'MAXIMUM_ABOVE_SCOPE' | 'MAXIMUM_ABOVE_SAMPLE';
+export type MaximumError = 'MAXIMUM_BELOW_MINIMUM' | 'MAXIMUM_ABOVE_SCOPE';
 export type MaximumResolution =
   | {
       ok: true;
@@ -105,22 +105,17 @@ export type MaximumResolution =
   | { ok: false; error: MaximumError };
 
 /**
- * Maximum of completed interviews (decision 65). Defaults to the minimum; the auditor may raise it, never
- * below the minimum nor above the people in scope or (once loaded) the size of the sample.
+ * Maximum of completed interviews (decisions 65 and 87). Defaults to the minimum; the auditor may raise it up
+ * to the people in scope. It is NOT capped by the loaded sample: people can be added while the audit runs
+ * (the audit page warns when the maximum exceeds the sample).
  * Returns `null` while the minimum itself is unknown (ranged bracket without the auditor's figure).
  */
-export function resolveMaximum(input: {
-  minimum: number | null;
-  requested?: number | null;
-  scopeSize: number;
-  sampleSize?: number;
-}): MaximumResolution | null {
-  const { minimum, requested, scopeSize, sampleSize = 0 } = input;
+export function resolveMaximum(input: { minimum: number | null; requested?: number | null; scopeSize: number }): MaximumResolution | null {
+  const { minimum, requested, scopeSize } = input;
   if (minimum === null) return null;
   if (requested == null) return { ok: true, maximum: minimum, auditorChosen: false };
   if (requested < minimum) return { ok: false, error: 'MAXIMUM_BELOW_MINIMUM' };
   if (requested > scopeSize) return { ok: false, error: 'MAXIMUM_ABOVE_SCOPE' };
-  if (sampleSize > 0 && requested > sampleSize) return { ok: false, error: 'MAXIMUM_ABOVE_SAMPLE' };
   return { ok: true, maximum: requested, auditorChosen: true };
 }
 

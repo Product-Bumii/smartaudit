@@ -194,15 +194,10 @@
     },
     "questions": "Preguntes activades",
     "offeredLanguages": "Idiomes per als participants",
-    "changeStatus": "Canvia l'estat",
-    "suspend": "Suspèn",
-    "resume": "Reprèn",
-    "cancel": "Cancel·la l'auditoria",
     "tableVersion": "taula v{{v}}",
     "questionnaireVersion": "qüestionari v{{v}}",
     "businessDays": "Dies feiners",
     "history": "Historial d'estats",
-    "confirmStatus": "Vols canviar l'estat a «{{status}}»?",
     "eyebrow": "M1 · auditoria",
     "questionnaire": "Qüestionari",
     "aggregateOnly": "només avanç",
@@ -211,10 +206,11 @@
     "interviewStartDate": "Inici de les entrevistes",
     "maximum": "Màxim de completades",
     "maximumHint": "En arribar a aquesta xifra d'entrevistes completades, l'auditoria es tanca automàticament.",
-    "maximumAboveSample": "El màxim ({{max}}) supera les persones de la mostra ({{n}}): l'auditoria no es podrà tancar pel màxim i es tancarà en acabar la finestra.",
-    "launch": "Llança l'auditoria",
-    "confirmLaunch": "Llançar l'auditoria? Les invitacions sortiran quan s'obri la finestra i ja no es podrà editar la configuració.",
-    "launched": "Auditoria llançada"
+    "maximumAboveSample": "El màxim ({{max}}) supera les persones de la mostra ({{n}}): afegeix persones a la mostra per poder-hi arribar; si no, l’auditoria es tancarà en acabar la finestra.",
+    "extension": "Ampliació",
+    "extensionText": "del {{from}} al {{to}}",
+    "wellbeing": "Component de Benestar",
+    "scheduledHint": "Auditoria programada: s’obrirà sola el {{opens}} i sortiran les invitacions. Fins aleshores la pots editar i substituir la mostra."
   },
   "auditTypes": {
     "inicial": "Inicial",
@@ -256,7 +252,8 @@
     "noOrganizations": "No tens organitzacions assignades. El teu coordinador/a d'auditories te n'ha d'assignar una abans de crear l'auditoria.",
     "interviewStartDateHint": "La finestra s'obre aquell dia i dura 10 dies feiners",
     "maxCompleted": "Màxim d'entrevistes completades",
-    "maxCompletedHint": "Buit = el mínim. En arribar-hi, l'auditoria es tanca automàticament."
+    "maxCompletedHint": "Buit = el mínim. En arribar-hi, l'auditoria es tanca automàticament.",
+    "wellbeing": "Inclou el component de Benestar (preguntes P11 a P15)"
   },
   "questionStates": {
     "active": "Es preguntarà",
@@ -365,7 +362,6 @@
     "INVALID_START_DATE": "La data d'inici de les entrevistes no és vàlida.",
     "MAXIMUM_BELOW_MINIMUM": "El màxim no pot ser inferior al mínim de completades.",
     "MAXIMUM_ABOVE_SCOPE": "El màxim no pot superar la població total.",
-    "MAXIMUM_ABOVE_SAMPLE": "El màxim no pot superar les persones de la mostra carregada.",
     "INTERVIEW_NOT_AVAILABLE": "L’entrevista no està oberta en aquest moment.",
     "LANGUAGE_NOT_OFFERED": "Aquest idioma no està disponible per a aquesta entrevista.",
     "QUESTION_MISMATCH": "La pregunta ha canviat; et mostrem l’actual.",

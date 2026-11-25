@@ -61,7 +61,6 @@ export async function computeCampaign(
   org: OrganizationDoc,
   leadAuditorId: string,
   input: CampaignM1Input,
-  sampleSize = 0,
 ): Promise<ComputedCampaign> {
   const settings = await getSettings();
   const conf = await currentConfiguration();
@@ -78,13 +77,13 @@ export async function computeCampaign(
     scopeSize: input.scopeSize,
     auditorMinimum: input.auditorMinimum ?? null,
     maxCompleted: input.maxCompleted ?? null,
-    sampleSize,
     interviewStartDate: input.interviewStartDate,
     timeZone: org.timeZone,
     brackets: conf.table.brackets as SamplingBracket[],
     questions,
     auditType: input.auditType,
     excellence: input.excellence,
+    wellbeing: input.wellbeing,
     norm: input.norm,
     now: ctx.now(),
   });
@@ -94,7 +93,7 @@ export async function computeCampaign(
   }
   if (derivation.windowError) problems.push({ code: 'INVALID_START_DATE', details: { reason: derivation.windowError } });
   const max = derivation.maximum;
-  if (max && !max.ok) problems.push({ code: max.error, details: { minimum: m0(derivation), scopeSize: input.scopeSize, sampleSize } });
+  if (max && !max.ok) problems.push({ code: max.error, details: { minimum: m0(derivation), scopeSize: input.scopeSize } });
 
   const m = derivation.minimum;
   const set = {
@@ -103,6 +102,7 @@ export async function computeCampaign(
       norm: input.norm,
       auditType: input.auditType,
       excellence: input.excellence,
+      wellbeing: input.wellbeing,
       leadAuditorId,
       efrManagerName: input.efrManagerName ?? null,
       interviewStartDate: input.interviewStartDate,
@@ -197,7 +197,6 @@ export async function findCampaignForUser(user: AuthUser, id: string, allowed: r
 }
 
 export const MANAGE: readonly CampaignAccess[] = ['manage'];
-export const MANAGE_OR_SUPERVISE: readonly CampaignAccess[] = ['manage', 'supervise'];
 export const ANY_ACCESS: readonly CampaignAccess[] = ['manage', 'supervise', 'aggregate'];
 
 export async function findOrganization(id: unknown) {
@@ -223,6 +222,7 @@ export function toCampaignDto(raw: object, access: CampaignAccess): CampaignDto 
       norm: m1.norm,
       auditType: m1.auditType as CampaignDto['m1Config']['auditType'],
       excellence: m1.excellence,
+      wellbeing: m1.wellbeing ?? false,
       leadAuditorId: String(m1.leadAuditorId),
       efrManagerName: m1.efrManagerName ?? null,
       interviewStartDate: m1.interviewStartDate,
@@ -252,6 +252,12 @@ export function toCampaignDto(raw: object, access: CampaignAccess): CampaignDto 
           opensAt: new Date(c.window.opensAt as Date).toISOString(),
           closesAt: new Date(c.window.closesAt as Date).toISOString(),
           reminders: (c.window.reminders ?? []) as NonNullable<CampaignDto['window']>['reminders'],
+          extensions: ((c.window.extensions ?? []) as { from: string; to: string; at: Date | string; reason?: string | null }[]).map((e) => ({
+            from: e.from,
+            to: e.to,
+            at: new Date(e.at).toISOString(),
+            reason: e.reason ?? null,
+          })),
         }
       : null,
     questionnaire: c.questionnaireSnapshot?.version

@@ -125,7 +125,7 @@ Código en GitHub. Despliegue con `infra/scripts/deploy.sh <staging|prod>`: buil
 | Crear/desactivar auditores de la entidad | ✅ | ✅ (la suya) | — | — |
 | Designar o cambiar el auditor de una organización | ✅ | ✅ (sus organizaciones) | — | — |
 | Gestionar cuestionarios, tabla de mínimos, textos | ✅ | — | — | — |
-| Crear y configurar campaña M1 | ✅ (ver, pausar, cerrar todas) | solo como auditor asignado | ✅ (organizaciones asignadas) | — |
+| Crear y configurar campaña M1 | ✅ (ver todas) | solo como auditor asignado | ✅ (organizaciones asignadas) | — |
 | Cargar y validar la muestra | — | solo como auditor | ✅ | — |
 | Ver estado por persona (invitada, iniciada, completada) | ✅ | solo como auditor | ✅ | — |
 | Ver avance agregado (% completadas frente al mínimo) | ✅ | ✅ (sus organizaciones) | ✅ | — |
@@ -184,17 +184,18 @@ Reglas:
 Campos que diligencia el auditor:
 - Entidad (organización, elegida entre las asignadas al auditor y fijada después). *(La «marca del certificado» se retiró: decisión 39.)*
 - Norma: `1000-1` o `1000-2` (la v1 solo estas; la lista vive en configuración).
-- Tipo de auditoría: `inicial`, `mantenimiento`, `renovacion`.
+- Tipo de auditoría: `inicial` o `renovacion` (25/11/2026, grupo de cambios 3, decisión 85; `mantenimiento` ya no se ofrece y solo se conserva en auditorías antiguas).
+- **Componente de Bienestar** (casilla): si se marca, se activan las preguntas P11 a P15 (decisión 86).
 - Postula o mantiene excelencia: sí/no.
 - Auditor responsable: el auditor asignado a la organización que crea la campaña. *(Los auditores colaboradores se retiraron: decisión 41.)*
 - Nombre del mánager efr de la entidad (solo para referencia de codificación; la IA no lo menciona).
 - **Fecha de comienzo de las entrevistas** (sustituye a la fecha de la visita): la ventana abre ese día (ver 5.4).
-- **Máximo de entrevistas completadas**: por defecto, el mínimo de la tabla; el auditor puede subirlo, nunca por debajo del mínimo ni por encima de la población total o de la muestra cargada. **Al alcanzarlo, la auditoría pasa de `en_curso` a `finalizada`** automáticamente (motivo `maximum_reached`) y los enlaces y códigos pendientes dejan de servir.
+- **Máximo de entrevistas completadas**: por defecto, el mínimo de la tabla; el auditor puede subirlo, nunca por debajo del mínimo ni por encima de la población total. **No lo limita la muestra cargada** (se pueden añadir personas con la auditoría en curso; la ficha avisa si el máximo la supera; decisión 87). **Al alcanzarlo, la auditoría pasa de `en_curso` a `finalizada`** automáticamente (motivo `maximum_reached`) y los enlaces y códigos pendientes dejan de servir.
 - Número total de personas en el alcance (cuenta ajena el día de la auditoría, sin subcontratas ni personal de ETT). **Es el único dato de la plantilla que se pide.**
 - Idiomas disponibles para los participantes (por defecto: es, en, pt, fr, solo los aprobados; el catalán no se ofrece).
 
-**Estados** (aprobados por la Fundación):
-`borrador` → `muestra_cargada` → `envios_activos` → `en_curso` → `finalizada` → `informe_generado`, más `suspendida` y `cancelada` desde cualquier estado activo. Cada transición se valida en código y se registra en el historial. Una campaña activa congela la versión del cuestionario y de la tabla con la que se lanzó.
+**Estados** (revisados el 25/11/2026, grupo de cambios 3, decisión 88):
+`borrador` → `muestra_cargada` → `en_curso` → `finalizada` → `informe_generado`. **No hay activación manual, ni suspensión, ni cancelación:** al cargar la muestra la auditoría queda programada y se abre sola el día de comienzo (`en_curso`, salen las invitaciones); se cierra sola al terminar la ventana o al alcanzar el máximo. Hasta que abre se puede editar y reemplazar la muestra; en curso solo se pueden añadir personas. `envios_activos`, `suspendida` y `cancelada` solo existen en auditorías anteriores a este cambio. Cada transición se valida en código y se registra en el historial. Una campaña en curso congela la versión del cuestionario y de la tabla con la que se abrió.
 
 ### 5.2 Cuestionario oficial M1 v1
 
@@ -216,7 +217,14 @@ Cada pregunta tiene: `code`, `block`, `order`, `text` por idioma, `type` (`singl
 | P7.1 | En caso de realizar exceso de jornada, ¿se siente compensado/a por ese exceso en tiempo libre o económicamente? | Si P7 ∈ {`ALGUNAS_VECES`, `SIEMPRE`} | `SI_TIEMPO`, `SI_ECONOMICA`, `SI_AMBAS`, `NO` (+ texto libre opcional) |
 | P8 | ¿En los últimos años se han mejorado las condiciones en materia de conciliación en su empresa? | Si tipo = `renovacion` | `GRAN_AVANCE`, `MODERADO`, `NULO`, `NS_NC` |
 | P9 | ¿Cree que su empresa es excelente en conciliación? | Si postula a excelencia | `SI`, `NO` |
+| P11 | ¿La salud y el bienestar de las personas son un valor importante en esta organización? | Si la auditoría incluye **Bienestar** | `EN_DESACUERDO`, `NI_DE_ACUERDO_NI_EN_DESACUERDO`, `DE_ACUERDO` |
+| P12 | ¿Los líderes actúan de manera coherente con los valores de bienestar que promueve la organización? | Si incluye **Bienestar** | Ídem |
+| P13 | ¿Siento que mi bienestar es importante para mi responsable directo? | Si incluye **Bienestar** | Ídem |
+| P14 | ¿Qué acciones de la organización contribuyen más a tu bienestar en el trabajo? | Si incluye **Bienestar**, opcional | Texto libre disociado |
+| P15 | ¿Qué podría hacer la organización para mejorar el bienestar de las personas? | Si incluye **Bienestar**, opcional | Texto libre disociado |
 | P10 | Comentarios abiertos sobre la conciliación | Siempre, **opcional** | Texto libre |
+
+P11–P15 (bloque «Bienestar», grupo de cambios 3, tabla facilitada por F+f el 25/11/2026) se hacen antes de P10. *«De acuerdo»* se ha añadido como tercera opción de P11–P13 porque la tabla recibida mostraba solo dos (pendiente de confirmar). En la Fase 3, P14 y P15 («texto libre disociado») se presentarán sin vínculo con los demográficos.
 
 Todas las preguntas admiten además `ABSTENCION` («Prefiero no responder»), que cuenta como respondida.
 
@@ -356,7 +364,7 @@ Ciclos semanales con demo los viernes. Cada fase termina con sus criterios de ac
 
 ### Fase 2 · Invitaciones y motor conversacional (semanas 3–4)
 
-**Construir:** envío de invitaciones (paso a `envios_activos`), enlace único y landing con código, aviso previo y selección de idioma, chat web adaptado a móvil (texto libre + botones + «Prefiero no responder»), máquina de estados de la entrevista, `LlmProvider` con adaptador mock y uno real, clasificación con confianza y una aclaración como máximo, pausa y reanudación, recordatorios programados, transiciones automáticas de estado (`en_curso` al abrir la ventana, `finalizada` al cerrarla), panel de avance (auditor: estado por persona; coordinador: % agregado), alertas de mínimo, ampliación de ventana, suite de unas 40 personas sintéticas para pruebas (incluye perfiles evasivos, fuera de tema e intentos de manipular a la IA).
+**Construir:** envío de invitaciones (al abrir la ventana; desde el grupo de cambios 3 sin paso manual), enlace único y landing con código, aviso previo y selección de idioma, chat web adaptado a móvil (texto libre + botones + «Prefiero no responder»), máquina de estados de la entrevista, `LlmProvider` con adaptador mock y uno real, clasificación con confianza y una aclaración como máximo, pausa y reanudación, recordatorios programados, transiciones automáticas de estado (`en_curso` al abrir la ventana, `finalizada` al cerrarla), panel de avance (auditor: estado por persona; coordinador: % agregado), alertas de mínimo, ampliación de ventana, suite de unas 40 personas sintéticas para pruebas (incluye perfiles evasivos, fuera de tema e intentos de manipular a la IA).
 
 **Criterios de aceptación:** 0 preguntas inventadas o respuestas sugeridas en las 40 pruebas adversariales; la pregunta P7.1, P8 y P9 solo aparecen cuando corresponde; reanudar tras desconexión no repite ni pierde respuestas; entrevista completa en móvil; ningún identificador enviado al proveedor de IA (test que inspecciona las llamadas).
 
@@ -396,7 +404,7 @@ Ciclos semanales con demo los viernes. Cada fase termina con sus criterios de ac
 | 4 | Remitente con dominio de la Fundación | bumii.ai; configurable en `settings` |
 | 5 | Validación de representatividad por demográficos de la plantilla | Fuera de la v1; el modelo permite añadir totales por grupo después |
 | 6 | Preguntas de excelencia de las normas 1000-6 y 1000-7 | Solo P9 hasta que la Fundación envíe los textos |
-| 7 | Si P8 se activa también en auditorías de mantenimiento | Solo renovación (según el cuestionario oficial); regla configurable |
+| 7 | Si P8 se activa también en auditorías de mantenimiento | Resuelto: ya no hay auditorías de mantenimiento (decisión 85) |
 | 8 | Normas 1000-5, 2000 y 3000 | Fuera de la v1; la lista de normas está en configuración |
 | 9 | Facturación por entrevista completada | Fuera de la v1; `completedAt` permite la consulta |
 | 10 | Acuerdo de tratamiento de datos (art. 28 RGPD) | Solo datos sintéticos hasta su firma |

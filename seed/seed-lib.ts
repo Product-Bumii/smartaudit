@@ -79,7 +79,7 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
     log('questionnaire M1 v1 published (es approved; en, ca, pt, fr pending approval)');
   }
 
-  await addMissingQuestionnaireLanguages(log);
+  await syncQuestionnaireWithSeed(log);
 
 
   const upsertUser = async (email: string, role: Role, auditEntityId: Types.ObjectId | null) => {
@@ -121,18 +121,22 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
 }
 
 /**
- * Existing databases: if the latest published M1 questionnaire lacks languages present in the seed file
- * (e.g. pt, fr added later), publish a NEW version with those texts merged by question/option code and the
- * new languages pending approval. Published versions are never edited; campaigns keep their own snapshot.
+ * Existing databases: if the latest published M1 questionnaire lacks languages (e.g. pt, fr) or questions
+ * (e.g. P11–P15 Bienestar, change group 3) present in the seed file, publish a NEW version with them merged by
+ * question/option code; new languages are pending approval. Published versions are never edited; campaigns
+ * keep their own snapshot.
  */
-async function addMissingQuestionnaireLanguages(log: (m: string) => void): Promise<void> {
+async function syncQuestionnaireWithSeed(log: (m: string) => void): Promise<void> {
   const latest = await Questionnaire.findOne({ module: 'M1', status: 'published' }).sort({ version: -1 }).lean();
   if (!latest) return;
   const present = new Set((latest.languages as QuestionnaireLanguage[]).map((l) => l.lang));
   const missing = (questionnaire.languages as QuestionnaireLanguage[]).map((l) => l.lang).filter((l) => !present.has(l));
-  if (missing.length === 0) return;
+  const presentCodes = new Set((latest.questions as Question[]).map((q) => q.code));
+  const newQuestions = (questionnaire.questions as Question[]).filter((q) => !presentCodes.has(q.code));
+  if (missing.length === 0 && newQuestions.length === 0) return;
+  const what = [missing.length ? `languages ${missing.join(', ')}` : '', newQuestions.length ? `questions ${newQuestions.map((q) => q.code).join(', ')}` : ''].filter(Boolean).join(' and ');
   if (await Questionnaire.exists({ module: 'M1', status: 'draft' })) {
-    log(`questionnaire: languages ${missing.join(', ')} not added (a draft exists)`);
+    log(`questionnaire: ${what} not added (a draft exists)`);
     return;
   }
   const seedByCode = new Map((questionnaire.questions as Question[]).map((q) => [q.code, q]));
@@ -153,6 +157,8 @@ async function addMissingQuestionnaireLanguages(log: (m: string) => void): Promi
     }
     return q;
   });
+  questions.push(...structuredClone(newQuestions));
+  questions.sort((a, b) => a.order - b.order);
   const version = latest.version + 1;
   await Questionnaire.create({
     module: 'M1',
@@ -160,9 +166,9 @@ async function addMissingQuestionnaireLanguages(log: (m: string) => void): Promi
     title: latest.title,
     status: 'published',
     publishedAt: new Date(),
-    notes: `Copia de la versión ${latest.version} con idiomas añadidos: ${missing.join(', ')}`,
+    notes: `Copia de la versión ${latest.version} con ${[missing.length ? `idiomas añadidos: ${missing.join(', ')}` : '', newQuestions.length ? `preguntas añadidas: ${newQuestions.map((q) => q.code).join(', ')}` : ''].filter(Boolean).join('; ')}`,
     languages: [...(latest.languages as QuestionnaireLanguage[]), ...missing.map((lang: Language) => ({ lang, status: 'pending_approval' }))],
     questions,
   });
-  log(`questionnaire M1 v${version} published with new languages ${missing.join(', ')} (pending approval)`);
+  log(`questionnaire M1 v${version} published with ${what}`);
 }

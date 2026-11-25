@@ -56,7 +56,6 @@ const managedResources: Call[] = [
   ['get', () => `/api/campaigns/${campaignCO}/sample/summary`],
   ['get', () => `/api/campaigns/${campaignCO}/access-codes`],
   ['post', () => `/api/campaigns/${campaignCO}/sample`],
-  ['post', () => `/api/campaigns/${campaignCO}/status`, { to: 'suspendida' }],
 ];
 const campaignResources: Call[] = [['get', () => `/api/campaigns/${campaignCO}`], ...managedResources];
 
@@ -201,8 +200,8 @@ describe('Superadmins', () => {
       await call(s[who], ['post', () => '/api/campaigns', campaignInput()]).expect(403);
       await call(s[who], ['put', () => `/api/campaigns/${campaignCO}`, campaignInput()]).expect(403);
     }
-    await call(s.superFundacion, ['post', () => `/api/campaigns/${campaignCO}/status`, { to: 'suspendida' }]).expect(200);
-    await call(s.superBumii, ['post', () => `/api/campaigns/${campaignCO}/status`, { to: 'muestra_cargada' }]).expect(200);
+    // Nobody can suspend or cancel an audit any more (change group 3), superadmins included.
+    await call(s.superFundacion, ['post', () => `/api/campaigns/${campaignCO}/status`, { to: 'suspendida' }]).expect(404);
   });
 
   it('only SUPERADMIN_BUMII changes technical settings', async () => {

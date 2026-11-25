@@ -51,4 +51,18 @@ describe('seed: languages added after the first deploy', () => {
     await runSeed(env.ctx.crypto, () => undefined);
     expect(await Questionnaire.countDocuments({ module: 'M1' })).toBe(2);
   });
+
+  it('publishes a new version with the Bienestar questions (P11–P15) when the latest one lacks them', async () => {
+    const latest = (await Questionnaire.findOne({ module: 'M1' }).sort({ version: -1 }))!;
+    const before = latest.version;
+    latest.set({ questions: (latest.toObject().questions as Question[]).filter((q) => !/^P1[1-5]$/.test(q.code)) });
+    latest.markModified('questions');
+    await latest.save();
+    await runSeed(env.ctx.crypto, () => undefined);
+    const next = (await Questionnaire.findOne({ module: 'M1' }).sort({ version: -1 }).lean())!;
+    expect(next.version).toBe(before + 1);
+    const codes = (next.questions as Question[]).map((q) => q.code);
+    expect(codes.slice(-6)).toEqual(['P11', 'P12', 'P13', 'P14', 'P15', 'P10']);
+    expect(next.notes).toContain('preguntas añadidas: P11, P12, P13, P14, P15');
+  });
 });

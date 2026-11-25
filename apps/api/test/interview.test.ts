@@ -5,7 +5,7 @@ import { SEED_USERS } from '../../../seed/seed-lib';
 import { AuditLog, Campaign, Interview, Respondent, Settings } from '../src/models';
 import { runScheduler } from '../src/services/scheduler';
 import { sessionFor, startTestEnv, type TestEnv } from './helpers';
-import { firstOption, invitationTokens, launchedCampaign, openWindow, participant, runInterview, sampleCsv } from './phase2-helpers';
+import { firstOption, invitationTokens, scheduledCampaign, openWindow, participant, runInterview, sampleCsv } from './phase2-helpers';
 
 const recorder = new RecordingLlmProvider(new MockLlmProvider());
 let env: TestEnv;
@@ -19,27 +19,26 @@ beforeAll(async () => {
   auditor = await sessionFor(env, SEED_USERS.auditorMulti, env.entities.CO);
   coordinator = await sessionFor(env, SEED_USERS.coordinatorCO, env.entities.CO);
   // Renewal with excellence: P8 and P9 are asked. 12 people, every 4th without email.
-  campaignId = await launchedCampaign(env, auditor, sampleCsv(12, 'ana', 4), { auditType: 'renovacion', excellence: true, interviewStartDate: '2026-11-16', scopeSize: 60 });
+  campaignId = await scheduledCampaign(env, auditor, sampleCsv(12, 'ana', 4), { auditType: 'renovacion', excellence: true, interviewStartDate: '2026-11-16', scopeSize: 60 });
 });
 afterAll(() => env?.stop());
 
 describe('launch, window and invitations', () => {
-  it('launching moves to envios_activos; nothing is sent before the window opens', async () => {
+  it('with the sample loaded the audit is scheduled: no launch, nothing sent before the window opens', async () => {
     const c = await Campaign.findById(campaignId).lean();
-    expect(c!.status).toBe('envios_activos');
-    expect(c!.statusHistory.at(-1)).toMatchObject({ from: 'muestra_cargada', to: 'envios_activos', reason: 'launched' });
+    expect(c!.status).toBe('muestra_cargada');
     expect(await runScheduler(env.ctx)).toMatchObject({ sent: 0, transitions: [] });
-    // People without email are invited from the launch (paper codes).
-    expect(await Respondent.countDocuments({ campaignId, status: 'invited' })).toBe(3);
-    expect(await AuditLog.exists({ action: 'campaign.launch', resourceId: campaignId })).toBeTruthy();
-    await request(env.app).post(`/api/campaigns/${campaignId}/launch`).set('Cookie', auditor).expect(409);
+    expect(await Respondent.countDocuments({ campaignId, status: 'invited' })).toBe(0);
+    // There is no manual activation, suspension or cancellation any more (change group 3).
+    await request(env.app).post(`/api/campaigns/${campaignId}/launch`).set('Cookie', auditor).expect(404);
+    await request(env.app).post(`/api/campaigns/${campaignId}/status`).set('Cookie', auditor).send({ to: 'suspendida' }).expect(404);
   });
 
   it('when the window opens: en_curso and one invitation per person with email (never twice)', async () => {
     await openWindow(env, campaignId);
     const c = await Campaign.findById(campaignId).lean();
     expect(c!.status).toBe('en_curso');
-    expect(c!.statusHistory.at(-1)).toMatchObject({ to: 'en_curso', reason: 'scheduled' });
+    expect(c!.statusHistory.at(-1)).toMatchObject({ from: 'muestra_cargada', to: 'en_curso', reason: 'scheduled' });
     tokens = invitationTokens(env);
     expect(tokens.size).toBe(9);
     const mail = env.mail.outbox.find((m) => m.to === 'ana001@demo.example')!;
@@ -166,6 +165,8 @@ describe('progress, reminders, extension and closing', () => {
     await request(env.app).post(`/api/campaigns/${campaignId}/window/extend`).set('Cookie', auditor).send({ closeDate: '2026-11-20' }).expect(422);
     const res = await request(env.app).post(`/api/campaigns/${campaignId}/window/extend`).set('Cookie', auditor).send({ closeDate: '2026-12-04', reason: 'pocas respuestas' }).expect(200);
     expect(res.body.campaign.window.closeDate).toBe('2026-12-04');
+    expect(res.body.campaign.window.businessDays.at(-1)).toBe('2026-12-04');
+    expect(res.body.campaign.window.extensions).toEqual([{ from: '2026-11-27', to: '2026-12-04', at: expect.any(String), reason: 'pocas respuestas' }]);
     expect(await AuditLog.exists({ action: 'campaign.window.extend', resourceId: campaignId })).toBeTruthy();
     await request(env.app).post(`/api/campaigns/${campaignId}/window/extend`).set('Cookie', coordinator).send({ closeDate: '2026-12-10' }).expect(403);
   });
@@ -186,7 +187,7 @@ describe('scheduler limits and AI misbehaviour', () => {
     await Settings.updateOne({ key: 'global' }, { $set: { mailDailyLimit: env.mail.outbox.length + 3 } });
     // Sends of the last 24 h count against the cap: move the clock so the earlier ones are older.
     env.ctx.now = () => new Date('2026-11-13T12:00:00Z');
-    const id = await launchedCampaign(env, auditor, sampleCsv(6, 'cap', 0), { interviewStartDate: '2026-11-13' });
+    const id = await scheduledCampaign(env, auditor, sampleCsv(6, 'cap', 0), { interviewStartDate: '2026-11-13' });
     await Campaign.updateOne({ _id: id }, { $set: { 'window.opensAt': new Date('2026-11-13T11:00:00Z') } });
     const failing = env.ctx.mail;
     let calls = 0;
@@ -206,7 +207,7 @@ describe('scheduler limits and AI misbehaviour', () => {
     });
     env.ctx.llm = rogue;
     try {
-      const id = await launchedCampaign(env, auditor, sampleCsv(2, 'rogue', 0), { interviewStartDate: '2026-11-16' });
+      const id = await scheduledCampaign(env, auditor, sampleCsv(2, 'rogue', 0), { interviewStartDate: '2026-11-16' });
       await openWindow(env, id);
       const token = [...invitationTokens(env).entries()].find(([to]) => to.startsWith('rogue001'))![1];
       const { agent } = await participant(env, token);

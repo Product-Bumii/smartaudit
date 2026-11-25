@@ -47,8 +47,12 @@ export const CAMPAIGN_STATUSES = [
 ] as const;
 export type CampaignStatus = (typeof CAMPAIGN_STATUSES)[number];
 
-export const AUDIT_TYPES = ['inicial', 'mantenimiento', 'renovacion'] as const;
-export type AuditType = (typeof AUDIT_TYPES)[number];
+/** Audit types that can be chosen (change group 3: only initial or renewal, decision 85). */
+export const AUDIT_TYPES = ['inicial', 'renovacion'] as const;
+/** `mantenimiento` is no longer offered; kept only so older audits keep working. */
+export const LEGACY_AUDIT_TYPES = ['mantenimiento'] as const;
+export const STORED_AUDIT_TYPES = [...AUDIT_TYPES, ...LEGACY_AUDIT_TYPES] as const;
+export type AuditType = (typeof STORED_AUDIT_TYPES)[number];
 
 /** Default norm list. The live list is stored in `settings.norms`. */
 export const DEFAULT_NORMS = ['1000-1', '1000-2'] as const;

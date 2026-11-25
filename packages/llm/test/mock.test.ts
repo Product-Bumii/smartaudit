@@ -29,6 +29,13 @@ describe('mock provider', () => {
     expect(await llm.classifyAnswer(p2, 'Por correo y en reuniones')).toMatchObject({ status: 'classified', optionCodes: ['MAIL', 'REUNIONES'] });
   });
 
+  it('agreement scale (Bienestar P11–P13)', async () => {
+    const p11: QuestionPayload = { ...p5, questionCode: 'P11', options: [{ code: 'EN_DESACUERDO', label: 'En desacuerdo' }, { code: 'NI_DE_ACUERDO_NI_EN_DESACUERDO', label: 'Ni de acuerdo ni en desacuerdo' }, { code: 'DE_ACUERDO', label: 'De acuerdo' }] };
+    expect(await llm.classifyAnswer(p11, 'Totalmente de acuerdo')).toMatchObject({ status: 'classified', optionCodes: ['DE_ACUERDO'] });
+    expect(await llm.classifyAnswer(p11, 'Estoy en desacuerdo')).toMatchObject({ status: 'classified', optionCodes: ['EN_DESACUERDO'] });
+    expect(await llm.classifyAnswer(p11, 'Ni de acuerdo ni en desacuerdo')).toMatchObject({ status: 'classified', optionCodes: ['NI_DE_ACUERDO_NI_EN_DESACUERDO'] });
+  });
+
   it('ambiguous, off topic, hedged and abstained answers', async () => {
     expect(await llm.classifyAnswer(p5, 'Siempre no, nunca tampoco')).toMatchObject({ status: 'ambiguous' });
     expect(await llm.classifyAnswer(p5, 'mmm')).toMatchObject({ status: 'ambiguous', optionCodes: [] });

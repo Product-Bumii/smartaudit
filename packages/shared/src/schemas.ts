@@ -87,7 +87,7 @@ export const activationSchema: z.ZodType<Activation> = z.lazy(() =>
     z.object({ kind: z.literal('answer_in'), question: z.string().min(1), values: z.array(z.string()).min(1) }),
     z.object({
       kind: z.literal('campaign_in'),
-      field: z.enum(['auditType', 'excellence', 'norm']),
+      field: z.enum(['auditType', 'excellence', 'wellbeing', 'norm']),
       values: z.array(z.union([z.string(), z.boolean()])).min(1),
     }),
     z.object({ kind: z.literal('all'), of: z.array(activationSchema).min(1) }),
@@ -143,6 +143,8 @@ export const campaignM1InputSchema = z.object({
   norm: z.string().min(1).max(20),
   auditType: z.enum(AUDIT_TYPES),
   excellence: z.boolean(),
+  /** Bienestar component: activates P11–P15. */
+  wellbeing: z.boolean().default(false),
   efrManagerName: z.string().trim().max(200).nullable().optional(),
   interviewStartDate: isoDateSchema,
   scopeSize: z.number().int().min(1).max(10_000_000),
@@ -154,10 +156,6 @@ export type CampaignM1Input = z.infer<typeof campaignM1InputSchema>;
 /** Creation (and preview) also name the organization; it cannot change afterwards. */
 export const campaignCreateSchema = campaignM1InputSchema.extend({ organizationId: objectIdSchema });
 
-export const campaignStatusChangeSchema = z.object({
-  to: z.enum(['suspendida', 'cancelada', 'borrador', 'muestra_cargada', 'envios_activos', 'en_curso']),
-  reason: z.string().trim().max(500).optional(),
-});
 
 // ---------- Participants (public landing)
 export const campaignSlugSchema = z.string().regex(/^[a-z2-9]{10}$/, 'INVALID_SLUG');

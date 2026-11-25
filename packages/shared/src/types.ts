@@ -94,7 +94,8 @@ export interface CampaignDto {
     requiresAuditorChoice: boolean;
     auditorChosen: boolean;
   } | null;
-  window: CampaignWindow | null;
+  /** Window, with the extensions decided by the auditor (section 5.4: «queda registrado»). */
+  window: (CampaignWindow & { extensions?: WindowExtensionView[] }) | null;
   questionnaire: { version: number; offeredLanguages: Language[] } | null;
   activatedQuestions: { code: string; order: number; mandatory: boolean; state: QuestionActivationState }[];
   sampleSize: number;
@@ -158,4 +159,12 @@ export interface ProgressPersonRow {
 
 export interface CampaignProgressDto extends Progress {
   people: ProgressPersonRow[] | null;
+}
+
+export interface WindowExtensionView {
+  /** Previous and new closing dates (local). */
+  from: string;
+  to: string;
+  at: string;
+  reason: string | null;
 }

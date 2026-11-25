@@ -1,5 +1,5 @@
 /**
- * Phase 2 end to end: the auditor launches the audit, the window opens (dev helper), a person opens the
+ * Phase 2 end to end: with the sample loaded the audit is scheduled, the window opens (dev helper), a person opens the
  * personal link from the invitation email on a phone, answers the whole interview (buttons, multiple choice,
  * own words), pauses and resumes, and the auditor sees the progress.
  */
@@ -48,11 +48,11 @@ async function answerCurrent(page: Page): Promise<string> {
   return code;
 }
 
-test('phase 2: launch, invitation link, interview on a phone with pause and resume, progress', async ({ page, browser }) => {
+test('phase 2: scheduled audit, invitation link, interview on a phone with pause and resume, progress', async ({ page, browser }) => {
   test.setTimeout(180_000);
   page.on('dialog', (d) => void d.accept());
 
-  // 1. The auditor prepares an audit (API) and launches it from the interface.
+  // 1. The auditor prepares an audit (API): with the sample loaded it is scheduled, there is nothing to launch.
   await login(page, AUDITOR);
   const options = await (await page.request.get('/api/campaigns/options')).json();
   const today = new Date().toISOString().slice(0, 10);
@@ -64,8 +64,9 @@ test('phase 2: launch, invitation link, interview on a phone with pause and resu
     multipart: { file: { name: 'muestra.csv', mimeType: 'text/csv', buffer: readFileSync(join(SAMPLES, 'muestra-valida-30.csv')) } },
   });
   await page.goto(`/campaigns/${id}`);
-  await page.getByTestId('launch').click();
-  await expect(page.getByTestId('campaign-status')).toHaveText('Envíos activos');
+  await expect(page.getByTestId('campaign-status')).toHaveText('Muestra cargada');
+  await expect(page.getByTestId('scheduled-notice')).toBeVisible();
+  await expect(page.getByTestId('launch')).toHaveCount(0);
 
   // 2. The window opens (dev helper) → en curso, invitations sent.
   await page.request.post(`${API}/api/dev/campaigns/${id}/open-now`);

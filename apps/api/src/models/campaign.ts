@@ -3,7 +3,6 @@ import { Schema, model, type InferSchemaType, type Types } from 'mongoose';
 import {
   AGE_BANDS,
   ANSWER_STATUSES,
-  AUDIT_TYPES,
   CAMPAIGN_STATUSES,
   INTERVIEW_STATES,
   LANGUAGES,
@@ -11,13 +10,16 @@ import {
   RESPONDENT_STATUSES,
   SENIORITY_BANDS,
   SEX_VALUES,
+  STORED_AUDIT_TYPES,
 } from '@smartaudit/shared';
 
 const m1ConfigSchema = new Schema(
   {
     norm: { type: String, required: true },
-    auditType: { type: String, enum: AUDIT_TYPES, required: true },
+    auditType: { type: String, enum: STORED_AUDIT_TYPES, required: true },
     excellence: { type: Boolean, required: true },
+    /** Bienestar component: activates P11–P15. */
+    wellbeing: { type: Boolean, required: true, default: false },
     leadAuditorId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     efrManagerName: { type: String, default: null },
     /** First day of interviews (local date); the window opens that day. */

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import seedQuestionnaire from '../../../seed/data/questionnaire-m1-v1.json';
 import seedTable from '../../../seed/data/sampling-table-v1.json';
 import { deriveM1Campaign } from '../src/campaign';
-import { allowedSampleModes, allowedTransitions, canTransition, isCampaignEditable } from '../src/campaign-state';
+import { allowedSampleModes, allowedTransitions, canTransition, isCampaignEditable, SCHEDULED_STATUSES } from '../src/campaign-state';
 import { CAMPAIGN_STATUSES, isSuperadmin, ROLES } from '../src/enums';
 import { ACTIONS, can } from '../src/permissions';
 import type { Question } from '../src/questionnaire';
@@ -12,30 +12,21 @@ import type { SamplingBracket } from '../src/sampling';
 describe('campaign state machine', () => {
   it('follows the main flow', () => {
     expect(canTransition('borrador', 'muestra_cargada')).toBe(true);
-    expect(canTransition('muestra_cargada', 'envios_activos')).toBe(true);
-    expect(canTransition('envios_activos', 'en_curso')).toBe(true);
+    expect(canTransition('muestra_cargada', 'en_curso')).toBe(true); // opens by itself on the start date
+    expect(canTransition('envios_activos', 'en_curso')).toBe(true); // legacy launched audits
     expect(canTransition('en_curso', 'finalizada')).toBe(true);
     expect(canTransition('finalizada', 'informe_generado')).toBe(true);
-    expect(canTransition('borrador', 'envios_activos')).toBe(false);
+    expect(canTransition('muestra_cargada', 'envios_activos')).toBe(false); // no manual launch any more
     expect(canTransition('muestra_cargada', 'borrador')).toBe(false);
   });
 
-  it('suspends and cancels from any active state only', () => {
-    for (const s of ['borrador', 'muestra_cargada', 'envios_activos', 'en_curso'] as const) {
-      expect(canTransition(s, 'suspendida')).toBe(true);
-      expect(canTransition(s, 'cancelada')).toBe(true);
-    }
-    for (const s of ['finalizada', 'informe_generado', 'cancelada'] as const) {
+  it('there is no manual suspension or cancellation (change group 3)', () => {
+    for (const s of CAMPAIGN_STATUSES) {
       expect(canTransition(s, 'suspendida')).toBe(false);
       expect(canTransition(s, 'cancelada')).toBe(false);
     }
-  });
-
-  it('resumes a suspended campaign only to its previous state', () => {
-    expect(allowedTransitions('suspendida', 'en_curso')).toEqual(['en_curso', 'cancelada']);
-    expect(canTransition('suspendida', 'borrador', 'en_curso')).toBe(false);
-    expect(allowedTransitions('suspendida', null)).toEqual(['cancelada']);
-    expect(allowedTransitions('suspendida', 'finalizada')).toEqual(['cancelada']);
+    expect(allowedTransitions('suspendida')).toEqual([]);
+    expect(SCHEDULED_STATUSES).toEqual(['muestra_cargada', 'envios_activos']);
   });
 
   it('terminal states have no transitions', () => {
@@ -114,9 +105,17 @@ describe('deriveM1Campaign', () => {
     expect(d.questions.find((q) => q.code === 'P9')?.state).toBe('inactive');
   });
 
-  it('applies the maximum chosen by the auditor, validated against the sample', () => {
+  it('applies the maximum chosen by the auditor (up to the people in scope)', () => {
     expect(deriveM1Campaign({ ...input, maxCompleted: 30 }).maximum).toEqual({ ok: true, maximum: 30, auditorChosen: true });
-    expect(deriveM1Campaign({ ...input, maxCompleted: 30, sampleSize: 25 }).maximum).toEqual({ ok: false, error: 'MAXIMUM_ABOVE_SAMPLE' });
+    expect(deriveM1Campaign({ ...input, maxCompleted: 121 }).maximum).toEqual({ ok: false, error: 'MAXIMUM_ABOVE_SCOPE' });
+  });
+
+  it('the Bienestar component activates P11–P15', () => {
+    const states = (wellbeing?: boolean) =>
+      Object.fromEntries(deriveM1Campaign({ ...input, wellbeing }).questions.filter((q) => /^P1[1-5]$/.test(q.code)).map((q) => [q.code, q.state]));
+    expect(states(true)).toEqual({ P11: 'active', P12: 'active', P13: 'active', P14: 'active', P15: 'active' });
+    expect(states(false)).toEqual({ P11: 'inactive', P12: 'inactive', P13: 'inactive', P14: 'inactive', P15: 'inactive' });
+    expect(states(undefined)).toEqual(states(false));
   });
 
   it('has no maximum while the minimum is unknown', () => {

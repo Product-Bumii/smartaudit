@@ -1,22 +1,19 @@
 import { Component, computed, inject, input, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
-import { MatMenuModule } from '@angular/material/menu';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiService, toApiFailure } from '../../core/api.service';
-import { I18nService } from '../../core/i18n.service';
 import type { CampaignDto, CampaignStatus, SampleError, SampleSummary } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
 import { TzDatePipe } from '../../shared/tz-date.pipe';
 import { CampaignProgressComponent } from './campaign-progress.component';
 
 const EDITABLE: CampaignStatus[] = ['borrador', 'muestra_cargada'];
-const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_activos', 'en_curso'];
 
 @Component({
   selector: 'app-campaign-detail',
-  imports: [RouterLink, MatButtonModule, MatMenuModule, MatProgressBarModule, TranslatePipe, TzDatePipe, CampaignProgressComponent],
+  imports: [RouterLink, MatButtonModule, MatProgressBarModule, TranslatePipe, TzDatePipe, CampaignProgressComponent],
   template: `
     @if (campaign(); as c) {
       <div class="page-header">
@@ -27,22 +24,14 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
           <div><span class="chip solid" data-testid="campaign-status">{{ 'campaignStatus.' + c.status | translate }}</span></div>
         </div>
         <div class="row-actions">
-          @if (canManage() && status() === 'muestra_cargada') {
-            <button mat-flat-button (click)="launch()" data-testid="launch">{{ 'campaigns.launch' | translate }}</button>
-          }
           @if (canManage() && editable()) {
             <a mat-stroked-button [routerLink]="['/campaigns', c.id, 'edit']">{{ 'common.edit' | translate }}</a>
           }
-          @if (canSuspend() || canResume() || canCancel()) {
-            <button mat-stroked-button [matMenuTriggerFor]="statusMenu">{{ 'campaigns.changeStatus' | translate }}</button>
-            <mat-menu #statusMenu="matMenu">
-              @if (canSuspend()) { <button mat-menu-item (click)="changeStatus('suspendida')">{{ 'campaigns.suspend' | translate }}</button> }
-              @if (canResume()) { <button mat-menu-item (click)="changeStatus(previousStatus()!)">{{ 'campaigns.resume' | translate }}</button> }
-              @if (canCancel()) { <button mat-menu-item (click)="changeStatus('cancelada')">{{ 'campaigns.cancel' | translate }}</button> }
-            </mat-menu>
-          }
         </div>
       </div>
+      @if (status() === 'muestra_cargada' && c.window; as w) {
+        <div class="alert info" role="status" data-testid="scheduled-notice">{{ 'campaigns.scheduledHint' | translate: { opens: (w.opensAt | tzDate: w.timeZone) } }}</div>
+      }
       @if (c.access === 'aggregate') {
         <div class="alert info" role="status" data-testid="aggregate-notice">{{ 'campaigns.aggregateHint' | translate }}</div>
       }
@@ -73,6 +62,7 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
             <dl class="kv">
               <div><dt>{{ 'campaignForm.norm' | translate }}</dt><dd>efr {{ c.m1Config.norm }}</dd></div>
               <div><dt>{{ 'campaigns.auditType' | translate }}</dt><dd>{{ 'auditTypes.' + c.m1Config.auditType | translate }}</dd></div>
+              <div><dt>{{ 'campaigns.wellbeing' | translate }}</dt><dd data-testid="campaign-wellbeing">{{ (c.m1Config.wellbeing ? 'common.yes' : 'common.no') | translate }}</dd></div>
               <div><dt>{{ 'campaignForm.excellence' | translate }}</dt><dd>{{ (c.m1Config.excellence ? 'common.yes' : 'common.no') | translate }}</dd></div>
               <div><dt>{{ 'campaignForm.efrManager' | translate }}</dt><dd>{{ c.m1Config.efrManagerName || '—' }}</dd></div>
               <div><dt>{{ 'campaigns.offeredLanguages' | translate }}</dt><dd>@for (l of c.questionnaire?.offeredLanguages ?? []; track l) { <span class="chip">{{ 'lang.' + l | translate }}</span> }</dd></div>
@@ -85,6 +75,12 @@ const SUSPENDABLE: CampaignStatus[] = ['borrador', 'muestra_cargada', 'envios_ac
               <dl class="kv">
                 <div><dt>{{ 'campaigns.opens' | translate }}</dt><dd data-testid="campaign-opens">{{ w.opensAt | tzDate: w.timeZone }}</dd></div>
                 <div><dt>{{ 'campaigns.closes' | translate }}</dt><dd data-testid="campaign-closes">{{ w.closesAt | tzDate: w.timeZone }}</dd></div>
+                @for (e of w.extensions ?? []; track e.at) {
+                  <div data-testid="campaign-extension">
+                    <dt>{{ 'campaigns.extension' | translate }}</dt>
+                    <dd>{{ 'campaigns.extensionText' | translate: { from: (e.from | tzDate: 'UTC' : 'date'), to: (e.to | tzDate: 'UTC' : 'date') } }}@if (e.reason) { · {{ e.reason }} }</dd>
+                  </div>
+                }
                 @for (r of w.reminders; track r.businessDay) {
                   <div><dt>{{ 'campaigns.reminderDay' | translate: { n: r.businessDay } }}</dt><dd>{{ r.sendAt | tzDate: w.timeZone }}</dd></div>
                 }
@@ -243,26 +239,19 @@ export class CampaignDetailPage implements OnInit {
   readonly id = input.required<string>();
   private readonly api = inject(ApiService);
   private readonly notify = inject(NotifyService);
-  private readonly i18n = inject(I18nService);
 
   readonly campaign = signal<CampaignDto | null>(null);
   readonly orgName = signal<string>('');
   readonly summary = signal<SampleSummary | null>(null);
   readonly errors = signal<SampleError[]>([]);
   readonly uploading = signal(false);
-  readonly previousStatus = signal<CampaignStatus | null>(null);
 
   /** Lead auditor: configuration, sample and codes. The access level comes from the API. */
   readonly canManage = computed(() => this.campaign()?.access === 'manage');
-  /** Lead auditor or superadmins: suspend, resume, cancel. Coordinators only see aggregates. */
-  readonly canChangeStatus = computed(() => this.campaign()?.access === 'manage' || this.campaign()?.access === 'supervise');
   readonly status = computed(() => this.campaign()?.status);
   readonly editable = computed(() => EDITABLE.includes(this.status()!));
-  /** From the launch on, the progress panel is shown. */
+  /** Once the window has opened, the progress panel is shown. */
   readonly launched = computed(() => !EDITABLE.includes(this.status()!) && this.status() !== 'cancelada');
-  readonly canSuspend = computed(() => this.canChangeStatus() && SUSPENDABLE.includes(this.status()!));
-  readonly canCancel = computed(() => this.canChangeStatus() && (SUSPENDABLE.includes(this.status()!) || this.status() === 'suspendida'));
-  readonly canResume = computed(() => this.canChangeStatus() && this.status() === 'suspendida' && !!this.previousStatus());
   readonly sampleMode = computed<'replace' | 'append' | null>(() => {
     const s = this.status();
     if (!s) return null;
@@ -280,9 +269,6 @@ export class CampaignDetailPage implements OnInit {
       const res = await this.api.get<{ campaign: CampaignDto; organization: { name: string } }>(`/campaigns/${this.id()}`);
       this.campaign.set(res.campaign);
       this.orgName.set(res.organization.name);
-      const hist = res.campaign.statusHistory;
-      const last = hist[hist.length - 1];
-      this.previousStatus.set(res.campaign.status === 'suspendida' ? (last?.from ?? null) : null);
       if (this.canManage()) this.summary.set(await this.api.get<SampleSummary>(`/campaigns/${this.id()}/sample/summary`));
     } catch (e) {
       this.notify.error(e);
@@ -313,29 +299,6 @@ export class CampaignDetailPage implements OnInit {
   async download(url: string): Promise<void> {
     try {
       await this.api.download(url);
-    } catch (e) {
-      this.notify.error(e);
-    }
-  }
-
-  async launch(): Promise<void> {
-    if (!confirm(this.i18n.t('campaigns.confirmLaunch'))) return;
-    try {
-      const res = await this.api.post<{ campaign: CampaignDto }>(`/campaigns/${this.id()}/launch`);
-      this.campaign.set(res.campaign);
-      this.notify.ok('campaigns.launched');
-      await this.load();
-    } catch (e) {
-      this.notify.error(e);
-    }
-  }
-
-  async changeStatus(to: CampaignStatus): Promise<void> {
-    if (!confirm(this.i18n.t('campaigns.confirmStatus', { status: this.i18n.t('campaignStatus.' + to) }))) return;
-    try {
-      const res = await this.api.post<{ campaign: CampaignDto }>(`/campaigns/${this.id()}/status`, { to });
-      this.campaign.set(res.campaign);
-      await this.load();
     } catch (e) {
       this.notify.error(e);
     }

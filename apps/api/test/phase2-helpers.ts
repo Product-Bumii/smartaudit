@@ -19,12 +19,11 @@ export function sampleCsv(n: number, prefix: string, noEmailEvery = 0): Buffer {
   return Buffer.from([HEADER, ...rows].join('\n'));
 }
 
-/** Creates the campaign, loads the sample and launches it (`envios_activos`). */
-export async function launchedCampaign(env: TestEnv, auditor: string, csv: Buffer, over: Record<string, unknown> = {}): Promise<string> {
+/** Creates the campaign and loads the sample: it is scheduled (`muestra_cargada`) and opens by itself. */
+export async function scheduledCampaign(env: TestEnv, auditor: string, csv: Buffer, over: Record<string, unknown> = {}): Promise<string> {
   const created = await request(env.app).post('/api/campaigns').set('Cookie', auditor).send(campaignInput(over)).expect(201);
   const id = created.body.campaign.id as string;
   await request(env.app).post(`/api/campaigns/${id}/sample`).set('Cookie', auditor).attach('file', csv, 'muestra.csv').expect(200);
-  await request(env.app).post(`/api/campaigns/${id}/launch`).set('Cookie', auditor).expect(200);
   return id;
 }
 

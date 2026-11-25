@@ -194,15 +194,10 @@
     },
     "questions": "Questions activées",
     "offeredLanguages": "Langues pour les participants",
-    "changeStatus": "Changer le statut",
-    "suspend": "Suspendre",
-    "resume": "Reprendre",
-    "cancel": "Annuler l'audit",
     "tableVersion": "table v{{v}}",
     "questionnaireVersion": "questionnaire v{{v}}",
     "businessDays": "Jours ouvrés",
     "history": "Historique des statuts",
-    "confirmStatus": "Passer le statut à « {{status}} » ?",
     "eyebrow": "M1 · audit",
     "questionnaire": "Questionnaire",
     "aggregateOnly": "avancement seul",
@@ -211,10 +206,11 @@
     "interviewStartDate": "Début des entretiens",
     "maximum": "Maximum de complétés",
     "maximumHint": "Une fois ce nombre d'entretiens complétés atteint, l'audit se clôture automatiquement.",
-    "maximumAboveSample": "Le maximum ({{max}}) dépasse le nombre de personnes de l'échantillon ({{n}}) : l'audit ne pourra pas se clôturer sur le maximum et se clôturera à la fin de la période.",
-    "launch": "Lancer l'audit",
-    "confirmLaunch": "Lancer l'audit ? Les invitations partiront à l'ouverture de la période et la configuration ne pourra plus être modifiée.",
-    "launched": "Audit lancé"
+    "maximumAboveSample": "Le maximum ({{max}}) dépasse le nombre de personnes de l'échantillon ({{n}}) : ajoutez des personnes pour pouvoir l'atteindre ; sinon, l'audit se clôturera à la fin de la période.",
+    "extension": "Prolongation",
+    "extensionText": "du {{from}} au {{to}}",
+    "wellbeing": "Volet Bien-être",
+    "scheduledHint": "Audit programmé : il s'ouvrira automatiquement le {{opens}} et les invitations partiront. D'ici là, vous pouvez le modifier et remplacer l'échantillon."
   },
   "auditTypes": {
     "inicial": "Initial",
@@ -256,7 +252,8 @@
     "noOrganizations": "Aucune organisation ne vous est attribuée. Votre coordinateur d'audits doit vous en attribuer une avant de créer l'audit.",
     "interviewStartDateHint": "La période s'ouvre ce jour-là et dure 10 jours ouvrés",
     "maxCompleted": "Maximum d'entretiens complétés",
-    "maxCompletedHint": "Vide = le minimum. Une fois atteint, l'audit se clôture automatiquement."
+    "maxCompletedHint": "Vide = le minimum. Une fois atteint, l'audit se clôture automatiquement.",
+    "wellbeing": "Inclut le volet Bien-être (questions P11 à P15)"
   },
   "questionStates": {
     "active": "Sera posée",
@@ -365,7 +362,6 @@
     "INVALID_START_DATE": "La date de début des entretiens n'est pas valide.",
     "MAXIMUM_BELOW_MINIMUM": "Le maximum ne peut pas être inférieur au minimum de complétés.",
     "MAXIMUM_ABOVE_SCOPE": "Le maximum ne peut pas dépasser l'effectif total.",
-    "MAXIMUM_ABOVE_SAMPLE": "Le maximum ne peut pas dépasser le nombre de personnes de l'échantillon chargé.",
     "INTERVIEW_NOT_AVAILABLE": "L'entretien n'est pas ouvert pour le moment.",
     "LANGUAGE_NOT_OFFERED": "Cette langue n'est pas disponible pour cet entretien.",
     "QUESTION_MISMATCH": "La question a changé ; voici l'actuelle.",

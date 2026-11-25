@@ -117,9 +117,7 @@ test('presentation screenshots', async ({ page }) => {
       created.push(res.campaign.id);
     }
   }
-  // Some closed ones (cancelled) and a suspended one, for the status filter.
-  for (const id of created.slice(-3)) await page.request.post(`/api/campaigns/${id}/status`, { data: { to: 'cancelada', reason: 'demo' } });
-  await page.request.post(`/api/campaigns/${created[1]}/status`, { data: { to: 'suspendida', reason: 'demo' } });
+  // No manual cancellation or suspension any more (change group 3): all demo audits stay as drafts.
   await logout(page);
 
   // ---------- 01-03 · Acceso
