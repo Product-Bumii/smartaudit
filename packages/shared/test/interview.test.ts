@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import seedQuestionnaire from '../../../seed/data/questionnaire-m1-v1.json';
 import {
+  answerModeOf,
   isFinalAnswer,
   knownAnswers,
   localized,
@@ -85,16 +86,29 @@ describe('nextQuestion: order and activation', () => {
 });
 
 describe('buttons and «prefiero no responder»', () => {
+  /** Questionnaires up to change group 3 (no `answerMode`): options as buttons. */
+  const buttons = (code: string): Question => {
+    const { answerMode: _mode, ...rest } = q(code);
+    return rest;
+  };
+
+  it('conversational questionnaire: closed questions only in own words; abstaining is still a button', () => {
+    expect(answerModeOf(q('P1'))).toBe('text');
+    expect(answerModeOf(buttons('P1'))).toBe('buttons');
+    expect(resolveDirectAnswer(q('P1'), { kind: 'options', optionCodes: ['SI'] })).toEqual({ action: 'reject', error: 'TEXT_ANSWER_REQUIRED' });
+    expect(resolveDirectAnswer(q('P1'), { kind: 'abstain' })).toMatchObject({ action: 'record', answer: { status: 'abstained' } });
+  });
+
   it('codes a button with confidence 1', () => {
-    expect(resolveDirectAnswer(q('P1'), { kind: 'options', optionCodes: ['SI'] })).toEqual({
+    expect(resolveDirectAnswer(buttons('P1'), { kind: 'options', optionCodes: ['SI'] })).toEqual({
       action: 'record',
       answer: { optionCodes: ['SI'], status: 'classified', confidence: 1, freeText: null, supportingQuote: null, viaButton: true },
     });
   });
 
   it('multiple choice (P2) with «otros, ¿cuál?» requires the text', () => {
-    expect(resolveDirectAnswer(q('P2'), { kind: 'options', optionCodes: ['MAIL', 'OTROS'] })).toEqual({ action: 'reject', error: 'FREE_TEXT_REQUIRED' });
-    const ok = resolveDirectAnswer(q('P2'), { kind: 'options', optionCodes: ['MAIL', 'OTROS', 'MAIL'], freeText: '  el tablón  ' });
+    expect(resolveDirectAnswer(buttons('P2'), { kind: 'options', optionCodes: ['MAIL', 'OTROS'] })).toEqual({ action: 'reject', error: 'FREE_TEXT_REQUIRED' });
+    const ok = resolveDirectAnswer(buttons('P2'), { kind: 'options', optionCodes: ['MAIL', 'OTROS', 'MAIL'], freeText: '  el tablón  ' });
     expect(ok).toMatchObject({ action: 'record', answer: { optionCodes: ['MAIL', 'OTROS'], freeText: 'el tablón' } });
   });
 
@@ -126,18 +140,45 @@ describe('free text classified by the AI', () => {
     expect(resolveTextAnswer(q('P1'), 'sí', c({ supportingQuote: '' }), 0, 0.8)).toMatchObject({ answer: { status: 'classified', supportingQuote: null } });
   });
 
-  it('low confidence goes to review without clarification', () => {
-    expect(resolveTextAnswer(q('P1'), 'creo que sí', c({ confidence: 0.5, supportingQuote: '' }), 0, 0.8)).toMatchObject({
+  it('low confidence: the AI proposes its interpretation while follow-ups remain, then review', () => {
+    expect(resolveTextAnswer(q('P1'), 'creo que sí', c({ confidence: 0.6 }), 0, 0.8)).toEqual({ action: 'clarify', reason: 'confirm', proposedCodes: ['SI'] });
+    expect(resolveTextAnswer(q('P1'), 'creo que sí', c({ confidence: 0.6 }), 1, 0.8)).toEqual({ action: 'clarify', reason: 'confirm', proposedCodes: ['SI'] });
+    // Too unsure to propose anything: ask more concretely.
+    expect(resolveTextAnswer(q('P1'), 'puede', c({ confidence: 0.3 }), 0, 0.8)).toEqual({ action: 'clarify', reason: 'ambiguous' });
+    expect(resolveTextAnswer(q('P1'), 'creo que sí', c({ confidence: 0.5, supportingQuote: '' }), 2, 0.8)).toMatchObject({
       action: 'record',
       answer: { optionCodes: ['SI'], status: 'pending_review', confidence: 0.5, supportingQuote: null },
     });
   });
 
-  it('ambiguous, off topic or invalid codes: one clarification, then review', () => {
-    for (const cl of [c({ status: 'ambiguous', optionCodes: [] }), c({ status: 'off_topic', optionCodes: [] }), c({ optionCodes: ['SIEMPRE'] })]) {
-      expect(resolveTextAnswer(q('P1'), 'mmm', cl, 0, 0.8)).toEqual({ action: 'clarify' });
-      expect(resolveTextAnswer(q('P1'), 'mmm', cl, 1, 0.8)).toMatchObject({ action: 'record', answer: { status: 'pending_review', optionCodes: [] } });
+  it('ambiguous, off topic or invalid codes: up to two follow-ups (conversational questionnaire), then review', () => {
+    expect(q('P1').maxClarifications).toBe(2);
+    const cases: [TextClassification, string][] = [
+      [c({ status: 'ambiguous', optionCodes: [] }), 'ambiguous'],
+      [c({ status: 'off_topic', optionCodes: [] }), 'off_topic'],
+      [c({ optionCodes: ['SIEMPRE'] }), 'ambiguous'],
+    ];
+    for (const [cl, reason] of cases) {
+      expect(resolveTextAnswer(q('P1'), 'mmm', cl, 0, 0.8)).toEqual({ action: 'clarify', reason });
+      expect(resolveTextAnswer(q('P1'), 'mmm', cl, 1, 0.8)).toEqual({ action: 'clarify', reason });
+      expect(resolveTextAnswer(q('P1'), 'mmm', cl, 2, 0.8)).toMatchObject({ action: 'record', answer: { status: 'pending_review', optionCodes: [] } });
     }
+    const single = { ...q('P1'), maxClarifications: 1 };
+    expect(resolveTextAnswer(single, 'mmm', c({ status: 'ambiguous', optionCodes: [] }), 1, 0.8)).toMatchObject({ answer: { status: 'pending_review' } });
+  });
+
+  it('the participant asks what something means: explanation, then review when no follow-ups remain', () => {
+    const asks = c({ status: 'question', optionCodes: [], confidence: 0.9 });
+    expect(resolveTextAnswer(q('P3.1'), '¿Qué es un mánager efr?', asks, 0, 0.8)).toEqual({ action: 'clarify', reason: 'question' });
+    expect(resolveTextAnswer(q('P3.1'), '¿Y eso qué es?', asks, 2, 0.8)).toMatchObject({ action: 'record', answer: { status: 'pending_review' } });
+  });
+
+  it('«Otros, ¿cuál?» in own words: the written text is the complement', () => {
+    expect(resolveTextAnswer(q('P2'), 'Por la revista interna', c({ optionCodes: ['OTROS'] }), 0, 0.8)).toMatchObject({
+      action: 'record',
+      answer: { optionCodes: ['OTROS'], status: 'classified', freeText: 'Por la revista interna' },
+    });
+    expect(resolveTextAnswer(q('P2'), 'No me han informado de nada', c({ optionCodes: ['NINGUNO'] }), 0, 0.8)).toMatchObject({ answer: { optionCodes: ['NINGUNO'] } });
   });
 
   it('abstention detected in text', () => {
@@ -146,8 +187,8 @@ describe('free text classified by the AI', () => {
       answer: { optionCodes: ['ABSTENCION'], status: 'abstained', supportingQuote: null },
     });
     const noAbstain = { ...q('P4'), allowAbstain: false };
-    expect(resolveTextAnswer(noAbstain, 'paso', c({ status: 'abstained', optionCodes: [] }), 0, 0.8)).toEqual({ action: 'clarify' });
-    expect(resolveTextAnswer(noAbstain, 'paso', c({ status: 'abstained', optionCodes: [] }), 1, 0.8)).toMatchObject({ answer: { status: 'pending_review' } });
+    expect(resolveTextAnswer(noAbstain, 'paso', c({ status: 'abstained', optionCodes: [] }), 0, 0.8)).toEqual({ action: 'clarify', reason: 'ambiguous' });
+    expect(resolveTextAnswer(noAbstain, 'paso', c({ status: 'abstained', optionCodes: [] }), 2, 0.8)).toMatchObject({ answer: { status: 'pending_review' } });
   });
 
   it('invalid AI output (null) goes to review; empty text is rejected; P10 is stored as written', () => {
@@ -225,5 +266,28 @@ describe('what the AI may see', () => {
     expect(safeClarification('fallback', 'x'.repeat(801))).toBe('fallback');
     expect(safeClarification('fallback', 'Por favor, responda de nuevo a la pregunta: "¿')).toBe('fallback');
     expect(safeClarification('fallback', '¿Y bien?')).toBe('fallback');
+  });
+
+  it('a confirmation may name only the interpretation being proposed', () => {
+    const labels = ['Siempre', 'Algunas veces', 'Nunca'];
+    const confirm = 'Entiendo que su respuesta sería «Algunas veces». ¿Es así?';
+    expect(safeClarification('fallback', confirm, labels, { proposedLabels: ['Algunas veces'] })).toBe(confirm);
+    expect(safeClarification('fallback', confirm, labels, { proposedLabels: ['Nunca'] })).toBe('fallback');
+    expect(safeClarification('fallback', confirm, labels)).toBe('fallback');
+  });
+
+  it('naming the options the approved answer hint names counts as naming them all', () => {
+    const labels = ['Por encima', 'En la media', 'Por debajo', 'No sabe / No contesta'];
+    const hint = '¿Diría que está por encima, en la media o por debajo? También puede decirnos que no lo sabe.';
+    const p = 'Entiendo. ¿Diría que la conciliación está por encima, en la media o por debajo de otras empresas, o no lo sabe?';
+    expect(safeClarification('fallback', p, labels, { answerHint: hint })).toBe(p);
+    expect(safeClarification('fallback', p, labels)).toBe('fallback');
+    expect(safeClarification('fallback', '¿Diría que por encima o en la media?', labels, { answerHint: hint })).toBe('fallback');
+  });
+
+  it('figures only when they are in the approved texts', () => {
+    const p = 'Exceder es trabajar más del 10 % de la jornada. ¿Le pasa a menudo?';
+    expect(safeClarification('fallback', p, [], { sources: ['«Excede» significa más del 10 % de la duración de la jornada'] })).toBe(p);
+    expect(safeClarification('fallback', 'Si trabaja 45 horas, ¿se excede?', [], { sources: ['más del 10 %'] })).toBe('fallback');
   });
 });

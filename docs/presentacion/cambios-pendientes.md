@@ -5,14 +5,15 @@ Lista numerada de los cambios de la plataforma que todavía no están en las cap
 como hecho; no se borra ni se renumera nada.
 
 **Situación (19/11/2026):** las capturas se rehicieron con los cambios 1 y 2 (27 capturas nuevas; resumen en
-[informe-cambios-1-y-2.md](informe-cambios-1-y-2.md)). Desde entonces se ha añadido el cambio 3 (Fase 2), aplicado el 20/11/2026 con 17 capturas en `img/fase2/` y la [presentación de la Fase 2](fase-2.md). Después se añadió el cambio 4 (grupo de cambios 3 de F+f), pendiente.
+[informe-cambios-1-y-2.md](informe-cambios-1-y-2.md)). Desde entonces se ha añadido el cambio 3 (Fase 2), aplicado el 20/11/2026 con 17 capturas en `img/fase2/` y la [presentación de la Fase 2](fase-2.md). Después se añadieron los cambios 4 (grupo de cambios 3 de F+f) y 5 (entrevista conversada): el 25/11/2026 se hicieron 20 capturas nuevas en `img/cambios3/` con su [informe](informe-cambios-3.md), con la IA real en el servidor de pruebas. Quedan por rehacer las capturas antiguas de la Fase 1 y la Fase 2 que muestran botones de opción, «lanzar» o los estados retirados.
 
 | # | Fecha | Cambio | Estado |
 |---|---|---|---|
 | 1 | 18/11/2026 | Nuevos perfiles: entidades de auditoría, coordinador y auditor asignado (decisiones 56–63) | Hecho (19/11/2026) |
 | 2 | 18/11/2026 | «Auditorías» en vez de «campañas», fecha de comienzo de las entrevistas, máximo de completadas, sin catalán, entidades reales y listados con búsqueda (decisiones 64–69) | Hecho (19/11/2026) |
 | 3 | 19/11/2026 | Fase 2: lanzar la auditoría, avance y ampliación de ventana, enlace personal, entrevista en el chat (móvil), invitación y recordatorio por correo (decisiones 70–82) | Hecho (20/11/2026) |
-| 4 | 25/11/2026 | Grupo de cambios 3 de F+f: tipos de auditoría inicial/renovación, componente de Bienestar (P11–P15), máximo sin tope por la muestra, sin lanzar/suspender/cancelar (decisiones 85–89) | Pendiente |
+| 4 | 25/11/2026 | Grupo de cambios 3 de F+f: tipos de auditoría inicial/renovación, componente de Bienestar (P11–P15), máximo sin tope por la muestra, sin lanzar/suspender/cancelar (decisiones 85–89) | Capturas nuevas hechas (25/11/2026, [informe-cambios-3.md](informe-cambios-3.md)); falta rehacer las antiguas de Fase 1 y Fase 2 |
+| 5 | 25/11/2026 | Entrevista conversada: respuesta escrita, frase que propone las respuestas, hasta 2 interacciones, explicaciones aprobadas, opción P2 «No he recibido información» (decisiones 90–93) | Capturas nuevas hechas (25/11/2026, [informe-cambios-3.md](informe-cambios-3.md)); falta rehacer las antiguas de Fase 2 |
 
 ---
 
@@ -148,4 +149,36 @@ de máximo superior a la muestra.
 
 **Textos:** en `fase-2.md` y en `README.md` de la presentación, quitar «lanzar», «envíos activos», suspender y cancelar;
 explicar que la auditoría queda programada al cargar la muestra; añadir el componente de Bienestar.
+
+## 5 · Entrevista conversada (comentarios de F+f, 25/11/2026)
+
+**Capturas que cambian:**
+
+| Captura | Qué cambia |
+|---|---|
+| Fase 2 · chat en el móvil (todas las de la entrevista) | Sin botones de opción: la pregunta oficial lleva la frase que propone las respuestas («Puede responder que sí, que no o que no lo sabe»), aviso «Responde con tus palabras. Si algo no te queda claro, pregúntalo.», cuadro «Escribe tu respuesta» y solo el botón «Prefiero no responder» |
+| Fase 2 · repregunta | Ahora reacciona: explicación aprobada cuando la persona pregunta («¿Qué es un mánager efr?»), propuesta de interpretación para confirmar («Entiendo que su respuesta sería «Sí». ¿Es así?») y hasta dos repreguntas |
+| Fase 1 · cuestionarios (superadmin) | Cada pregunta cerrada muestra la frase de respuesta, la «Explicación para la IA» y la etiqueta «Conversación · hasta 2 repreguntas»; P2 tiene la opción «No he recibido información» |
+
+**Capturas nuevas (sugeridas):** la conversación del ejemplo de F+f (P1 «¿Qué modelo es el efr?» → explicación →
+respuesta) y una confirmación.
+
+**Scripts:** `e2e/presentation/fase2.spec.ts` pulsa botones de opción (`chat-option-*`): hay que pasarlo a respuestas
+escritas, como `e2e/phase2.spec.ts`.
+
+**Textos:** en `fase-2.md`, sustituir «botones + texto libre» y «una aclaración como máximo» por la entrevista
+conversada (decisiones 90–93).
+
+## 6 · Cambios 4 (Fase 3), bloques 1 y 2: resultados y revisión (25/11/2026)
+
+**Pantallas nuevas (capturas sugeridas):**
+
+| Pantalla | Qué mostrar |
+|---|---|
+| Ficha de la auditoría | Nueva sección «Resultados y revisión» con los botones resultados, revisión de respuestas y respuestas individuales |
+| Resultados | Aviso de respuestas pendientes; sección 7.1 (modalidad y tabla sexo × tramo de edad); tabla por pregunta con n, abstenciones y pendientes; P2 con los textos de «Otros»; P8 con «No sabe / No contesta» fuera de la base |
+| Revisión de respuestas | Una respuesta pendiente con su conversación, la propuesta de la IA, la decisión (opciones, abstención, «sin respuesta válida») y la nota; filtro pendientes / revisadas / todas |
+| Respuestas individuales | Aviso de confidencialidad antes de cargar; tabla con demográficos y respuestas (las decididas en la revisión, en negrita); aviso de grupos de menos de 3 personas; respuestas abiertas aparte |
+
+**Textos:** informe de cambios 4 (por crear) explicando el cálculo (decisiones 94–97).
 

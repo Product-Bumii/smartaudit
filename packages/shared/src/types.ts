@@ -1,12 +1,13 @@
 /** Shared API DTO shapes (serialized JSON). */
 import type { CampaignAccess } from './access';
 import type { CampaignWindow } from './business-days';
-import type { CampaignStatus, EntityStatus, InterviewState, Language, QuestionType, RespondentStatus, Role } from './enums';
+import type { AnswerMode, AnswerStatus, CampaignStatus, ReviewDecision, EntityStatus, InterviewState, Language, QuestionType, RespondentStatus, Role } from './enums';
 import type { ParticipantAvailability } from './participant';
 import type { Progress } from './schedule';
-import type { QuestionActivationState } from './questionnaire';
+import type { LocalizedText, QuestionActivationState } from './questionnaire';
+import type { CampaignResults, OptionResult, QuestionResult } from './results';
 import type { M1Config } from './modules';
-import type { SampleError } from './sample-file';
+import type { SampleError, SmallGroup } from './sample-file';
 
 export interface ApiErrorBody {
   error: { code: string; message: string; details?: unknown };
@@ -114,6 +115,8 @@ export interface InterviewQuestionView {
   /** Text shown to the participant (AI phrasing checked by `safePhrasing`, or the official text). */
   text: string;
   help: string | null;
+  /** `text`: no option buttons, the participant answers in own words (decision 90). */
+  answerMode: AnswerMode;
   options: { code: string; label: string; freeText: { label: string; required: boolean } | null }[];
   allowAbstain: boolean;
   mandatory: boolean;
@@ -167,4 +170,67 @@ export interface WindowExtensionView {
   to: string;
   at: string;
   reason: string | null;
+}
+
+// ---------- Results, review and individual answers (cambios 4 · bloques 1 y 2)
+
+/** Question texts and option labels in every language: the screen shows the user's language (Spanish fallback). */
+export interface ResultsQuestionView extends Omit<QuestionResult, 'options'> {
+  text: LocalizedText;
+  options: (OptionResult & { label: LocalizedText })[];
+}
+
+export interface CampaignResultsDto extends Omit<CampaignResults, 'questions'> {
+  questionnaireVersion: number | null;
+  questions: ResultsQuestionView[];
+}
+
+export interface ReviewItemDto {
+  /** Opaque reference of the interview (never the person). */
+  interviewId: string;
+  questionCode: string;
+  questionText: LocalizedText;
+  questionType: QuestionType;
+  options: { code: string; label: LocalizedText }[];
+  /** Language the person answered in. */
+  language: Language;
+  status: AnswerStatus;
+  /** What the AI proposed (may be empty) and how sure it was. */
+  aiCodes: string[];
+  confidence: number | null;
+  supportingQuote: string | null;
+  originalText: string | null;
+  followUpReason: string | null;
+  clarificationsUsed: number;
+  /** The conversation about this question only. */
+  thread: { role: 'assistant' | 'participant'; text: string }[];
+  review: { decision: ReviewDecision; optionCodes: string[]; note: string | null; reviewedAt: string } | null;
+}
+
+export interface ReviewListDto {
+  items: ReviewItemDto[];
+  counts: { pending: number; reviewed: number };
+}
+
+export interface ResponsesQuestionColumn {
+  code: string;
+  text: LocalizedText;
+  options: { code: string; label: LocalizedText }[];
+}
+
+/** One completed interview: demographics and effective coded answers. Never an identity, file row or date. */
+export interface ResponseRow {
+  demographics: Record<string, string | boolean | null>;
+  answers: Record<string, { kind: 'codes' | 'abstention' | 'no_valid_answer' | 'pending'; codes: string[]; reviewed: boolean }>;
+}
+
+export interface ResponsesDto {
+  questions: ResponsesQuestionColumn[];
+  rows: ResponseRow[];
+  smallGroups: SmallGroup[];
+}
+
+/** Open answers, without demographics and not in interview order (P14–P15 «texto libre disociado»). */
+export interface CommentsDto {
+  questions: { code: string; text: LocalizedText; comments: string[] }[];
 }

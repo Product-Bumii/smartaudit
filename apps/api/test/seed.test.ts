@@ -65,4 +65,41 @@ describe('seed: languages added after the first deploy', () => {
     expect(codes.slice(-6)).toEqual(['P11', 'P12', 'P13', 'P14', 'P15', 'P10']);
     expect(next.notes).toContain('preguntas añadidas: P11, P12, P13, P14, P15');
   });
+
+  it('publishes the conversational interview and the results base (seed revisions 2–3) over a questionnaire with buttons, keeping its texts', async () => {
+    // Simulate the questionnaire published before the conversational interview (staging, change group 3).
+    const latest = (await Questionnaire.findOne({ module: 'M1' }).sort({ version: -1 }))!;
+    const before = latest.version;
+    const old = (latest.toObject().questions as Question[]).map((q) => {
+      const { answerMode: _m, answerHint: _h, explanation: _e, ...rest } = q;
+      return { ...rest, maxClarifications: q.type === 'free_text' ? 0 : 1, options: q.options.filter((o) => o.code !== 'NINGUNO') };
+    });
+    const p1 = old.find((q) => q.code === 'P1')!;
+    p1.text = { ...p1.text, es: 'Texto de P1 editado por la Fundación' };
+    latest.set({ seedRevision: 1, questions: old });
+    latest.markModified('questions');
+    await latest.save();
+
+    await runSeed(env.ctx.crypto, () => undefined);
+    const next = (await Questionnaire.findOne({ module: 'M1' }).sort({ version: -1 }).lean())!;
+    expect(next).toMatchObject({ version: before + 1, seedRevision: 3, status: 'published' });
+    expect(next.notes).toContain('revisión 3 de la semilla (entrevista conversada, cálculo de resultados)');
+    const byCode = Object.fromEntries((next.questions as Question[]).map((q) => [q.code, q]));
+    expect(byCode.P1).toMatchObject({ answerMode: 'text', maxClarifications: 2, text: { es: 'Texto de P1 editado por la Fundación' } });
+    expect(byCode.P1.answerHint!.es).toBe('Puede responder que sí, que no o que no lo sabe.');
+    expect(byCode['P3.1'].explanation!.es).toMatch(/^El Mánager efr es la persona/);
+    expect(byCode.P2.options.map((o) => o.code)).toEqual(['INTRANET', 'MAIL', 'REUNIONES', 'BOCA_A_BOCA', 'OTROS', 'NINGUNO']);
+    expect(byCode.P10).toMatchObject({ maxClarifications: 0 });
+    expect(byCode.P8.results).toEqual({ excludeFromBase: ['NS_NC'] });
+    expect(byCode.P10.answerMode).toBeUndefined();
+
+    // Idempotent, and a draft blocks it.
+    await runSeed(env.ctx.crypto, () => undefined);
+    expect((await Questionnaire.findOne({ module: 'M1' }).sort({ version: -1 }).lean())!.version).toBe(before + 1);
+    await Questionnaire.updateOne({ version: before + 1 }, { $set: { seedRevision: 1 } });
+    await Questionnaire.create({ module: 'M1', version: before + 2, status: 'draft', questions: [] });
+    const logs: string[] = [];
+    await runSeed(env.ctx.crypto, (m) => logs.push(m));
+    expect(logs.some((m) => /revisión 3 de la semilla .* not applied \(a draft exists\)/.test(m))).toBe(true);
+  });
 });

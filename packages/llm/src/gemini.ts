@@ -6,8 +6,9 @@
  * - temperature 0, bounded output and a timeout. Errors never include the API key or the prompt.
  */
 import type { Language } from '@smartaudit/shared';
-import type { Classification, LlmCallMeta, LlmProvider, QuestionPayload } from './index';
-import { CLASSIFY_ANSWER, CLARIFICATION, PHRASE_QUESTION, PROMPT_VERSION } from './prompts/m1-v1';
+import type { Classification, ClassifyContext, ConversationTurn, FollowUpRequest, LlmCallMeta, LlmProvider, QuestionPayload } from './index';
+import { questionWithHint } from './clarification';
+import { CLASSIFY_ANSWER, FOLLOW_UP, FOLLOW_UP_TASKS, PHRASE_QUESTION, PROMPT_VERSION } from './prompts/m1-v2';
 
 export interface GeminiOptions {
   apiKey: string;
@@ -24,13 +25,18 @@ const LANGUAGE_NAMES: Record<Language, string> = { es: 'Spanish (Spain)', en: 'E
 
 const fill = (template: string, vars: Record<string, string>) => template.replace(/\{\{(\w+)\}\}/g, (_m, k: string) => vars[k] ?? '');
 
+/** The conversation about the current question, one line per message. */
+const threadText = (thread: readonly ConversationTurn[]) =>
+  thread.map((t) => `${t.role === 'assistant' ? 'INTERVIEWER' : 'PARTICIPANT'}: ${t.text.replace(/\s+/g, ' ')}`).join('\n') || '(none)';
+const labelsOf = (q: QuestionPayload, codes: readonly string[] = []) => codes.map((c) => q.options.find((o) => o.code === c)?.label ?? c);
+
 /** JSON schema of the classification (Gemini `responseSchema`, OpenAPI subset). */
 const CLASSIFICATION_SCHEMA = {
   type: 'OBJECT',
   properties: {
     optionCodes: { type: 'ARRAY', items: { type: 'STRING' } },
     confidence: { type: 'NUMBER' },
-    status: { type: 'STRING', enum: ['classified', 'ambiguous', 'abstained', 'off_topic'] },
+    status: { type: 'STRING', enum: ['classified', 'ambiguous', 'abstained', 'off_topic', 'question'] },
     supportingQuote: { type: 'STRING' },
   },
   required: ['optionCodes', 'confidence', 'status', 'supportingQuote'],
@@ -103,11 +109,13 @@ export class GeminiLlmProvider implements LlmProvider {
     return { text, ...this.meta };
   }
 
-  async classifyAnswer(q: QuestionPayload, answer: string): Promise<Classification & LlmCallMeta> {
+  async classifyAnswer(q: QuestionPayload, answer: string, context?: ClassifyContext): Promise<Classification & LlmCallMeta> {
     const prompt = fill(CLASSIFY_ANSWER, {
       question: q.text,
       type: q.type === 'multi' ? 'multiple choice (one or more codes)' : 'single choice (exactly one code)',
       options: q.options.map((o) => `${o.code}: ${o.label}`).join('; '),
+      proposed: (context?.proposedCodes ?? []).join(', ') || '(none)',
+      thread: threadText(context?.thread ?? []),
       answer,
     });
     const raw = await this.generate(prompt, { json: true, maxOutputTokens: 1024 });
@@ -117,12 +125,28 @@ export class GeminiLlmProvider implements LlmProvider {
     } catch {
       throw new GeminiError('Gemini returned invalid JSON');
     }
+    // Gemini sometimes returns one object per part of the message (e.g. an answer plus a question): the answer wins.
+    if (Array.isArray(parsed)) {
+      const items = parsed as Partial<Classification>[];
+      parsed = items.find((x) => x?.status === 'classified') ?? items.find((x) => x?.status !== 'off_topic') ?? items[0];
+    }
     // Validated with Zod by the caller (parseClassification); an invalid shape counts as a failed attempt.
     return { ...(parsed as Classification), ...this.meta };
   }
 
-  async phraseClarification(q: QuestionPayload, answer: string) {
-    const text = await this.generate(fill(CLARIFICATION, { language: LANGUAGE_NAMES[q.language], question: q.text, answer }), { maxOutputTokens: 1024 });
+  async phraseClarification(q: QuestionPayload, request: FollowUpRequest) {
+    const proposed = labelsOf(q, request.proposedCodes).join(' / ');
+    const prompt = fill(FOLLOW_UP, {
+      language: LANGUAGE_NAMES[q.language],
+      task: fill(FOLLOW_UP_TASKS[request.reason], { proposed }),
+      question: q.text,
+      options: q.options.map((o) => o.label).join('; '),
+      hint: questionWithHint(q).slice(q.text.length).trim() || '(none)',
+      explanation: q.explanation?.trim() || q.help?.trim() || '(none)',
+      thread: threadText(request.thread),
+      answer: request.answer,
+    });
+    const text = await this.generate(prompt, { maxOutputTokens: 1024 });
     return { text, ...this.meta };
   }
 

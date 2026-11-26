@@ -163,7 +163,9 @@
     },
     "always": "Siempre",
     "confirmApprove": "¿Aprobar la traducción al {{lang}}?",
-    "approved": "Idioma aprobado"
+    "approved": "Idioma aprobado",
+    "explanation": "Explicación para la IA",
+    "conversation": "Conversación · hasta {{n}} repreguntas"
   },
   "settings": {
     "general": "General",
@@ -304,7 +306,13 @@
     "sex": "Sexo",
     "ageBand": "Tramo de edad",
     "workCenter": "Centro de trabajo",
-    "jobType": "Tipo de puesto"
+    "jobType": "Tipo de puesto",
+    "seniorityBand": "Antigüedad",
+    "area": "Área",
+    "shifts": "Turnos",
+    "telework": "Teletrabajo",
+    "dependents": "Hijos o dependientes",
+    "rlpt": "RLPT"
   },
   "historyReasons": {
     "created": "creada",
@@ -376,7 +384,10 @@
     "INVALID_OPTIONS": "Elige una opción válida.",
     "FREE_TEXT_REQUIRED": "Indica cuál, por favor.",
     "EMPTY_ANSWER": "Escribe tu respuesta o elige una opción.",
-    "ABSTAIN_NOT_ALLOWED": "Esta pregunta necesita una respuesta."
+    "ABSTAIN_NOT_ALLOWED": "Esta pregunta necesita una respuesta.",
+    "TEXT_ANSWER_REQUIRED": "Responde escribiendo con tus palabras.",
+    "NOT_REVIEWABLE": "Esta respuesta no está pendiente de revisión.",
+    "REPORT_ALREADY_GENERATED": "El informe ya está generado: las decisiones no se pueden cambiar."
   },
   "brand": {
     "sideNote": "Para organizaciones con certificado efr en vigor."
@@ -459,7 +470,7 @@
     "status": "Estado",
     "all": "Todos",
     "open": "Abiertas",
-    "closed": "Cerradas (informe generado o canceladas)",
+    "closed": "Cerradas (informe generado)",
     "auditEntity": "Entidad de auditoría",
     "noEntity": "Sin entidad asignada",
     "clear": "Limpiar filtros",
@@ -513,6 +524,91 @@
     "comment": "Tu comentario",
     "doneTitle": "¡gracias por participar!",
     "doneText": "Tus respuestas se han guardado de forma confidencial. Ya puedes cerrar esta página.",
-    "multiHint": "Puedes elegir varias opciones; luego pulsa «enviar»."
+    "multiHint": "Puedes elegir varias opciones; luego pulsa «enviar».",
+    "writeAnswer": "Escribe tu respuesta",
+    "conversationHint": "Responde con tus palabras. Si algo no te queda claro, pregúntalo."
+  },
+  "results": {
+    "sectionTitle": "Resultados y revisión",
+    "sectionHint": "Tablas calculadas con las entrevistas completadas, cola de respuestas dudosas y respuestas individuales.",
+    "backToAudit": "Volver a la auditoría",
+    "eyebrow": "Resultados",
+    "title": "Resultados",
+    "goReview": "Revisar respuestas dudosas",
+    "goResponses": "Respuestas individuales",
+    "pendingAlert": "Hay {{n}} respuestas pendientes de revisión: no cuentan en los porcentajes hasta que decidas.",
+    "howCalculated": "Calculado por la plataforma, nunca por la IA, sobre las entrevistas completadas. Los porcentajes se calculan sobre las respuestas válidas (sin abstenciones, respuestas sin validez ni pendientes) y se muestran con un decimal.",
+    "completed": "Entrevistas completadas",
+    "pendingReview": "Pendientes de revisión",
+    "section71": "Entrevistas realizadas (7.1)",
+    "modality": "Modalidad",
+    "interviews": "Entrevistas",
+    "modalityAi": "Entrevista escrita asistida por IA",
+    "bySexAndAge": "Distribución por sexo y tramo de edad",
+    "total": "Total",
+    "section72": "Resultados por pregunta (7.2)",
+    "notAsked": "No se ha preguntado en ninguna entrevista completada.",
+    "comments": "{{n}} comentarios escritos",
+    "seeComments": "ver los comentarios",
+    "option": "Opción",
+    "count": "Personas",
+    "outOfBase": "fuera de la base",
+    "abstentions": "{{n}} abstenciones",
+    "noValid": "{{n}} sin respuesta válida",
+    "pendingN": "{{n}} pendientes de revisión",
+    "outsideCondition": "{{n}} fuera de la condición de la pregunta",
+    "multiNote": "Respuesta múltiple: porcentaje de personas que mencionan cada opción; la suma puede pasar del 100 %.",
+    "optionTexts": "Textos de «{{option}}» ({{n}})"
+  },
+  "review": {
+    "title": "Revisión de respuestas",
+    "goResults": "Ver resultados",
+    "filter": "Mostrar",
+    "filters": {
+      "pending": "Pendientes",
+      "reviewed": "Revisadas",
+      "all": "Todas"
+    },
+    "confidentiality": "Confidencial: estas respuestas son individuales. Úsalas solo para codificarlas; cada acceso queda registrado. No se muestra quién respondió.",
+    "emptyPending": "No hay respuestas pendientes de revisión.",
+    "empty": "No hay respuestas en esta vista.",
+    "reason": {
+      "question": "Preguntó qué significaba",
+      "confirm": "Se le propuso una interpretación",
+      "ambiguous": "Respuesta poco clara",
+      "off_topic": "Fuera de tema"
+    },
+    "followUps": "{{n}} repreguntas",
+    "decided": "Revisada",
+    "conversation": "Conversación sobre esta pregunta",
+    "person": "Persona",
+    "ai": "IA",
+    "aiProposal": "Propuesta de la IA",
+    "noProposal": "ninguna",
+    "confidence": "confianza",
+    "decision": "Tu decisión",
+    "abstention": "Prefiere no responder (abstención)",
+    "noValid": "Sin respuesta válida",
+    "note": "Nota (opcional)",
+    "save": "Guardar decisión",
+    "saved": "Decisión guardada",
+    "reviewedAt": "Revisada el {{when}}"
+  },
+  "responses": {
+    "title": "Respuestas individuales",
+    "noticeTitle": "Aviso de confidencialidad",
+    "notice": "Vas a ver las respuestas de cada persona junto a sus datos demográficos. Es información confidencial de la auditoría.",
+    "notice1": "No se muestra el correo ni la fila del archivo de muestra, y las filas no siguen el orden de las entrevistas.",
+    "notice2": "Este acceso queda registrado con tu usuario, la fecha y la IP.",
+    "notice3": "Si un grupo tiene menos de 3 personas, podría identificarse a alguien: verás un aviso.",
+    "accept": "Entiendo, ver las respuestas",
+    "closedTitle": "Preguntas cerradas ({{n}} entrevistas)",
+    "legend": "En negrita, las respuestas decididas en la revisión. Pasa el ratón por el código para ver la pregunta.",
+    "commentsTitle": "Respuestas abiertas",
+    "commentsNote": "Se muestran aparte, sin datos demográficos y sin el orden de las entrevistas (texto libre disociado).",
+    "noComments": "Sin comentarios.",
+    "abstention": "Abstención",
+    "noValid": "Sin respuesta válida",
+    "pending": "Pendiente"
   }
 }

@@ -3,7 +3,7 @@
  * (section 6, Fase 2: «ningún identificador enviado al proveedor de IA»).
  */
 import type { Language } from '@smartaudit/shared';
-import type { LlmProvider, QuestionPayload } from './index';
+import type { ClassifyContext, FollowUpRequest, LlmProvider, QuestionPayload } from './index';
 
 export interface RecordedCall {
   method: 'phraseQuestion' | 'classifyAnswer' | 'phraseClarification' | 'summarize' | 'anonymizeComment';
@@ -22,13 +22,13 @@ export class RecordingLlmProvider implements LlmProvider {
     this.calls.push({ method: 'phraseQuestion', payload: q });
     return this.inner.phraseQuestion(q);
   }
-  classifyAnswer(q: QuestionPayload, answer: string) {
-    this.calls.push({ method: 'classifyAnswer', payload: { q, answer } });
-    return this.inner.classifyAnswer(q, answer);
+  classifyAnswer(q: QuestionPayload, answer: string, context?: ClassifyContext) {
+    this.calls.push({ method: 'classifyAnswer', payload: { q, answer, context } });
+    return this.inner.classifyAnswer(q, answer, context);
   }
-  phraseClarification(q: QuestionPayload, answer: string) {
-    this.calls.push({ method: 'phraseClarification', payload: { q, answer } });
-    return this.inner.phraseClarification(q, answer);
+  phraseClarification(q: QuestionPayload, request: FollowUpRequest) {
+    this.calls.push({ method: 'phraseClarification', payload: { q, request } });
+    return this.inner.phraseClarification(q, request);
   }
   summarize(input: { tables: unknown; comments: string[] }) {
     this.calls.push({ method: 'summarize', payload: input });

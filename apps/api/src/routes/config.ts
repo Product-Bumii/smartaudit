@@ -111,6 +111,7 @@ export function configRouter(_ctx: AppContext): Router {
     const doc = await Questionnaire.create({
       module: source.module,
       title: source.title,
+      seedRevision: source.seedRevision,
       version: await nextVersion(Questionnaire, { module: source.module }),
       languages: source.toObject().languages,
       questions: source.toObject().questions,

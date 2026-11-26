@@ -1,12 +1,15 @@
 /**
  * Interview service (section 5.5): glues the deterministic engine of `packages/shared` with the AI provider.
- * - The next question, the coding rules, the clarification limit and the review threshold are shared code.
- * - The AI only phrases (checked by `safePhrasing`), classifies free text (validated with the schema, one
- *   retry) and phrases the single clarification (checked by `safeClarification`).
- * - Only question text, options and the answer (with identifiers removed) are sent to the provider.
+ * - The next question, the coding rules, the follow-up limit and reason and the review threshold are shared code.
+ * - Conversational questionnaire (decisions 90–92): the question is the official text plus the approved answer
+ *   hint (no AI); answers are written; the AI classifies them seeing the conversation about that question and
+ *   writes up to 2 follow-ups (explain, confirm, ask more concretely, bring back), checked by `safeClarification`.
+ * - Buttons questionnaires: the AI phrasing is checked by `safePhrasing`.
+ * - Only question texts, options and the answers (with identifiers removed) are sent to the provider.
  */
 import {
   ABSTENTION_CODE,
+  answerModeOf,
   localized,
   looksLikeInstructions,
   needsClassification,
@@ -29,7 +32,7 @@ import {
   type Question,
   type TextClassification,
 } from '@smartaudit/shared';
-import { defaultClarification, parseClassification, PROMPT_VERSION, type QuestionPayload } from '@smartaudit/llm';
+import { defaultClarification, parseClassification, PROMPT_VERSION, questionWithHint, type ConversationTurn, type QuestionPayload } from '@smartaudit/llm';
 import type { HydratedDocument } from 'mongoose';
 import type { AppContext } from '../context';
 import { conflict, unprocessable } from '../lib/errors';
@@ -46,6 +49,9 @@ interface AnswerRecord {
   confidence?: number | null;
   supportingQuote?: string | null;
   clarificationsUsed: number;
+  /** Last follow-up (decision 91): why it was asked and, for a confirmation, the interpretation proposed. */
+  followUpReason?: string | null;
+  proposedCodes?: string[];
   viaButton: boolean;
   model?: string | null;
   promptVersion?: string | null;
@@ -76,6 +82,8 @@ export const questionPayload = (q: Question, language: Language): QuestionPayloa
   type: q.type,
   text: localized(q.text, language),
   help: q.help ? localized(q.help, language) : null,
+  answerHint: q.answerHint ? localized(q.answerHint, language) : null,
+  explanation: q.explanation ? localized(q.explanation, language) : null,
   options: q.options.map((o) => ({ code: o.code, label: localized(o.label, language) })),
   language,
 });
@@ -85,6 +93,7 @@ export const questionView = (q: Question, language: Language, text: string): Int
   type: q.type,
   text,
   help: q.help ? localized(q.help, language) : null,
+  answerMode: answerModeOf(q),
   options: q.options.map((o) => ({
     code: o.code,
     label: localized(o.label, language),
@@ -108,11 +117,16 @@ async function askNext(ctx: AppContext, i: InterviewDoc, c: CampaignDoc): Promis
   const language = i.language as Language;
   const official = localized(next.text, language);
   let text = official;
-  try {
-    const payload = questionPayload(next, language);
-    text = safePhrasing(official, (await ctx.llm.phraseQuestion(payload)).text, payload.options.map((o) => o.label));
-  } catch (err) {
-    ctx.logger.warn({ err: (err as Error).message, question: next.code }, 'phrasing failed, official text used');
+  if (questionsOf(c).some((q) => answerModeOf(q) === 'text')) {
+    // Conversational questionnaire: the approved wording, no AI phrasing, also for open questions (decision 92).
+    text = answerModeOf(next) === 'text' ? questionWithHint(questionPayload(next, language)) : official;
+  } else {
+    try {
+      const payload = questionPayload(next, language);
+      text = safePhrasing(official, (await ctx.llm.phraseQuestion(payload)).text, payload.options.map((o) => o.label));
+    } catch (err) {
+      ctx.logger.warn({ err: (err as Error).message, question: next.code }, 'phrasing failed, official text used');
+    }
   }
   messagesOf(i).push({ role: 'assistant', kind: 'question', text, questionCode: next.code, at: ctx.now() });
   return next;
@@ -163,13 +177,26 @@ export async function resumeInterview(ctx: AppContext, i: InterviewDoc, c: Campa
   return toStateDto(i, c, next);
 }
 
+/** Messages already exchanged about a question, as the AI may see them (participant texts redacted). */
+const threadOf = (i: InterviewDoc, questionCode: string): ConversationTurn[] =>
+  messagesOf(i)
+    .filter((m) => m.questionCode === questionCode && m.kind !== 'abstain' && m.text)
+    .map((m) => ({ role: m.role, text: m.role === 'participant' ? redactIdentifiers(m.text) : m.text }));
+
 /** Classification by the AI: validated with the schema, retried once, `null` if still invalid. */
-async function classify(ctx: AppContext, payload: QuestionPayload, text: string): Promise<{ c: TextClassification | null; model: string | null }> {
+async function classify(
+  ctx: AppContext,
+  payload: QuestionPayload,
+  text: string,
+  context: { thread: ConversationTurn[]; proposedCodes?: string[] },
+): Promise<{ c: TextClassification | null; model: string | null }> {
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      const raw = await ctx.llm.classifyAnswer(payload, text);
+      const raw = await ctx.llm.classifyAnswer(payload, text, context);
       const parsed = parseClassification(raw);
       if (parsed) return { c: parsed, model: raw.model };
+      // Only the shape is logged, never the content (it may contain the participant's words).
+      ctx.logger.warn({ question: payload.questionCode, attempt, keys: raw && typeof raw === 'object' ? Object.keys(raw).slice(0, 10) : typeof raw }, 'classification did not match the schema');
     } catch (err) {
       ctx.logger.warn({ err: (err as Error).message, question: payload.questionCode, attempt }, 'classification failed');
     }
@@ -194,6 +221,8 @@ export async function answerInterview(
   const payload = questionPayload(current, language);
   const previous = answersOf(i).find((a) => a.questionCode === current.code);
   const clarificationsUsed = previous?.clarificationsUsed ?? 0;
+  const thread = threadOf(i, current.code);
+  const pendingProposal = previous?.followUpReason === 'confirm' ? [...(previous.proposedCodes ?? [])] : [];
 
   let outcome: AnswerOutcome;
   let classification: TextClassification | null = null;
@@ -203,7 +232,7 @@ export async function answerInterview(
       outcome = resolveTextAnswer(current, input.text, null, clarificationsUsed, 1);
     } else {
       if (looksLikeInstructions(input.text)) classification = OFF_TOPIC;
-      else ({ c: classification, model } = await classify(ctx, payload, redactIdentifiers(input.text)));
+      else ({ c: classification, model } = await classify(ctx, payload, redactIdentifiers(input.text), { thread, proposedCodes: pendingProposal }));
       const { confidenceThreshold } = await getSettings();
       outcome = resolveTextAnswer(current, input.text, classification, clarificationsUsed, confidenceThreshold);
     }
@@ -230,6 +259,8 @@ export async function answerInterview(
       model: input.kind === 'text' && needsClassification(current) ? model ?? ctx.llm.name : null,
       promptVersion: input.kind === 'text' && needsClassification(current) ? PROMPT_VERSION : null,
       clarificationsUsed,
+      // Keeps why the last follow-up was asked (shown to the auditor in the review queue).
+      followUpReason: previous?.followUpReason ?? null,
       ...a,
     };
     const idx = answersOf(i).findIndex((x) => x.questionCode === current.code);
@@ -238,12 +269,25 @@ export async function answerInterview(
   };
 
   if (outcome.action === 'clarify') {
-    record({ status: classification!.status === 'off_topic' ? 'off_topic' : 'ambiguous', confidence: classification!.confidence, clarificationsUsed: clarificationsUsed + 1 });
-    const fallback = defaultClarification(payload);
+    const { reason, proposedCodes = [] } = outcome;
+    record({
+      status: reason === 'off_topic' ? 'off_topic' : 'ambiguous',
+      confidence: classification!.confidence,
+      clarificationsUsed: clarificationsUsed + 1,
+      followUpReason: reason,
+      proposedCodes,
+    });
+    const fallback = defaultClarification(payload, reason, proposedCodes);
     let text = fallback;
     try {
-      const phrased = (await ctx.llm.phraseClarification(payload, redactIdentifiers(input.kind === 'text' ? input.text : ''))).text;
-      text = safeClarification(fallback, phrased, payload.options.map((o) => o.label));
+      const answer = redactIdentifiers(input.kind === 'text' ? input.text : '');
+      const phrased = (await ctx.llm.phraseClarification(payload, { reason, answer, thread, proposedCodes })).text;
+      text = safeClarification(fallback, phrased, payload.options.map((o) => o.label), {
+        proposedLabels: proposedCodes.map((c) => payload.options.find((o) => o.code === c)?.label ?? c),
+        sources: [payload.text, payload.answerHint ?? '', payload.explanation ?? '', payload.help ?? ''],
+        answerHint: payload.answerHint,
+      });
+      if (text === fallback && phrased?.trim()) ctx.logger.info({ question: current.code, reason }, 'follow-up replaced by the default (guard)');
     } catch (err) {
       ctx.logger.warn({ err: (err as Error).message, question: current.code }, 'clarification failed, default used');
     }

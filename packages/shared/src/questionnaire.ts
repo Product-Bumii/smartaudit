@@ -2,7 +2,7 @@
  * Questionnaire structure and declarative activation rules (section 5.2).
  * Activation is ALWAYS evaluated here, in code, never by the AI.
  */
-import { ABSTENTION_CODE, isAvailableLanguage, type AuditType, type Language, type QuestionType, type TranslationStatus } from './enums';
+import { ABSTENTION_CODE, isAvailableLanguage, type AnswerMode, type AuditType, type Language, type QuestionType, type TranslationStatus } from './enums';
 
 export type LocalizedText = Partial<Record<Language, string>>;
 
@@ -31,7 +31,22 @@ export interface Question {
   order: number;
   type: QuestionType;
   text: LocalizedText;
+  /** Official help shown under the question (e.g. P7: what «excede» means). */
   help?: LocalizedText | null;
+  /** Default `buttons`. With `text` the question is answered in own words (decision 90). */
+  answerMode?: AnswerMode;
+  /** Text mode: how the possible answers are said after the official question («¿Diría que…?»). */
+  answerHint?: LocalizedText | null;
+  /**
+   * Approved explanation the AI may use, and nothing else, when the participant asks what something means
+   * (decision 91). Never shown upfront.
+   */
+  explanation?: LocalizedText | null;
+  /**
+   * How the results are calculated (section 5.6, cambios 4). `excludeFromBase`: options counted apart and left
+   * out of the percentage base (P8: «No sabe / No contesta»).
+   */
+  results?: { excludeFromBase?: string[] } | null;
   options: QuestionOption[];
   activation: Activation;
   mandatory: boolean;

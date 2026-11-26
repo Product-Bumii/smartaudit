@@ -1,7 +1,8 @@
 /**
  * Interview engine (section 5.5). Deterministic: which question comes next, how a participant input is
- * turned into a coded answer, when to ask the (single) clarification and when to send it to human review.
- * The AI only phrases questions and classifies free text; it never decides any of this.
+ * turned into a coded answer, when to follow up (at most `maxClarifications` times, 2 in the conversational
+ * questionnaire, and why) and when to send it to human review.
+ * The AI only phrases and classifies free text; it never decides any of this.
  */
 import { ABSTENTION_CODE, type AnswerStatus, type Language } from './enums';
 import { evaluateActivation, type ActivationContext, type Question } from './questionnaire';
@@ -71,9 +72,23 @@ export type ParticipantInput =
 export interface TextClassification {
   optionCodes: string[];
   confidence: number;
-  status: 'classified' | 'ambiguous' | 'abstained' | 'off_topic';
+  /** `question`: the participant asks what something means instead of answering (decision 91). */
+  status: 'classified' | 'ambiguous' | 'abstained' | 'off_topic' | 'question';
   supportingQuote: string;
 }
+
+/**
+ * Why the AI follows up (decision 91):
+ * - `question`: explain with the approved explanation and ask again;
+ * - `confirm`: propose the likely interpretation and ask the participant to confirm it;
+ * - `ambiguous`: pick up what the participant said and ask more concretely;
+ * - `off_topic`: thank and bring the conversation back to the question.
+ */
+export const FOLLOW_UP_REASONS = ['question', 'confirm', 'ambiguous', 'off_topic'] as const;
+export type FollowUpReason = (typeof FOLLOW_UP_REASONS)[number];
+
+/** Below the review threshold but at least this confident: the AI proposes its interpretation to confirm. */
+export const CONFIRMATION_MIN_CONFIDENCE = 0.5;
 
 export interface CodedAnswer {
   optionCodes: string[];
@@ -84,12 +99,15 @@ export interface CodedAnswer {
   viaButton: boolean;
 }
 
-export type InputError = 'INVALID_OPTIONS' | 'ABSTAIN_NOT_ALLOWED' | 'FREE_TEXT_REQUIRED' | 'EMPTY_ANSWER';
+export type InputError = 'INVALID_OPTIONS' | 'ABSTAIN_NOT_ALLOWED' | 'FREE_TEXT_REQUIRED' | 'EMPTY_ANSWER' | 'TEXT_ANSWER_REQUIRED';
 
 export type AnswerOutcome =
   | { action: 'record'; answer: CodedAnswer }
-  | { action: 'clarify' }
+  | { action: 'clarify'; reason: FollowUpReason; proposedCodes?: string[] }
   | { action: 'reject'; error: InputError };
+
+/** Text mode (decision 90): closed questions are answered in own words; option buttons are not accepted. */
+export const answerModeOf = (q: Question) => q.answerMode ?? 'buttons';
 
 const MAX_FREE_TEXT = 2000;
 const clean = (t: string | null | undefined): string | null => {
@@ -117,6 +135,7 @@ export function resolveDirectAnswer(q: Question, input: Exclude<ParticipantInput
       answer: { optionCodes: [ABSTENTION_CODE], status: 'abstained', confidence: 1, freeText: null, supportingQuote: null, viaButton: true },
     };
   }
+  if (answerModeOf(q) === 'text') return { action: 'reject', error: 'TEXT_ANSWER_REQUIRED' };
   const error = validateOptionSelection(q, input.optionCodes, input.freeText);
   if (error) return { action: 'reject', error };
   return {
@@ -166,6 +185,7 @@ export function resolveTextAnswer(
   });
   if (!classification) return review();
   const canClarify = clarificationsUsed < q.maxClarifications;
+  const followUp = (reason: FollowUpReason): AnswerOutcome => (canClarify ? { action: 'clarify', reason } : review());
 
   if (classification.status === 'abstained') {
     if (q.allowAbstain) {
@@ -174,15 +194,18 @@ export function resolveTextAnswer(
         answer: { optionCodes: [ABSTENTION_CODE], status: 'abstained', confidence: classification.confidence, freeText: written, supportingQuote: classification.supportingQuote || null, viaButton: false },
       };
     }
-    return canClarify ? { action: 'clarify' } : review();
+    return followUp('ambiguous');
   }
+  if (classification.status === 'question') return followUp('question');
   if (classification.status === 'classified') {
-    const valid = validateOptionSelection(q, classification.optionCodes) === null;
+    const codes = [...new Set(classification.optionCodes)];
+    // In own words the written text is also the complement of «Otros, ¿cuál?».
+    const valid = validateOptionSelection(q, codes, written) === null;
     if (valid && classification.confidence >= threshold) {
       return {
         action: 'record',
         answer: {
-          optionCodes: [...new Set(classification.optionCodes)],
+          optionCodes: codes,
           status: 'classified',
           confidence: classification.confidence,
           freeText: written,
@@ -191,10 +214,14 @@ export function resolveTextAnswer(
         },
       };
     }
-    // Low confidence goes straight to review (section 5.5, step 6); invalid codes are treated as ambiguous.
-    if (valid) return review([...new Set(classification.optionCodes)]);
+    // Low confidence: the AI proposes its interpretation while follow-ups remain (decision 91); otherwise review
+    // (section 5.5, step 6). Invalid codes are treated as ambiguous.
+    if (valid) {
+      if (!canClarify) return review(codes);
+      return classification.confidence >= CONFIRMATION_MIN_CONFIDENCE ? { action: 'clarify', reason: 'confirm', proposedCodes: codes } : { action: 'clarify', reason: 'ambiguous' };
+    }
   }
-  return canClarify ? { action: 'clarify' } : review();
+  return followUp(classification.status === 'off_topic' ? 'off_topic' : 'ambiguous');
 }
 
 // ---------- What the AI may see
@@ -278,14 +305,32 @@ export function safePhrasing(official: string, phrased: string | null | undefine
 }
 
 /**
- * Guard for the AI clarification: short, no links or emails, and it names either all the options or none
- * (naming only some would suggest an answer). Otherwise the neutral default is used.
+ * Guard for the AI follow-up: complete, at most 800 characters, no links or emails, no figures that are not in
+ * the approved texts (`sources`: question, answer hint, explanation, help), and it names either all the options
+ * (or at least those the approved `answerHint` names) or none: naming only some would suggest an answer. The only
+ * exception is a confirmation, which may name the interpretation being proposed (`proposedLabels`). Otherwise the
+ * neutral default is used.
  */
-export function safeClarification(fallback: string, phrased: string | null | undefined, optionLabels: readonly string[] = []): string {
+export function safeClarification(
+  fallback: string,
+  phrased: string | null | undefined,
+  optionLabels: readonly string[] = [],
+  opts: { proposedLabels?: readonly string[]; sources?: readonly string[]; answerHint?: string | null } = {},
+): string {
   const p = (phrased ?? '').trim();
-  const named = mentionedLabels(p, optionLabels).length;
+  const named = mentionedLabels(p, optionLabels);
   const nameable = optionLabels.filter((l) => fold(l).replace(/[^a-z0-9]+/g, ' ').trim().length >= 4).length;
-  const neutral = named === 0 || named === nameable;
+  const proposed = new Set(mentionedLabels((opts.proposedLabels ?? []).join(' · '), optionLabels));
+  // The approved answer hint presents every option in natural words (e.g. «…o que no lo sabe»): naming at least
+  // the labels it names is presenting them all.
+  const hinted = mentionedLabels(opts.answerHint ?? '', optionLabels);
+  const neutral =
+    named.length === 0 ||
+    named.length === nameable ||
+    (hinted.length > 0 && hinted.every((l) => named.includes(l))) ||
+    (proposed.size > 0 && named.every((l) => proposed.has(l)));
+  const allowedNumbers = new Set([fallback, ...(opts.sources ?? [])].join(' ').match(/\d+/g) ?? []);
+  const figures = (p.match(/\d+/g) ?? []).every((n) => allowedNumbers.has(n));
   const complete = p.length >= 15 && /[?.!)»"”]$/.test(p);
-  return p && complete && p.length <= 800 && !/@|https?:\/\/|www\./i.test(p) && neutral ? p : fallback;
+  return p && complete && p.length <= 800 && !/@|https?:\/\/|www\./i.test(p) && neutral && figures ? p : fallback;
 }

@@ -194,6 +194,18 @@ const EDITABLE: CampaignStatus[] = ['borrador', 'muestra_cargada'];
           <app-campaign-progress [campaign]="c" (changed)="campaign.set($event)" />
         }
 
+        @if (launched() && (c.access === 'manage' || c.access === 'supervise')) {
+          <section class="card" data-testid="results-section">
+            <h2 class="section-title">{{ 'results.sectionTitle' | translate }}</h2>
+            <p class="muted">{{ 'results.sectionHint' | translate }}</p>
+            <div class="row-actions">
+              <a mat-flat-button [routerLink]="['/campaigns', c.id, 'results']" data-testid="open-results">{{ 'results.title' | translate }}</a>
+              <a mat-stroked-button [routerLink]="['/campaigns', c.id, 'review']" data-testid="open-review">{{ 'review.title' | translate }}</a>
+              <a mat-stroked-button [routerLink]="['/campaigns', c.id, 'responses']" data-testid="open-responses">{{ 'responses.title' | translate }}</a>
+            </div>
+          </section>
+        }
+
         <section class="card">
           <h2 class="section-title">{{ 'campaigns.history' | translate }}</h2>
           <ol class="history">

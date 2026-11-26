@@ -163,7 +163,9 @@
     },
     "always": "Sempre",
     "confirmApprove": "Vols aprovar la traducció al {{lang}}?",
-    "approved": "Idioma aprovat"
+    "approved": "Idioma aprovat",
+    "explanation": "Explicació per a la IA",
+    "conversation": "Conversa · fins a {{n}} repreguntes"
   },
   "settings": {
     "general": "General",
@@ -304,7 +306,13 @@
     "sex": "Sexe",
     "ageBand": "Franja d'edat",
     "workCenter": "Centre de treball",
-    "jobType": "Tipus de lloc"
+    "jobType": "Tipus de lloc",
+    "seniorityBand": "Antiguitat",
+    "area": "Àrea",
+    "shifts": "Torns",
+    "telework": "Teletreball",
+    "dependents": "Fills o dependents",
+    "rlpt": "RLPT"
   },
   "historyReasons": {
     "created": "creada",
@@ -376,7 +384,10 @@
     "INVALID_OPTIONS": "Tria una opció vàlida.",
     "FREE_TEXT_REQUIRED": "Indica quin, si us plau.",
     "EMPTY_ANSWER": "Escriu la teva resposta o tria una opció.",
-    "ABSTAIN_NOT_ALLOWED": "Aquesta pregunta necessita una resposta."
+    "ABSTAIN_NOT_ALLOWED": "Aquesta pregunta necessita una resposta.",
+    "TEXT_ANSWER_REQUIRED": "Respon amb les teves paraules.",
+    "NOT_REVIEWABLE": "Aquesta resposta no està pendent de revisió.",
+    "REPORT_ALREADY_GENERATED": "L’informe ja s’ha generat: les decisions no es poden canviar."
   },
   "brand": {
     "sideNote": "Per a organitzacions amb certificat efr vigent."
@@ -459,7 +470,7 @@
     "status": "Estat",
     "all": "Tots",
     "open": "Obertes",
-    "closed": "Tancades (informe generat o cancel·lades)",
+    "closed": "Tancades (informe generat)",
     "auditEntity": "Entitat d'auditoria",
     "noEntity": "Sense entitat assignada",
     "clear": "Neteja els filtres",
@@ -513,6 +524,91 @@
     "comment": "El teu comentari",
     "doneTitle": "gràcies per participar!",
     "doneText": "Les teves respostes s’han desat de manera confidencial. Ja pots tancar aquesta pàgina.",
-    "multiHint": "Pots triar diverses opcions; després prem «envia»."
+    "multiHint": "Pots triar diverses opcions; després prem «envia».",
+    "writeAnswer": "Escriu la teva resposta",
+    "conversationHint": "Respon amb les teves paraules. Si alguna cosa no et queda clara, pregunta-ho."
+  },
+  "results": {
+    "sectionTitle": "Resultats i revisió",
+    "sectionHint": "Taules calculades amb les entrevistes completades, cua de respostes dubtoses i respostes individuals.",
+    "backToAudit": "Tornar a l’auditoria",
+    "eyebrow": "Resultats",
+    "title": "Resultats",
+    "goReview": "Revisar respostes dubtoses",
+    "goResponses": "Respostes individuals",
+    "pendingAlert": "Hi ha {{n}} respostes pendents de revisió: no compten en els percentatges fins que decideixis.",
+    "howCalculated": "Calculat per la plataforma, mai per la IA, amb les entrevistes completades. Els percentatges es calculen sobre les respostes vàlides (sense abstencions, respostes no vàlides ni pendents) i es mostren amb un decimal.",
+    "completed": "Entrevistes completades",
+    "pendingReview": "Pendents de revisió",
+    "section71": "Entrevistes realitzades (7.1)",
+    "modality": "Modalitat",
+    "interviews": "Entrevistes",
+    "modalityAi": "Entrevista escrita assistida per IA",
+    "bySexAndAge": "Distribució per sexe i franja d’edat",
+    "total": "Total",
+    "section72": "Resultats per pregunta (7.2)",
+    "notAsked": "No s’ha preguntat en cap entrevista completada.",
+    "comments": "{{n}} comentaris escrits",
+    "seeComments": "veure els comentaris",
+    "option": "Opció",
+    "count": "Persones",
+    "outOfBase": "fora de la base",
+    "abstentions": "{{n}} abstencions",
+    "noValid": "{{n}} sense resposta vàlida",
+    "pendingN": "{{n}} pendents de revisió",
+    "outsideCondition": "{{n}} fora de la condició de la pregunta",
+    "multiNote": "Resposta múltiple: percentatge de persones que esmenten cada opció; la suma pot passar del 100 %.",
+    "optionTexts": "Textos de «{{option}}» ({{n}})"
+  },
+  "review": {
+    "title": "Revisió de respostes",
+    "goResults": "Veure resultats",
+    "filter": "Mostrar",
+    "filters": {
+      "pending": "Pendents",
+      "reviewed": "Revisades",
+      "all": "Totes"
+    },
+    "confidentiality": "Confidencial: aquestes respostes són individuals. Fes-les servir només per codificar-les; cada accés queda registrat. No es mostra qui va respondre.",
+    "emptyPending": "No hi ha respostes pendents de revisió.",
+    "empty": "No hi ha respostes en aquesta vista.",
+    "reason": {
+      "question": "Va preguntar què volia dir",
+      "confirm": "Se li va proposar una interpretació",
+      "ambiguous": "Resposta poc clara",
+      "off_topic": "Fora de tema"
+    },
+    "followUps": "{{n}} repreguntes",
+    "decided": "Revisada",
+    "conversation": "Conversa sobre aquesta pregunta",
+    "person": "Persona",
+    "ai": "IA",
+    "aiProposal": "Proposta de la IA",
+    "noProposal": "cap",
+    "confidence": "confiança",
+    "decision": "La teva decisió",
+    "abstention": "Prefereix no respondre (abstenció)",
+    "noValid": "Sense resposta vàlida",
+    "note": "Nota (opcional)",
+    "save": "Desar la decisió",
+    "saved": "Decisió desada",
+    "reviewedAt": "Revisada el {{when}}"
+  },
+  "responses": {
+    "title": "Respostes individuals",
+    "noticeTitle": "Avís de confidencialitat",
+    "notice": "Veuràs les respostes de cada persona juntament amb les seves dades demogràfiques. És informació confidencial de l’auditoria.",
+    "notice1": "No es mostra el correu ni la fila del fitxer de mostra, i les files no segueixen l’ordre de les entrevistes.",
+    "notice2": "Aquest accés queda registrat amb el teu usuari, la data i la IP.",
+    "notice3": "Si un grup té menys de 3 persones, algú es podria identificar: veuràs un avís.",
+    "accept": "Ho entenc, veure les respostes",
+    "closedTitle": "Preguntes tancades ({{n}} entrevistes)",
+    "legend": "En negreta, les respostes decidides a la revisió. Passa el ratolí pel codi per veure la pregunta.",
+    "commentsTitle": "Respostes obertes",
+    "commentsNote": "Es mostren a part, sense dades demogràfiques i sense l’ordre de les entrevistes (text lliure dissociat).",
+    "noComments": "Sense comentaris.",
+    "abstention": "Abstenció",
+    "noValid": "Sense resposta vàlida",
+    "pending": "Pendent"
   }
 }

@@ -66,6 +66,5 @@ export async function runInterview(agent: request.Agent, persona: Persona, langu
   return state;
 }
 
-/** Persona that always taps the first option (multiple choice: the first one). */
-export const firstOption: Persona = (q) =>
-  q.type === 'free_text' ? { kind: 'text', text: 'Sin más comentarios.' } : { kind: 'options', optionCodes: [q.options[0].code] };
+/** Persona that always writes the first option, in its own words (the conversational questionnaire has no buttons). */
+export const firstOption: Persona = (q) => ({ kind: 'text', text: q.type === 'free_text' ? 'Sin más comentarios.' : q.options[0].label });

@@ -8,6 +8,7 @@ import {
   LANGUAGES,
   MODULES,
   RESPONDENT_STATUSES,
+  REVIEW_DECISIONS,
   SENIORITY_BANDS,
   SEX_VALUES,
   STORED_AUDIT_TYPES,
@@ -179,10 +180,16 @@ const answerSchema = new Schema(
     confidence: { type: Number, default: null },
     supportingQuote: { type: String, default: null },
     clarificationsUsed: { type: Number, default: 0 },
+    /** Last follow-up (decision 91): question | confirm | ambiguous | off_topic. */
+    followUpReason: { type: String, default: null },
+    /** Interpretation proposed in a confirmation, waiting for the participant. */
+    proposedCodes: { type: [String], default: undefined },
     viaButton: { type: Boolean, default: false },
     model: { type: String, default: null },
     promptVersion: { type: String, default: null },
+    /** Auditor's decision on an answer sent to review (cambios 4, decision 94). */
     review: {
+      decision: { type: String, enum: [...REVIEW_DECISIONS, null], default: null },
       reviewedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
       reviewedAt: { type: Date, default: null },
       optionCodes: { type: [String], default: undefined },

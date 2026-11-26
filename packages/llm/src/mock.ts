@@ -1,11 +1,13 @@
 /**
  * Deterministic mock adapter for development and tests (no network). It never phrases differently from the
- * official text and classifies by matching option labels and common synonyms in es/en/pt/fr/ca.
+ * official text, classifies by matching option labels and common synonyms in es/en/pt/fr/ca, recognizes when
+ * the participant asks what something means and confirmations («sí», «eso es») of a proposed interpretation,
+ * and follows up with the default (approved) texts.
  */
 import type { Language } from '@smartaudit/shared';
-import type { Classification, LlmCallMeta, LlmProvider, QuestionPayload } from './index';
+import type { Classification, ClassifyContext, FollowUpRequest, LlmCallMeta, LlmProvider, QuestionPayload } from './index';
 import { defaultClarification } from './clarification';
-import { PROMPT_VERSION } from './prompts/m1-v1';
+import { PROMPT_VERSION } from './prompts/m1-v2';
 
 const META: LlmCallMeta = { model: 'mock-1', promptVersion: PROMPT_VERSION };
 
@@ -43,6 +45,8 @@ const SYNONYMS: Record<string, string[]> = {
   SI_TIEMPO: ['tiempo', 'horas libres', 'dias libres', 'time off', 'tempo', 'temps'],
   SI_ECONOMICA: ['dinero', 'pagan', 'economica', 'nomina', 'paid', 'money', 'dinheiro', 'argent'],
   SI_AMBAS: ['ambas', 'las dos', 'both', 'ambos', 'les deux'],
+  // P2: no information received (conversational questionnaire, decision 92).
+  NINGUNO: ['no me han informado', 'no he recibido', 'nadie me ha informado', 'ningun medio', 'por ningun medio', 'ninguno', 'not received', 'nobody told me', 'nao recebi', 'aucune information', 'no m han informat'],
   // P11–P13 (Bienestar): agreement scale. Longer phrases win, so «ni de acuerdo ni en desacuerdo» is not «de acuerdo».
   DE_ACUERDO: ['de acuerdo', 'totalmente de acuerdo', 'estoy de acuerdo', 'agree', 'i agree', 'concordo', 'd accord', 'tout a fait'],
   EN_DESACUERDO: ['en desacuerdo', 'desacuerdo', 'disagree', 'discordo', 'pas d accord', 'en desacord'],
@@ -51,6 +55,11 @@ const SYNONYMS: Record<string, string[]> = {
 
 const ABSTAIN = ['prefiero no', 'no quiero responder', 'no quiero contestar', 'paso', 'prefer not', 'rather not', 'prefiro nao', 'je prefere ne pas', 'prefereixo no'];
 const HEDGES = ['creo', 'quizas', 'quiza', 'tal vez', 'supongo', 'maybe', 'perhaps', 'i think', 'talvez', 'acho que', 'peut etre', 'je crois'];
+
+/** Asking what something means instead of answering. */
+const ASKS = /^(que|a que|en que|what|o que|qu est ce|qu est|que vol dir|quin|quina|cual|como|how)\b/;
+/** Confirming a proposed interpretation. */
+const AFFIRM = ['si', 'eso es', 'correcto', 'exacto', 'asi es', 'efectivamente', 'yes', 'right', 'correct', 'exactly', 'sim', 'exato', 'isso', 'oui', 'exactement', 'c est ca', 'aixo es'];
 
 const contains = (text: string, phrase: string) => ` ${text} `.includes(` ${phrase} `);
 
@@ -77,11 +86,18 @@ export class MockLlmProvider implements LlmProvider {
     return { text: q.text, ...META };
   }
 
-  async classifyAnswer(q: QuestionPayload, answer: string): Promise<Classification & LlmCallMeta> {
+  async classifyAnswer(q: QuestionPayload, answer: string, context?: ClassifyContext): Promise<Classification & LlmCallMeta> {
     const text = normalize(answer);
-    if (ABSTAIN.some((p) => contains(text, p))) return { optionCodes: [], confidence: 0.9, status: 'abstained', supportingQuote: answer.slice(0, 200), ...META };
-    const codes = matchOptions(text, q.options);
     const quote = answer.slice(0, 200);
+    const proposed = context?.proposedCodes ?? [];
+    if (proposed.length && AFFIRM.some((a) => text === a || text.startsWith(`${a} `))) {
+      return { optionCodes: [...proposed], confidence: 0.95, status: 'classified', supportingQuote: quote, ...META };
+    }
+    if (ABSTAIN.some((p) => contains(text, p))) return { optionCodes: [], confidence: 0.9, status: 'abstained', supportingQuote: quote, ...META };
+    const codes = matchOptions(text, q.options);
+    if (codes.length === 0 && (answer.includes('?') || ASKS.test(text))) {
+      return { optionCodes: [], confidence: 0.9, status: 'question', supportingQuote: '', ...META };
+    }
     if (codes.length === 0) {
       const words = text.split(' ').filter(Boolean).length;
       return { optionCodes: [], confidence: 0.3, status: words > 4 ? 'off_topic' : 'ambiguous', supportingQuote: '', ...META };
@@ -91,8 +107,8 @@ export class MockLlmProvider implements LlmProvider {
     return { optionCodes: codes, confidence, status: 'classified', supportingQuote: quote, ...META };
   }
 
-  async phraseClarification(q: QuestionPayload, _answer?: string) {
-    return { text: defaultClarification(q), ...META };
+  async phraseClarification(q: QuestionPayload, request: FollowUpRequest) {
+    return { text: defaultClarification(q, request.reason, request.proposedCodes), ...META };
   }
 
   // TODO(Fase 3): synthesis and comment anonymization (deterministic placeholders for now).

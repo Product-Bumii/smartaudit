@@ -1,7 +1,8 @@
 /**
  * Phase 2 end to end: with the sample loaded the audit is scheduled, the window opens (dev helper), a person opens the
- * personal link from the invitation email on a phone, answers the whole interview (buttons, multiple choice,
- * own words), pauses and resumes, and the auditor sees the progress.
+ * personal link from the invitation email on a phone, answers the whole conversational interview in own words
+ * (no option buttons; asks what something means and gets the approved explanation), pauses and resumes, and the
+ * auditor sees the progress.
  */
 import { expect, test, type Page } from '@playwright/test';
 import { readFileSync } from 'node:fs';
@@ -13,38 +14,42 @@ const SAMPLES = join(__dirname, '../seed/samples');
 const AUDITOR = 'auditor2@auditoria.example';
 const run = Date.now().toString(36);
 
-/** Answers the question on screen (by its code) and waits for the conversation to move on. */
+/** What the person writes for each question (the conversational questionnaire has no option buttons). */
+const WRITTEN: Record<string, string> = {
+  P1: 'Sí',
+  P2: 'Por correo y en reuniones',
+  'P3.2': 'No',
+  'P3.3': 'Sí',
+  P4: 'Mejor que en otras empresas',
+  P5: 'Algunas veces',
+  P6: 'Positiva',
+  P7: 'Siempre', // brings P7.1
+  'P7.1': 'Sí, me dan tiempo libre',
+  P10: 'Todo bien, gracias.',
+};
+
+async function write(page: Page, text: string): Promise<void> {
+  const before = await page.getByTestId('chat-message').count();
+  await page.getByTestId('chat-text').fill(text);
+  await page.getByTestId('chat-send').click();
+  await expect.poll(() => page.getByTestId('chat-message').count()).toBeGreaterThan(before);
+}
+
+/** Answers the question on screen (by its code) in own words and waits for the conversation to move on. */
 async function answerCurrent(page: Page): Promise<string> {
   const area = page.getByTestId('chat-answer');
   await expect(area).toBeVisible();
   const code = (await area.getAttribute('data-question'))!;
-  const before = await page.getByTestId('chat-message').count();
-  switch (code) {
-    case 'P2': // multiple choice
-      await page.getByTestId('chat-option-MAIL').click();
-      await page.getByTestId('chat-option-REUNIONES').click();
-      await page.getByTestId('chat-send-options').click();
-      break;
-    case 'P3.1': // own words, classified by the (mock) AI
-      await page.getByTestId('chat-text').fill('No lo sé');
-      await page.getByTestId('chat-send').click();
-      break;
-    case 'P7': // «siempre» brings P7.1
-      await page.getByTestId('chat-option-SIEMPRE').click();
-      break;
-    case 'P7.1': // option with an optional complementary text
-      await page.getByTestId('chat-option-SI_TIEMPO').click();
-      await page.getByTestId('chat-option-text').fill('días libres');
-      await page.getByTestId('chat-send-options').click();
-      break;
-    case 'P10':
-      await page.getByTestId('chat-text').fill('Todo bien, gracias.');
-      await page.getByTestId('chat-send').click();
-      break;
-    default:
-      await page.locator('.options button').first().click();
+  await expect(page.locator('.options button')).toHaveCount(0);
+  if (code === 'P3.1') {
+    // The person asks what it means: the approved explanation, then the question again.
+    await write(page, '¿Qué es un mánager efr?');
+    await expect(page.getByTestId('chat-message').last()).toContainText('El Mánager efr es la persona de su organización que coordina el Modelo efr');
+    await expect(area).toHaveAttribute('data-question', 'P3.1');
+    await write(page, 'Entonces no lo sé');
+  } else {
+    await write(page, WRITTEN[code] ?? 'De acuerdo');
   }
-  await expect.poll(() => page.getByTestId('chat-message').count()).toBeGreaterThan(before);
   return code;
 }
 

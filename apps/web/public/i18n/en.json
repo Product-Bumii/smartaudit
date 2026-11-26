@@ -163,7 +163,9 @@
     },
     "always": "Always",
     "confirmApprove": "Approve the {{lang}} translation?",
-    "approved": "Language approved"
+    "approved": "Language approved",
+    "explanation": "Explanation for the AI",
+    "conversation": "Conversation · up to {{n}} follow-ups"
   },
   "settings": {
     "general": "General",
@@ -304,7 +306,13 @@
     "sex": "Sex",
     "ageBand": "Age band",
     "workCenter": "Work centre",
-    "jobType": "Job type"
+    "jobType": "Job type",
+    "seniorityBand": "Seniority",
+    "area": "Area",
+    "shifts": "Shifts",
+    "telework": "Telework",
+    "dependents": "Children or dependants",
+    "rlpt": "Workers’ representation"
   },
   "historyReasons": {
     "created": "created",
@@ -376,7 +384,10 @@
     "INVALID_OPTIONS": "Choose a valid option.",
     "FREE_TEXT_REQUIRED": "Please say which.",
     "EMPTY_ANSWER": "Write your answer or choose an option.",
-    "ABSTAIN_NOT_ALLOWED": "This question needs an answer."
+    "ABSTAIN_NOT_ALLOWED": "This question needs an answer.",
+    "TEXT_ANSWER_REQUIRED": "Please answer in your own words.",
+    "NOT_REVIEWABLE": "This answer is not waiting for review.",
+    "REPORT_ALREADY_GENERATED": "The report has already been generated: decisions can no longer change."
   },
   "brand": {
     "sideNote": "For organizations with a valid efr certificate."
@@ -459,7 +470,7 @@
     "status": "Status",
     "all": "All",
     "open": "Open",
-    "closed": "Closed (report generated or cancelled)",
+    "closed": "Closed (report generated)",
     "auditEntity": "Audit entity",
     "noEntity": "No entity assigned",
     "clear": "Clear filters",
@@ -513,6 +524,91 @@
     "comment": "Your comment",
     "doneTitle": "thank you for taking part!",
     "doneText": "Your answers have been saved confidentially. You can now close this page.",
-    "multiHint": "You can choose several options; then press «send»."
+    "multiHint": "You can choose several options; then press «send».",
+    "writeAnswer": "Type your answer",
+    "conversationHint": "Answer in your own words. If something isn't clear, just ask."
+  },
+  "results": {
+    "sectionTitle": "Results and review",
+    "sectionHint": "Tables calculated from the completed interviews, queue of doubtful answers and individual answers.",
+    "backToAudit": "Back to the audit",
+    "eyebrow": "Results",
+    "title": "Results",
+    "goReview": "Review doubtful answers",
+    "goResponses": "Individual answers",
+    "pendingAlert": "There are {{n}} answers waiting for review: they do not count in the percentages until you decide.",
+    "howCalculated": "Calculated by the platform, never by the AI, from the completed interviews. Percentages are over the valid answers (without abstentions, invalid or pending answers) and shown with one decimal.",
+    "completed": "Completed interviews",
+    "pendingReview": "Waiting for review",
+    "section71": "Interviews carried out (7.1)",
+    "modality": "Modality",
+    "interviews": "Interviews",
+    "modalityAi": "AI-assisted written interview",
+    "bySexAndAge": "Distribution by sex and age band",
+    "total": "Total",
+    "section72": "Results per question (7.2)",
+    "notAsked": "Not asked in any completed interview.",
+    "comments": "{{n}} written comments",
+    "seeComments": "see the comments",
+    "option": "Option",
+    "count": "People",
+    "outOfBase": "outside the base",
+    "abstentions": "{{n}} abstentions",
+    "noValid": "{{n}} without a valid answer",
+    "pendingN": "{{n}} waiting for review",
+    "outsideCondition": "{{n}} outside the condition of the question",
+    "multiNote": "Multiple choice: percentage of people mentioning each option; the sum may exceed 100%.",
+    "optionTexts": "Texts of \"{{option}}\" ({{n}})"
+  },
+  "review": {
+    "title": "Answer review",
+    "goResults": "See results",
+    "filter": "Show",
+    "filters": {
+      "pending": "Pending",
+      "reviewed": "Reviewed",
+      "all": "All"
+    },
+    "confidentiality": "Confidential: these are individual answers. Use them only to code them; every access is recorded. Who answered is not shown.",
+    "emptyPending": "There are no answers waiting for review.",
+    "empty": "There are no answers in this view.",
+    "reason": {
+      "question": "Asked what it meant",
+      "confirm": "An interpretation was proposed",
+      "ambiguous": "Unclear answer",
+      "off_topic": "Off topic"
+    },
+    "followUps": "{{n}} follow-ups",
+    "decided": "Reviewed",
+    "conversation": "Conversation about this question",
+    "person": "Person",
+    "ai": "AI",
+    "aiProposal": "AI proposal",
+    "noProposal": "none",
+    "confidence": "confidence",
+    "decision": "Your decision",
+    "abstention": "Prefers not to answer (abstention)",
+    "noValid": "No valid answer",
+    "note": "Note (optional)",
+    "save": "Save decision",
+    "saved": "Decision saved",
+    "reviewedAt": "Reviewed on {{when}}"
+  },
+  "responses": {
+    "title": "Individual answers",
+    "noticeTitle": "Confidentiality notice",
+    "notice": "You are about to see each person’s answers together with their demographics. This is confidential audit information.",
+    "notice1": "Neither the email nor the sample file row is shown, and rows do not follow the order of the interviews.",
+    "notice2": "This access is recorded with your user, the date and the IP address.",
+    "notice3": "If a group has fewer than 3 people, someone could be identified: you will see a warning.",
+    "accept": "I understand, show the answers",
+    "closedTitle": "Closed questions ({{n}} interviews)",
+    "legend": "In bold, answers decided in the review. Hover over the code to see the question.",
+    "commentsTitle": "Open answers",
+    "commentsNote": "Shown apart, without demographics and not in interview order (dissociated free text).",
+    "noComments": "No comments.",
+    "abstention": "Abstention",
+    "noValid": "No valid answer",
+    "pending": "Pending"
   }
 }

@@ -24,6 +24,11 @@ import {
   type CampaignAccess,
   type CampaignStatus,
   type QuestionnaireLanguage,
+  answerReviewSchema,
+  objectIdSchema,
+  reviewInputError,
+  reviewListQuerySchema,
+  type Question,
 } from '@smartaudit/shared';
 import type { AppContext } from '../context';
 import { audit } from '../lib/audit';
@@ -41,7 +46,11 @@ import {
   MANAGE,
   toCampaignDto,
 } from '../services/campaigns';
+import { campaignResults, individualResponses, openComments, reviewAnswer, reviewQueue } from '../services/results';
 import { accessCodesFile, MAX_SAMPLE_FILE_BYTES, sampleSummary, sampleTemplateFile, uploadSample } from '../services/sample';
+
+/** Results, review and individual answers: lead auditor and superadmins. */
+const RESULTS_ACCESS: readonly CampaignAccess[] = ['manage', 'supervise'];
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_SAMPLE_FILE_BYTES, files: 1 } });
 
@@ -269,6 +278,65 @@ export function campaignsRouter(ctx: AppContext): Router {
     await campaign.save();
     await audit(req, { action: 'campaign.window.extend', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId), meta: { from: extension.from, to: extension.to } });
     res.json({ campaign: toCampaignDto(campaign.toObject(), 'manage') });
+  });
+
+  // ---------------- Results, review and individual answers (cambios 4 · bloques 1 y 2)
+  // Lead auditor and superadmins only (`manage`, `supervise`); the coordinator sees the aggregate progress (403).
+
+  /** Results tables (section 5.6), calculated in code over the completed interviews. */
+  r.get('/:id/results', requireAction('report.manage'), async (req, res) => {
+    const { campaign } = await findCampaignForUser(req.user as AuthUser, String(req.params.id), RESULTS_ACCESS);
+    res.json(await campaignResults(campaign.toObject() as CampaignDoc));
+  });
+
+  /** Answers sent to review: the conversation about that question and what the AI proposed. Individual data → logged. */
+  r.get('/:id/review', requireAction('responses.review'), async (req, res) => {
+    const { campaign } = await findCampaignForUser(req.user as AuthUser, String(req.params.id), RESULTS_ACCESS);
+    const { state } = reviewListQuerySchema.parse(req.query);
+    const list = await reviewQueue(campaign.toObject() as CampaignDoc, state);
+    await audit(req, { action: 'responses.review.view', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId), meta: { state, items: list.items.length } });
+    res.json(list);
+  });
+
+  /** The auditor's decision on one answer: option code(s), abstention or «sin respuesta válida». */
+  r.put('/:id/review/:interviewId/:questionCode', requireAction('responses.review'), async (req, res) => {
+    const user = req.user as AuthUser;
+    const { campaign } = await findCampaignForUser(user, String(req.params.id), RESULTS_ACCESS);
+    if (campaign.status === 'informe_generado') throw conflict('REPORT_ALREADY_GENERATED');
+    const input = answerReviewSchema.parse(req.body);
+    const interviewId = objectIdSchema.safeParse(req.params.interviewId);
+    if (!interviewId.success) throw notFound();
+    const question = ((campaign.questionnaireSnapshot?.questions ?? []) as Question[]).find((q) => q.code === req.params.questionCode);
+    if (!question) throw notFound();
+    const error = reviewInputError(question, input.decision, input.optionCodes);
+    if (error) throw unprocessable(error);
+    const outcome = await reviewAnswer(campaign.toObject() as CampaignDoc, interviewId.data, question.code, input, user.id, ctx.now());
+    if (outcome === 'NOT_FOUND') throw notFound();
+    if (outcome === 'NOT_REVIEWABLE') throw conflict('NOT_REVIEWABLE');
+    await audit(req, {
+      action: 'responses.review',
+      resourceType: 'interview',
+      resourceId: interviewId.data,
+      organizationId: String(campaign.organizationId),
+      meta: { campaignId: String(campaign._id), questionCode: question.code, decision: input.decision },
+    });
+    res.json(await reviewQueue(campaign.toObject() as CampaignDoc, 'pending').then((l) => ({ counts: l.counts })));
+  });
+
+  /** Individual answers with demographics (never identity). The page shows the confidentiality notice first. */
+  r.get('/:id/responses', requireAction('responses.viewIndividual'), async (req, res) => {
+    const { campaign } = await findCampaignForUser(req.user as AuthUser, String(req.params.id), RESULTS_ACCESS);
+    const dto = await individualResponses(campaign.toObject() as CampaignDoc);
+    await audit(req, { action: 'responses.view', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId), meta: { rows: dto.rows.length } });
+    res.json(dto);
+  });
+
+  /** Open answers apart, without demographics (P14–P15 «texto libre disociado»; P10 too, decision 96). */
+  r.get('/:id/comments', requireAction('responses.viewIndividual'), async (req, res) => {
+    const { campaign } = await findCampaignForUser(req.user as AuthUser, String(req.params.id), RESULTS_ACCESS);
+    const dto = await openComments(campaign.toObject() as CampaignDoc);
+    await audit(req, { action: 'responses.comments.view', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId), meta: { comments: dto.questions.reduce((n, q) => n + q.comments.length, 0) } });
+    res.json(dto);
   });
 
   return r;

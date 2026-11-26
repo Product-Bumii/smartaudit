@@ -20,6 +20,10 @@ interface QuestionView {
   mandatory: boolean;
   text: Partial<Record<Language, string>>;
   help?: Partial<Record<Language, string>> | null;
+  answerMode?: 'buttons' | 'text';
+  answerHint?: Partial<Record<Language, string>> | null;
+  explanation?: Partial<Record<Language, string>> | null;
+  maxClarifications?: number;
   options: { code: string; label: Partial<Record<Language, string>> }[];
   activation: unknown;
 }
@@ -107,6 +111,13 @@ interface QuestionnaireItem {
                   <td>
                     {{ question.text[viewLang] || '—' }}
                     @if (question.help?.[viewLang]) { <div class="muted small">{{ question.help?.[viewLang] }}</div> }
+                    @if (question.answerHint?.[viewLang]) { <div class="small" data-testid="q-hint">{{ question.answerHint?.[viewLang] }}</div> }
+                    @if (question.explanation?.[viewLang]) {
+                      <div class="muted small" data-testid="q-explanation"><strong>{{ 'questionnaires.explanation' | translate }}:</strong> {{ question.explanation?.[viewLang] }}</div>
+                    }
+                    @if (question.answerMode === 'text') {
+                      <div class="chip neutral">{{ 'questionnaires.conversation' | translate: { n: question.maxClarifications ?? 0 } }}</div>
+                    }
                   </td>
                   <td>{{ 'questionnaires.types.' + question.type | translate }}</td>
                   <td class="small">

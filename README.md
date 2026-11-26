@@ -139,19 +139,32 @@ Se regeneran con `npx tsx seed/generate-samples.ts`.
   volver atrás.
 - **Participante** (Fase 2): entra con su **enlace personal** `/i/<token>` (invitación por correo) o con su **código** en
   `/c/<auditoría>` (personas sin correo); ve el aviso previo, elige idioma y responde una **entrevista escrita en el
-  móvil**: botones con las opciones, respuesta con sus palabras (la IA la clasifica) o «Prefiero no responder». Puede
-  pausar y continuar con el mismo enlace o código, sin repetir ni perder respuestas.
-- **IA acotada** (Fase 2): la IA solo reformula la pregunta, clasifica el texto libre y pide **una** aclaración como
-  máximo. El orden, las condiciones (P7.1, P8, P9), el umbral de confianza y la revisión humana son código
-  determinista. Guardas: reformulaciones que inventen preguntas o nombren opciones, aclaraciones que sugieran una
-  respuesta y respuestas que intenten dar instrucciones a la IA se descartan; los datos personales que escriba una
+  móvil**, **conversada**: cada pregunta propone las respuestas posibles y la persona contesta siempre con sus
+  palabras (la IA la clasifica) o con «Prefiero no responder»; no hay botones de opción. Puede preguntar qué significa
+  algo. Puede pausar y continuar con el mismo enlace o código, sin repetir ni perder respuestas.
+- **IA acotada** (Fase 2, entrevista conversada desde el 25/11/2026, decisiones 90–93): la IA clasifica la respuesta
+  viendo la conversación de esa pregunta y conversa **hasta dos veces** por pregunta: explica con la **explicación
+  aprobada** cuando la persona pregunta, propone su interpretación para que la confirme, pide concretar o reconduce.
+  La pregunta es el texto oficial con la frase aprobada que propone las respuestas, sin reformular. El orden, las
+  condiciones (P7.1, P8, P9), el motivo de cada repregunta, el umbral de confianza y la revisión humana son código
+  determinista. Guardas: repreguntas que sugieran una respuesta o traigan cifras que no estén en los textos aprobados y
+  respuestas que intenten dar instrucciones a la IA se descartan; los datos personales que escriba una
   persona se eliminan antes de llamar a la IA. El proveedor real es **Google Gemini** (`LLM_PROVIDER=gemini`); en
   desarrollo y tests se usa un **adaptador mock determinista**.
+- **Resultados y revisión** (Fase 3, «cambios 4», bloques 1 y 2; decisiones 94–97), para el auditor responsable y los
+  superadmins:
+  - **Resultados**: sección 7.1 (entrevistas y distribución por sexo y edad) y una tabla por pregunta, calculadas en
+    código sobre las entrevistas completadas; porcentajes sobre las respuestas válidas, siempre con n, abstenciones,
+    «sin respuesta válida» y pendientes; P2 por personas, P7.1 solo si aplica, P8 sin «No sabe».
+  - **Revisión**: cola de respuestas dudosas con la conversación de esa pregunta y la propuesta de la IA; el auditor
+    decide el código, la abstención o «sin respuesta válida», y cada decisión queda registrada.
+  - **Respuestas individuales**: tras un aviso de confidencialidad, demográficos y respuestas codificadas (sin
+    identidad, fila ni fechas), con aviso de grupos pequeños; las respuestas abiertas, aparte y sin demográficos.
 
 ### Lo que todavía no existe (fases siguientes)
 
-La revisión de respuestas dudosas, el cálculo de resultados y la
-exportación del informe (Word/Excel/PDF), en la Fase 3. Ver [hoja de ruta](#19-hoja-de-ruta-y-pendientes).
+La anonimización de comentarios, la síntesis con IA y la exportación del informe (Word/Excel/PDF), en la Fase 3
+(«cambios 4», bloques 3 a 5). Ver [hoja de ruta](#19-hoja-de-ruta-y-pendientes).
 
 ---
 
@@ -262,8 +275,9 @@ se crea una nueva (solo puede haber un borrador a la vez). Las auditorías guard
    (`https://<dominio>/c/<auditoría>`) y escribe su **código** (da igual mayúsculas, minúsculas, espacios o guiones).
 2. Lee el aviso previo (uso de IA, finalidad, confidencialidad, derecho a no responder, contacto), elige idioma y pulsa
    **«empezar la entrevista»**.
-3. Responde con los **botones**, con **sus palabras** o con **«Prefiero no responder»**. Si la respuesta libre no encaja
-   con ninguna opción, la IA repregunta una vez; si sigue sin encajar, queda para revisión del auditor.
+3. Responde **con sus palabras** (la pregunta propone las respuestas posibles) o con **«Prefiero no responder»**. Si
+   pregunta qué significa algo, la IA se lo explica con el texto aprobado; si la respuesta no queda clara, la IA
+   propone su interpretación o pide concretar, hasta dos veces; si sigue sin encajar, queda para revisión del auditor.
 4. Puede cerrar y volver con el mismo enlace o código: **«continuar la entrevista»** retoma la pregunta pendiente.
 5. Al terminar ve el agradecimiento; el enlace ya no permite empezar otra entrevista.
 6. Tras **10 intentos fallidos de código en 15 minutos** desde la misma IP, se bloquea temporalmente.
@@ -299,8 +313,8 @@ navegador ──────▶│                                              
 | Infraestructura | Servidor de pruebas: systemd + nginx. Producción prevista: Docker Compose + Caddy |
 
 **Principio clave: IA acotada.** El orden de preguntas, las condiciones, los cálculos, los porcentajes y los permisos son
-**código determinista y testeado** en `packages/shared`. La IA solo formulará preguntas, pedirá una aclaración como
-máximo y clasificará respuestas (Fase 2).
+**código determinista y testeado** en `packages/shared`. La IA solo clasifica respuestas y conversa dentro de cada
+pregunta, con dos interacciones como máximo y solo con textos aprobados (Fase 2, decisión 91).
 
 **Configuración, no código.** Cuestionarios, tabla de mínimos, textos de correo y umbrales viven en la base de
 datos, versionados, y se cambian sin redesplegar.
@@ -396,12 +410,12 @@ npm run check:i18n         # mismas claves en es/en/ca/pt/fr y claves usadas exi
 
 | Suite | Contenido | Resultado actual |
 |---|---|---|
-| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles (lunes a viernes) y ventanas desde la fecha de comienzo (fin de semana, fin de año, cambio de hora), **máximo de completadas**, búsqueda sin acentos, idiomas disponibles, **motor de entrevista** (siguiente pregunta, botones, texto libre, una aclaración, umbral y revisión), **guardas de la IA** (reformulación, aclaración, instrucciones, datos personales), **planificación** (invitaciones, recordatorios, transiciones), avance y alertas, ampliación de ventana, validación de muestra, activación de preguntas, estados de auditoría, permisos, **acceso por asignación** (entidad, coordinador, auditor, traspaso de auditorías), códigos, retención, disponibilidad del participante | 186 tests · **100 % de ramas** |
+| `packages/shared` | Tabla de mínimos (fronteras 90/91 … 16.000/16.001), días hábiles (lunes a viernes) y ventanas desde la fecha de comienzo (fin de semana, fin de año, cambio de hora), **máximo de completadas**, búsqueda sin acentos, idiomas disponibles, **motor de entrevista** (siguiente pregunta, respuesta escrita, motivo de cada repregunta —explicar, confirmar, concretar, reconducir—, hasta dos, umbral y revisión), **guardas de la IA** (reformulación, repregunta, confirmación, cifras, instrucciones, datos personales), **planificación** (invitaciones, recordatorios, transiciones), avance y alertas, ampliación de ventana, validación de muestra, activación de preguntas, estados de auditoría, permisos, **acceso por asignación** (entidad, coordinador, auditor, traspaso de auditorías), códigos, retención, disponibilidad del participante | 203 tests · **100 % de ramas** |
 | `packages/mail` | Plantillas por idioma (acceso, alta, **invitación**, **recordatorio**), marca, escape HTML, proveedores | 6 tests |
-| `packages/llm` | Adaptador mock (clasificación por opciones y sinónimos en varios idiomas, aclaración neutral), registro de llamadas, validación del esquema | 6 tests |
-| `apps/api` | Enlace mágico, selección de entidad, límites de peticiones, aislamiento entre entidades de auditoría, coordinador solo con agregado, asignación y traspaso de auditorías, auditorías (máximo y **cierre automático al alcanzarlo**), **listados paginados con búsqueda, filtros y orden**, carga de muestra, configuración versionada, **ningún correo en claro en la BD**, acceso con código; **Fase 2**: lanzar, invitaciones al abrir la ventana, enlace personal, entrevista completa (botones, abstención, P7.1/P8/P9), pausa y reanudación, aclaración y revisión, instrucciones a la IA nunca clasificadas, **ningún identificador enviado a la IA**, recordatorios, ampliación, cierre, límite diario y reintentos, proveedor «malicioso» neutralizado; **40 personas sintéticas** | 88 tests |
+| `packages/llm` | Adaptador mock (clasificación por opciones y sinónimos en varios idiomas, preguntas de la persona, confirmaciones, repreguntas aprobadas por motivo), adaptador Gemini (prompts m1-v2 con la conversación de la pregunta), registro de llamadas, validación del esquema | 13 tests |
+| `apps/api` | Enlace mágico, selección de entidad, límites de peticiones, aislamiento entre entidades de auditoría, coordinador solo con agregado, asignación y traspaso de auditorías, auditorías (máximo y **cierre automático al alcanzarlo**), **listados paginados con búsqueda, filtros y orden**, carga de muestra, configuración versionada, **ningún correo en claro en la BD**, acceso con código; **Fase 2**: lanzar, invitaciones al abrir la ventana, enlace personal, entrevista completa escrita (abstención, P7.1/P8/P9; las opciones marcadas se rechazan), pausa y reanudación, **conversación** (explicación, confirmación, dos repreguntas y revisión), instrucciones a la IA nunca clasificadas, **ningún identificador enviado a la IA**, recordatorios, ampliación, cierre, límite diario y reintentos, proveedor «malicioso» neutralizado; **40 personas sintéticas**; semilla de la entrevista conversada sobre un cuestionario con botones; **cambios 4**: resultados (solo completadas, P8 fuera de base, P7.1 con la decisión del auditor), cola de revisión con la conversación, decisiones y registro, respuestas individuales sin identidad, comentarios disociados, permisos | 100 tests |
 | `apps/worker` | Purga de retención (apagada / activada) | 2 tests |
-| E2E (Playwright) | Superadmin crea entidad de auditoría con coordinador y organización asignada → coordinador crea auditor y lo designa → el superadmin la encuentra con la búsqueda y el filtro por entidad → auditor crea auditoría con máximo, sube muestra con errores, la corrige → `muestra_cargada` con mínimo, máximo y ventana correctos → el coordinador la encuentra con la búsqueda → coordinador solo ve el agregado; selección de entidad; acceso con código; **Fase 2**: el auditor lanza la auditoría, se abre la ventana, una persona entra con su enlace personal en un **móvil**, responde toda la entrevista (con pausa y reanudación) y el auditor ve el avance | 4 tests |
+| E2E (Playwright) | Superadmin crea entidad de auditoría con coordinador y organización asignada → coordinador crea auditor y lo designa → el superadmin la encuentra con la búsqueda y el filtro por entidad → auditor crea auditoría con máximo, sube muestra con errores, la corrige → `muestra_cargada` con mínimo, máximo y ventana correctos → el coordinador la encuentra con la búsqueda → coordinador solo ve el agregado; selección de entidad; acceso con código; **Fase 2**: con la muestra cargada la auditoría queda programada, se abre la ventana, una persona entra con su enlace personal en un **móvil**, responde toda la entrevista **por escrito** (pregunta qué es el Mánager efr y recibe la explicación; pausa y reanudación) y el auditor ve el avance; **cambios 4**: resultados con una respuesta pendiente, el auditor la revisa, los resultados se actualizan y abre las respuestas individuales tras el aviso de confidencialidad | 5 tests |
 | i18n | 436 claves × 5 ficheros (4 idiomas ofrecidos; el catalán se conserva oculto) | OK |
 
 E2E contra el servidor de pruebas:

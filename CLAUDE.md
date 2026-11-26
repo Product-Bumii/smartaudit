@@ -9,7 +9,7 @@
 
 1. **Se diseña todo, se construye por fases.** La arquitectura y el modelo de datos cubren las 4 fases de M1 y dejan previstos los módulos M2 y M3. **Solo implementas la fase que se te indique en el prompt.** No adelantes funcionalidades de fases posteriores; deja interfaces, tipos y `TODO(Fase N)` donde corresponda.
 2. **Al terminar cada fase, te detienes.** Entregas: resumen de lo construido, cómo probarlo, resultado de los tests, decisiones tomadas por defecto y lista de pendientes. No empiezas la fase siguiente sin instrucción explícita.
-3. **IA acotada.** La IA solo formula preguntas con naturalidad, pide una aclaración como máximo y clasifica respuestas. El orden de preguntas, las condiciones, los cálculos, los porcentajes y los permisos son **código determinista** y testeado.
+3. **IA acotada.** La IA solo conversa dentro de cada pregunta (explica con textos aprobados, pide concretar o confirmar, **dos interacciones como máximo**, decisión 91) y clasifica respuestas. El orden de preguntas, las condiciones, los cálculos, los porcentajes y los permisos son **código determinista** y testeado.
 4. **Privacidad desde el día 1.** Solo datos sintéticos en desarrollo. Nunca se captan nombres, documentos de identidad, salario, afiliación sindical, datos de salud ni motivos de baja.
 5. **Configuración, no código.** Cuestionarios, tabla de mínimos, textos de correo y umbrales viven en la base de datos, versionados, y se cambian sin redesplegar.
 6. **Si algo no está definido aquí**, elige la opción más simple coherente con este documento, déjala marcada como `DECISIÓN POR DEFECTO` en el resumen de la fase y sigue.
@@ -287,13 +287,19 @@ Validación: errores por fila (correo inválido, duplicado, campo obligatorio va
 
 ### 5.5 Motor de entrevista (IA acotada)
 
+> Revisado el 25/11/2026 a partir de los comentarios de F+f («entrevista conversada», decisiones 90–93): no se responde marcando opciones y la IA conversa hasta dos veces por pregunta. Los cuestionarios anteriores (con botones) siguen funcionando para las auditorías que los congelaron.
+
 Máquina de estados en servidor (código en `packages/shared`), nunca decidida por la IA:
 1. Determina la siguiente pregunta activa según el cuestionario congelado, las respuestas previas y la configuración de la campaña.
-2. Pide a la IA formular la pregunta con naturalidad en el idioma elegido, **sin cambiar su significado ni sugerir respuestas**. Se muestran además las opciones como botones y el botón «Prefiero no responder».
-3. Si la persona toca un botón, se codifica directamente (confianza 1).
-4. Si escribe texto libre, la IA devuelve una salida estructurada validada con Zod: `{ optionCodes[], confidence (0-1), status: classified | ambiguous | abstained | off_topic, supportingQuote }`.
-5. Si es `ambiguous` u `off_topic` y quedan aclaraciones (máximo 1), la IA formula una repregunta neutral. Si sigue sin clasificarse, se guarda como `pending_review`.
-6. Si la confianza es menor que el umbral (por defecto 0,8, en `settings`), se guarda como `pending_review`.
+2. Muestra el **texto oficial** con una **frase aprobada que propone todas las respuestas posibles** (`answerHint`, p. ej. «¿Diría que siempre, algunas veces o nunca?»). La IA no la reformula. Solo hay un botón: «Prefiero no responder» (`answerMode: 'text'`; en los cuestionarios antiguos, `buttons`, la IA reformula y las opciones son botones con confianza 1).
+3. La persona responde **siempre por escrito**. La IA devuelve una salida estructurada validada con Zod: `{ optionCodes[], confidence (0-1), status: classified | ambiguous | abstained | off_topic | question, supportingQuote }`, viendo la conversación de esa pregunta (sin identificadores).
+4. Si queda alguna de las **2 interacciones** (`maxClarifications`), el código decide el motivo y la IA redacta la respuesta, reaccionando a lo que dijo la persona:
+   - `question`, la persona pregunta qué significa algo: explica **solo con la explicación aprobada** de la pregunta (`explanation`) y vuelve a preguntar;
+   - `confirm`, la confianza está entre 0,5 y el umbral (0,8 por defecto, en `settings`): propone su interpretación y la persona confirma o corrige;
+   - `ambiguous`: recoge lo dicho y pide concretar;
+   - `off_topic`: reconduce a la pregunta.
+5. Sin interacciones restantes, lo que no queda clasificado con confianza suficiente se guarda como `pending_review`.
+6. Toda repregunta pasa por una guarda determinista: nombra todas las opciones o ninguna (salvo la interpretación propuesta), no trae cifras ni enlaces que no estén en los textos aprobados y está completa; si no, se usa el texto por defecto aprobado.
 
 Por cada respuesta se guarda: código de pregunta, texto original, códigos asignados, estado, confianza, cita de apoyo, aclaraciones usadas, modelo y versión del prompt, y revisión humana posterior.
 
@@ -312,11 +318,11 @@ Reglas duras:
 - Por pregunta: n de respuestas, abstenciones y porcentaje por opción. Los porcentajes se calculan **sobre las respuestas válidas** (sin abstenciones ni `pending_review` sin resolver); el informe muestra siempre n y el número de abstenciones.
 - P2 (múltiple): porcentaje de personas que mencionan cada medio; la suma puede pasar de 100 %. Los textos de «Otros» se listan.
 - P7.1: solo sobre quienes respondieron `ALGUNAS_VECES` o `SIEMPRE` en P7.
-- P8: porcentajes sobre `GRAN_AVANCE`, `MODERADO` y `NULO`; `NS_NC` excluido de la base.
+- P8: porcentajes sobre `GRAN_AVANCE`, `MODERADO` y `NULO`; `NS_NC` excluido de la base. La exclusión es configuración del cuestionario (`results.excludeFromBase`).
 - Sección 7.1: número de entrevistas por modalidad (nueva modalidad «Entrevista escrita asistida por IA»), distribución por tramo de edad y sexo.
 - El informe se genera siempre en español, aunque las entrevistas se hayan respondido en otros idiomas (los códigos internos son los mismos).
 
-**Vista del auditor:** tablas agregadas, cola de respuestas dudosas y respuestas individuales ligadas a sus demográficos (nunca al correo). Mostrar aviso de confidencialidad al abrir respuestas individuales y registrar cada acceso. Advertir cuando un grupo demográfico tenga menos de 3 personas, por riesgo de reidentificación.
+**Vista del auditor:** tablas agregadas, cola de respuestas dudosas y respuestas individuales ligadas a sus demográficos (nunca al correo). *(Construido en «cambios 4», bloques 1 y 2, decisiones 94–97: el auditor decide código, abstención o «sin respuesta válida»; las respuestas abiertas, incluida P10, se muestran aparte sin demográficos hasta que haya anonimización.)* Mostrar aviso de confidencialidad al abrir respuestas individuales y registrar cada acceso. Advertir cuando un grupo demográfico tenga menos de 3 personas, por riesgo de reidentificación.
 
 **Listados:** las listas de organizaciones (superadmins, coordinador y auditor) y de auditorías se buscan, filtran, ordenan y paginan en el servidor (cientos de organizaciones, decenas por coordinador, miles de auditorías): búsqueda sin mayúsculas ni acentos, filtros por entidad de auditoría y estado, auditorías abiertas/cerradas o por estado, 25 filas por página.
 
@@ -364,7 +370,7 @@ Ciclos semanales con demo los viernes. Cada fase termina con sus criterios de ac
 
 ### Fase 2 · Invitaciones y motor conversacional (semanas 3–4)
 
-**Construir:** envío de invitaciones (al abrir la ventana; desde el grupo de cambios 3 sin paso manual), enlace único y landing con código, aviso previo y selección de idioma, chat web adaptado a móvil (texto libre + botones + «Prefiero no responder»), máquina de estados de la entrevista, `LlmProvider` con adaptador mock y uno real, clasificación con confianza y una aclaración como máximo, pausa y reanudación, recordatorios programados, transiciones automáticas de estado (`en_curso` al abrir la ventana, `finalizada` al cerrarla), panel de avance (auditor: estado por persona; coordinador: % agregado), alertas de mínimo, ampliación de ventana, suite de unas 40 personas sintéticas para pruebas (incluye perfiles evasivos, fuera de tema e intentos de manipular a la IA).
+**Construir:** envío de invitaciones (al abrir la ventana; desde el grupo de cambios 3 sin paso manual), enlace único y landing con código, aviso previo y selección de idioma, chat web adaptado a móvil (desde la entrevista conversada, solo texto libre + «Prefiero no responder»), máquina de estados de la entrevista, `LlmProvider` con adaptador mock y uno real, clasificación con confianza y hasta dos interacciones por pregunta (decisión 91), pausa y reanudación, recordatorios programados, transiciones automáticas de estado (`en_curso` al abrir la ventana, `finalizada` al cerrarla), panel de avance (auditor: estado por persona; coordinador: % agregado), alertas de mínimo, ampliación de ventana, suite de unas 40 personas sintéticas para pruebas (incluye perfiles evasivos, fuera de tema e intentos de manipular a la IA).
 
 **Criterios de aceptación:** 0 preguntas inventadas o respuestas sugeridas en las 40 pruebas adversariales; la pregunta P7.1, P8 y P9 solo aparecen cuando corresponde; reanudar tras desconexión no repite ni pierde respuestas; entrevista completa en móvil; ningún identificador enviado al proveedor de IA (test que inspecciona las llamadas).
 

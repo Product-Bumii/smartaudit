@@ -59,8 +59,22 @@ export const DEFAULT_NORMS = ['1000-1', '1000-2'] as const;
 
 export const QUESTION_TYPES = ['single', 'multi', 'yes_no', 'free_text'] as const;
 export type QuestionType = (typeof QUESTION_TYPES)[number];
+/**
+ * How a closed question is answered (decision 90): `buttons` = options as buttons or own words (questionnaires
+ * up to change group 3); `text` = conversational interview, always in own words (only «Prefiero no responder»
+ * remains a button).
+ */
+export const ANSWER_MODES = ['buttons', 'text'] as const;
+export type AnswerMode = (typeof ANSWER_MODES)[number];
 
 export const ABSTENTION_CODE = 'ABSTENCION';
+
+/**
+ * What the auditor decides on an answer sent to review (cambios 4, decision 94): the option code(s), an
+ * abstention, or «sin respuesta válida» (excluded from the percentages, like an abstention, but counted apart).
+ */
+export const REVIEW_DECISIONS = ['codes', 'abstention', 'no_valid_answer'] as const;
+export type ReviewDecision = (typeof REVIEW_DECISIONS)[number];
 
 /**
  * `pending` = loaded in the sample but not yet invited (Phase 1).

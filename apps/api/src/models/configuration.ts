@@ -38,6 +38,8 @@ const questionnaireSchema = new Schema(
     ...versioned,
     module: { type: String, enum: MODULES, required: true },
     title: { type: String, default: null },
+    /** Revision of the seed file it includes (`revision` in seed/data); copies keep it. 2 = conversational. */
+    seedRevision: { type: Number, default: 1 },
     languages: [
       {
         _id: false,

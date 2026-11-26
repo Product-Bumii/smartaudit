@@ -4,7 +4,7 @@
  */
 import { z } from 'zod';
 import { isValidTimeZone } from './business-days';
-import { AUDIT_TYPES, AVAILABLE_LANGUAGES, CAMPAIGN_STATUSES, ENTITY_STATUSES, LANGUAGES, QUESTION_TYPES, ROLES } from './enums';
+import { ANSWER_MODES, AUDIT_TYPES, REVIEW_DECISIONS, AVAILABLE_LANGUAGES, CAMPAIGN_STATUSES, ENTITY_STATUSES, LANGUAGES, QUESTION_TYPES, ROLES } from './enums';
 import type { Activation } from './questionnaire';
 
 export const objectIdSchema = z.string().regex(/^[a-f0-9]{24}$/i, 'INVALID_ID');
@@ -103,6 +103,10 @@ export const questionSchema = z.object({
   type: z.enum(QUESTION_TYPES),
   text: localizedTextSchema,
   help: localizedTextSchema.nullable().optional(),
+  answerMode: z.enum(ANSWER_MODES).optional(),
+  answerHint: localizedTextSchema.nullable().optional(),
+  explanation: localizedTextSchema.nullable().optional(),
+  results: z.object({ excludeFromBase: z.array(z.string().regex(/^[A-Z0-9_]{1,40}$/)).max(20).optional() }).nullable().optional(),
   options: z.array(
     z.object({
       code: z.string().regex(/^[A-Z0-9_]{1,40}$/),
@@ -173,6 +177,15 @@ export const interviewAnswerSchema = z.discriminatedUnion('kind', [
 export type InterviewAnswerInput = z.infer<typeof interviewAnswerSchema>;
 /** Window extension: new closing date (local). */
 export const windowExtensionSchema = z.object({ closeDate: isoDateSchema, reason: z.string().trim().max(500).optional() });
+
+/** The auditor's decision on an answer sent to review (cambios 4). */
+export const answerReviewSchema = z.object({
+  decision: z.enum(REVIEW_DECISIONS),
+  optionCodes: z.array(z.string().regex(/^[A-Z0-9_]{1,40}$/)).max(20).default([]),
+  note: z.string().trim().max(1000).optional(),
+});
+export type AnswerReviewInput = z.infer<typeof answerReviewSchema>;
+export const reviewListQuerySchema = z.object({ state: z.enum(['pending', 'reviewed', 'all']).default('pending') });
 
 export const sampleUploadQuerySchema = z.object({ mode: z.enum(['replace', 'append']).default('replace') });
 export const fileFormatQuerySchema = z.object({ format: z.enum(['xlsx', 'csv']).default('xlsx') });

@@ -1,8 +1,9 @@
 {
   "module": "M1",
   "version": 1,
+  "revision": 3,
   "title": "Cuestionario Oficial M1",
-  "source": "Hoja «Cuestionario Oficial M1» de SmartAudit_efr_M1_Plan_y_Preguntas (F+f) (2) 4 nov.xlsx · P11–P15 (Bienestar): tabla facilitada por F+f el 25/11/2026",
+  "source": "Hoja «Cuestionario Oficial M1» de SmartAudit_efr_M1_Plan_y_Preguntas (F+f) (2) 4 nov.xlsx · P11–P15 (Bienestar): tabla facilitada por F+f el 25/11/2026 · Entrevista conversada (decisiones 90–92, 25/11/2026): frases de respuesta, explicaciones y opción P2 «No he recibido información» redactadas por Bumii, pendientes de aprobación de F+f · Cálculo de resultados (cambios 4, decisión 95): P8 excluye «No sabe / No contesta» de la base",
   "languages": [
     {
       "lang": "es",
@@ -37,6 +38,21 @@
         "ca": "Coneix o ha sentit parlar de l'existència del Model efr (Empresa Familiarment Responsable) a l'organització?",
         "pt": "Conhece ou já ouviu falar da existência do Modelo efr (Empresa Familiarmente Responsável) na organização?",
         "fr": "Connaissez-vous ou avez-vous entendu parler de l'existence du Modèle efr (Entreprise Familialement Responsable) dans l'organisation ?"
+      },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "Puede responder que sí, que no o que no lo sabe.",
+        "en": "You can answer yes, no, or that you don't know.",
+        "pt": "Pode responder que sim, que não ou que não sabe.",
+        "fr": "Vous pouvez répondre oui, non, ou que vous ne savez pas.",
+        "ca": "Pot respondre que sí, que no o que no ho sap."
+      },
+      "explanation": {
+        "es": "El Modelo efr (Empresa Familiarmente Responsable) es un modelo de gestión promovido por la Fundación Másfamilia con el que las organizaciones impulsan la conciliación de la vida personal, familiar y laboral. Las organizaciones que lo aplican y superan una auditoría obtienen el certificado efr.",
+        "en": "The efr Model (Family Responsible Company) is a management model promoted by the Másfamilia Foundation through which organizations foster the balance between personal, family and working life. Organizations that apply it and pass an audit obtain the efr certificate.",
+        "pt": "O Modelo efr (Empresa Familiarmente Responsável) é um modelo de gestão promovido pela Fundação Másfamilia, com o qual as organizações promovem a conciliação entre a vida pessoal, familiar e profissional. As organizações que o aplicam e são aprovadas numa auditoria obtêm o certificado efr.",
+        "fr": "Le Modèle efr (Entreprise Familialement Responsable) est un modèle de gestion promu par la Fondation Másfamilia, grâce auquel les organisations favorisent l’équilibre entre vie personnelle, familiale et professionnelle. Les organisations qui l’appliquent et réussissent un audit obtiennent le certificat efr.",
+        "ca": "El Model efr (Empresa Familiarment Responsable) és un model de gestió promogut per la Fundació Másfamilia amb el qual les organitzacions impulsen la conciliació de la vida personal, familiar i laboral. Les organitzacions que l'apliquen i superen una auditoria obtenen el certificat efr."
       },
       "options": [
         {
@@ -75,7 +91,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P1"
     },
     {
@@ -89,6 +105,21 @@
         "ca": "A través de quin mitjà de comunicació se'n va assabentar o rep informació sobre el Model efr?",
         "pt": "Através de que meio de comunicação tomou conhecimento ou recebe informação sobre o Modelo efr?",
         "fr": "Par quel moyen de communication avez-vous appris l'existence du Modèle efr ou recevez-vous des informations à son sujet ?"
+      },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "Por ejemplo: intranet, correo electrónico, reuniones, boca a boca u otro medio (díganos cuál). Puede mencionar varios, o decirnos que no ha recibido información.",
+        "en": "For example: intranet, email, meetings, word of mouth or another channel (tell us which). You can mention several, or tell us that you have not received any information.",
+        "pt": "Por exemplo: intranet, e-mail, reuniões, boca a boca ou outro meio (diga-nos qual). Pode mencionar vários, ou dizer-nos que não recebeu informação.",
+        "fr": "Par exemple : intranet, e-mail, réunions, bouche-à-oreille ou un autre moyen (dites-nous lequel). Vous pouvez en citer plusieurs, ou nous dire que vous n'avez reçu aucune information.",
+        "ca": "Per exemple: intranet, correu electrònic, reunions, boca-orella o un altre mitjà (digui'ns quin). Pot esmentar-ne diversos, o dir-nos que no ha rebut informació."
+      },
+      "explanation": {
+        "es": "Se refiere a los medios por los que le ha llegado información sobre el Modelo efr en su organización, por ejemplo la intranet, el correo electrónico, reuniones o comentarios de compañeros. Si no ha recibido ninguna información, también es una respuesta válida.",
+        "en": "It refers to the channels through which information about the efr Model has reached you in your organization, for example the intranet, email, meetings or colleagues. If you have not received any information, that is also a valid answer.",
+        "pt": "Refere-se aos meios pelos quais lhe chegou informação sobre o Modelo efr na sua organização, por exemplo a intranet, o e-mail, reuniões ou comentários de colegas. Se não recebeu nenhuma informação, essa também é uma resposta válida.",
+        "fr": "Il s’agit des moyens par lesquels des informations sur le Modèle efr vous sont parvenues dans votre organisation, par exemple l’intranet, l’e-mail, des réunions ou des collègues. Si vous n’avez reçu aucune information, c’est aussi une réponse valable.",
+        "ca": "Es refereix als mitjans pels quals li ha arribat informació sobre el Model efr a la seva organització, per exemple la intranet, el correu electrònic, reunions o comentaris de companys. Si no ha rebut cap informació, també és una resposta vàlida."
       },
       "options": [
         {
@@ -150,6 +181,16 @@
             },
             "required": true
           }
+        },
+        {
+          "code": "NINGUNO",
+          "label": {
+            "es": "No he recibido información",
+            "en": "I have not received any information",
+            "ca": "No he rebut informació",
+            "pt": "Não recebi informação",
+            "fr": "Je n'ai reçu aucune information"
+          }
         }
       ],
       "activation": {
@@ -157,7 +198,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P2"
     },
     {
@@ -172,6 +213,21 @@
         "pt": "Sabe quem é o Gestor efr da sua entidade?",
         "fr": "Savez-vous qui est le Manager efr de votre entité ?"
       },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "Puede responder que sí, que no o que no lo sabe.",
+        "en": "You can answer yes, no, or that you don't know.",
+        "pt": "Pode responder que sim, que não ou que não sabe.",
+        "fr": "Vous pouvez répondre oui, non, ou que vous ne savez pas.",
+        "ca": "Pot respondre que sí, que no o que no ho sap."
+      },
+      "explanation": {
+        "es": "El Mánager efr es la persona de su organización que coordina el Modelo efr: impulsa las medidas de conciliación y atiende las dudas y sugerencias de la plantilla sobre ellas.",
+        "en": "The efr Manager is the person in your organization who coordinates the efr Model: they promote the work-life balance measures and deal with staff questions and suggestions about them.",
+        "pt": "O/A Gestor/a efr é a pessoa da sua organização que coordena o Modelo efr: promove as medidas de conciliação e responde às dúvidas e sugestões dos trabalhadores sobre elas.",
+        "fr": "Le/la Manager efr est la personne de votre organisation qui coordonne le Modèle efr : il/elle promeut les mesures de conciliation et répond aux questions et suggestions du personnel à leur sujet.",
+        "ca": "El Mànager efr és la persona de la seva organització que coordina el Model efr: impulsa les mesures de conciliació i atén els dubtes i suggeriments de la plantilla sobre aquestes mesures."
+      },
       "options": [
         {
           "code": "SI",
@@ -209,7 +265,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P3.1"
     },
     {
@@ -224,6 +280,21 @@
         "pt": "Conhece ou sabe que existe um canal de comunicação direto com a Fundación Másfamilia?",
         "fr": "Connaissez-vous ou savez-vous qu'il existe un canal de communication direct avec la Fundación Másfamilia ?"
       },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "Puede responder que sí, que no o que no lo sabe.",
+        "en": "You can answer yes, no, or that you don't know.",
+        "pt": "Pode responder que sim, que não ou que não sabe.",
+        "fr": "Vous pouvez répondre oui, non, ou que vous ne savez pas.",
+        "ca": "Pot respondre que sí, que no o que no ho sap."
+      },
+      "explanation": {
+        "es": "La Fundación Másfamilia, que promueve el Modelo efr, ofrece a las personas que trabajan en organizaciones efr un canal para comunicarse directamente con ella, por ejemplo para hacer consultas o sugerencias sobre la conciliación.",
+        "en": "The Másfamilia Foundation, which promotes the efr Model, offers people working in efr organizations a channel to contact it directly, for example to ask questions or make suggestions about work-life balance.",
+        "pt": "A Fundação Másfamilia, que promove o Modelo efr, disponibiliza às pessoas que trabalham em organizações efr um canal para comunicarem diretamente com ela, por exemplo para colocar dúvidas ou fazer sugestões sobre a conciliação.",
+        "fr": "La Fondation Másfamilia, qui promeut le Modèle efr, met à la disposition des personnes qui travaillent dans des organisations efr un canal pour la contacter directement, par exemple pour poser des questions ou faire des suggestions sur la conciliation.",
+        "ca": "La Fundació Másfamilia, que promou el Model efr, ofereix a les persones que treballen en organitzacions efr un canal per comunicar-se directament amb ella, per exemple per fer consultes o suggeriments sobre la conciliació."
+      },
       "options": [
         {
           "code": "SI",
@@ -261,7 +332,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P3.2"
     },
     {
@@ -276,6 +347,21 @@
         "pt": "Conhece o catálogo ou as medidas de conciliação efr que a sua entidade oferece?",
         "fr": "Connaissez-vous le catalogue ou les mesures de conciliation efr proposées par votre entité ?"
       },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "Puede responder que sí, que no o que no lo sabe.",
+        "en": "You can answer yes, no, or that you don't know.",
+        "pt": "Pode responder que sim, que não ou que não sabe.",
+        "fr": "Vous pouvez répondre oui, non, ou que vous ne savez pas.",
+        "ca": "Pot respondre que sí, que no o que no ho sap."
+      },
+      "explanation": {
+        "es": "Son las medidas que su organización pone a disposición de la plantilla para facilitar la conciliación de la vida personal, familiar y laboral. Suelen estar recogidas en un catálogo o documento de medidas efr.",
+        "en": "These are the measures your organization makes available to staff to make it easier to balance personal, family and working life. They are usually collected in a catalogue or document of efr measures.",
+        "pt": "São as medidas que a sua organização disponibiliza aos trabalhadores para facilitar a conciliação entre a vida pessoal, familiar e profissional. Costumam estar reunidas num catálogo ou documento de medidas efr.",
+        "fr": "Ce sont les mesures que votre organisation met à la disposition du personnel pour faciliter l’équilibre entre vie personnelle, familiale et professionnelle. Elles sont généralement réunies dans un catalogue ou un document de mesures efr.",
+        "ca": "Són les mesures que la seva organització posa a disposició de la plantilla per facilitar la conciliació de la vida personal, familiar i laboral. Solen estar recollides en un catàleg o document de mesures efr."
+      },
       "options": [
         {
           "code": "SI",
@@ -313,7 +399,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P3.3"
     },
     {
@@ -327,6 +413,21 @@
         "ca": "Com valora la conciliació a la seva entitat en comparació amb el que observa en altres empreses del seu entorn?",
         "pt": "Como avalia a conciliação na sua entidade em comparação com o que observa noutras empresas do seu meio?",
         "fr": "Comment évaluez-vous la conciliation dans votre entité par rapport à ce que vous observez dans d'autres entreprises de votre environnement ?"
+      },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "¿Diría que está por encima, en la media o por debajo? También puede decirnos que no lo sabe.",
+        "en": "Would you say it is above, about average or below? You can also tell us that you don't know.",
+        "pt": "Diria que está acima, na média ou abaixo? Também pode dizer-nos que não sabe.",
+        "fr": "Diriez-vous que c’est au-dessus, dans la moyenne ou en dessous ? Vous pouvez aussi nous dire que vous ne savez pas.",
+        "ca": "Diria que està per sobre, en la mitjana o per sota? També ens pot dir que no ho sap."
+      },
+      "explanation": {
+        "es": "Se trata de comparar cómo es la conciliación en su organización con lo que usted observa o conoce de otras empresas de su entorno.",
+        "en": "The aim is to compare work-life balance in your organization with what you see or know of other companies around you.",
+        "pt": "Trata-se de comparar a conciliação na sua organização com o que observa ou conhece de outras empresas à sua volta.",
+        "fr": "Il s’agit de comparer la conciliation dans votre organisation avec ce que vous observez ou connaissez d’autres entreprises de votre entourage.",
+        "ca": "Es tracta de comparar com és la conciliació a la seva organització amb el que vostè observa o coneix d'altres empreses del seu entorn."
       },
       "options": [
         {
@@ -375,7 +476,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P4"
     },
     {
@@ -389,6 +490,21 @@
         "ca": "El seu superior directe/a dona suport a la conciliació i a l'ús de les mesures efr?",
         "pt": "O seu superior direto apoia a conciliação e a utilização das medidas efr?",
         "fr": "Votre supérieur(e) direct(e) soutient-il/elle la conciliation et l'utilisation des mesures efr ?"
+      },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "¿Diría que siempre, algunas veces o nunca?",
+        "en": "Would you say always, sometimes or never?",
+        "pt": "Diria que sempre, algumas vezes ou nunca?",
+        "fr": "Diriez-vous toujours, parfois ou jamais ?",
+        "ca": "Diria que sempre, algunes vegades o mai?"
+      },
+      "explanation": {
+        "es": "Su superior directo/a es la persona de la que depende directamente en su trabajo. La pregunta es si facilita y respalda que las personas de su equipo concilien y usen las medidas efr.",
+        "en": "Your direct supervisor is the person you report to directly at work. The question is whether they make it easier for, and support, the people on their team to balance work and personal life and use the efr measures.",
+        "pt": "O/A seu/sua superior direto/a é a pessoa de quem depende diretamente no trabalho. A pergunta é se facilita e apoia que as pessoas da equipa conciliem e usem as medidas efr.",
+        "fr": "Votre supérieur(e) direct(e) est la personne dont vous dépendez directement dans votre travail. La question est de savoir s’il/elle facilite et soutient la conciliation des personnes de son équipe et l’usage des mesures efr.",
+        "ca": "El seu superior directe/a és la persona de qui depèn directament a la feina. La pregunta és si facilita i dona suport que les persones del seu equip concilien i facin servir les mesures efr."
       },
       "options": [
         {
@@ -427,7 +543,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P5"
     },
     {
@@ -441,6 +557,21 @@
         "ca": "Quina és l'actitud de l'empresa respecte a les persones que fan ús actiu de les mesures de conciliació?",
         "pt": "Qual é a atitude da empresa em relação às pessoas que utilizam ativamente as medidas de conciliação?",
         "fr": "Quelle est l'attitude de l'entreprise envers les personnes qui utilisent activement les mesures de conciliation ?"
+      },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "¿Diría que es positiva, neutra o negativa?",
+        "en": "Would you say it is positive, neutral or negative?",
+        "pt": "Diria que é positiva, neutra ou negativa?",
+        "fr": "Diriez-vous qu’elle est positive, neutre ou négative ?",
+        "ca": "Diria que és positiva, neutra o negativa?"
+      },
+      "explanation": {
+        "es": "Se refiere a cómo ve y trata la empresa a las personas que usan las medidas de conciliación: si lo valora bien, le es indiferente o lo ve de forma desfavorable.",
+        "en": "It refers to how the company views and treats people who use the work-life balance measures: whether it values it, is indifferent to it or sees it unfavourably.",
+        "pt": "Refere-se a como a empresa vê e trata as pessoas que usam as medidas de conciliação: se o valoriza, se lhe é indiferente ou se o vê de forma desfavorável.",
+        "fr": "Il s’agit de la façon dont l’entreprise perçoit et traite les personnes qui utilisent les mesures de conciliation : si elle l’apprécie, y est indifférente ou le voit d’un mauvais œil.",
+        "ca": "Es refereix a com veu i tracta l'empresa les persones que fan servir les mesures de conciliació: si ho valora bé, li és indiferent o ho veu de manera desfavorable."
       },
       "options": [
         {
@@ -479,7 +610,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P6"
     },
     {
@@ -495,6 +626,21 @@
         "fr": "La durée de travail est-elle dépassée de manière répétée ?"
       },
       "help": {
+        "es": "«Excede» significa más del 10 % de la duración de la jornada; «reiterada», en más del 10 % de las jornadas.",
+        "en": "\"Exceeded\" means more than 10% of the length of the working day; \"repeatedly\" means on more than 10% of working days.",
+        "ca": "«Excedeix» vol dir més del 10 % de la durada de la jornada; «reiterada», en més del 10 % de les jornades.",
+        "pt": "«Exceder» significa mais de 10 % da duração do horário de trabalho; «reiterada», em mais de 10 % dos dias de trabalho.",
+        "fr": "« Dépasser » signifie plus de 10 % de la durée de la journée de travail ; « de manière répétée », plus de 10 % des journées."
+      },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "¿Diría que nunca, algunas veces o siempre?",
+        "en": "Would you say never, sometimes or always?",
+        "pt": "Diria que nunca, algumas vezes ou sempre?",
+        "fr": "Diriez-vous jamais, parfois ou toujours ?",
+        "ca": "Diria que mai, algunes vegades o sempre?"
+      },
+      "explanation": {
         "es": "«Excede» significa más del 10 % de la duración de la jornada; «reiterada», en más del 10 % de las jornadas.",
         "en": "\"Exceeded\" means more than 10% of the length of the working day; \"repeatedly\" means on more than 10% of working days.",
         "ca": "«Excedeix» vol dir més del 10 % de la durada de la jornada; «reiterada», en més del 10 % de les jornades.",
@@ -538,7 +684,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P7"
     },
     {
@@ -552,6 +698,21 @@
         "ca": "En cas de fer excés de jornada, se sent compensat/ada per aquest excés en temps lliure o econòmicament?",
         "pt": "Caso faça horas para além do horário, sente-se compensado/a por esse excesso em tempo livre ou financeiramente?",
         "fr": "Si vous dépassez votre durée de travail, vous sentez-vous compensé(e) pour ce dépassement en temps libre ou financièrement ?"
+      },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "Puede decirnos si se le compensa con tiempo libre, económicamente, de ambas formas, o si no se le compensa.",
+        "en": "You can tell us whether you are compensated with time off, financially, in both ways, or not at all.",
+        "pt": "Pode dizer-nos se é compensado/a com tempo livre, financeiramente, de ambas as formas, ou se não é compensado/a.",
+        "fr": "Vous pouvez nous dire si vous êtes compensé(e) en temps libre, financièrement, des deux façons, ou pas du tout.",
+        "ca": "Ens pot dir si se li compensa amb temps lliure, econòmicament, de totes dues maneres, o si no se li compensa."
+      },
+      "explanation": {
+        "es": "Se refiere a si las horas que trabaja de más se le compensan, ya sea con tiempo libre, con dinero o de ambas formas.",
+        "en": "It refers to whether the extra hours you work are compensated, either with time off, with money or both.",
+        "pt": "Refere-se a se as horas que trabalha a mais lhe são compensadas, seja com tempo livre, com dinheiro ou de ambas as formas.",
+        "fr": "Il s’agit de savoir si les heures que vous faites en plus vous sont compensées, en temps libre, en argent ou les deux.",
+        "ca": "Es refereix a si les hores que treballa de més se li compensen, ja sigui amb temps lliure, amb diners o de totes dues maneres."
       },
       "options": [
         {
@@ -645,7 +806,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P7.1"
     },
     {
@@ -659,6 +820,26 @@
         "ca": "En els darrers anys s'han millorat les condicions en matèria de conciliació a la seva empresa?",
         "pt": "Nos últimos anos, melhoraram as condições em matéria de conciliação na sua empresa?",
         "fr": "Ces dernières années, les conditions en matière de conciliation se sont-elles améliorées dans votre entreprise ?"
+      },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "¿Diría que ha habido un gran avance, un avance moderado o ningún avance? También puede decirnos que no lo sabe.",
+        "en": "Would you say there has been great progress, moderate progress or no progress? You can also tell us that you don't know.",
+        "pt": "Diria que houve um grande avanço, um avanço moderado ou nenhum avanço? Também pode dizer-nos que não sabe.",
+        "fr": "Diriez-vous qu’il y a eu une grande avancée, une avancée modérée ou aucune avancée ? Vous pouvez aussi nous dire que vous ne savez pas.",
+        "ca": "Diria que hi ha hagut un gran avenç, un avenç moderat o cap avenç? També ens pot dir que no ho sap."
+      },
+      "explanation": {
+        "es": "Se pregunta si en los últimos años, por ejemplo desde la certificación anterior, ha notado mejoras en la conciliación en su empresa, y en qué medida.",
+        "en": "The question is whether in recent years, for example since the previous certification, you have noticed improvements in work-life balance in your company, and to what extent.",
+        "pt": "Pergunta-se se nos últimos anos, por exemplo desde a certificação anterior, notou melhorias na conciliação na sua empresa, e em que medida.",
+        "fr": "La question est de savoir si, ces dernières années, par exemple depuis la certification précédente, vous avez remarqué des améliorations de la conciliation dans votre entreprise, et dans quelle mesure.",
+        "ca": "Es pregunta si en els darrers anys, per exemple des de la certificació anterior, ha notat millores en la conciliació a la seva empresa, i en quina mesura."
+      },
+      "results": {
+        "excludeFromBase": [
+          "NS_NC"
+        ]
       },
       "options": [
         {
@@ -711,7 +892,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P8"
     },
     {
@@ -725,6 +906,21 @@
         "ca": "Creu que la seva empresa és excel·lent en conciliació?",
         "pt": "Considera que a sua empresa é excelente em conciliação?",
         "fr": "Pensez-vous que votre entreprise est excellente en matière de conciliation ?"
+      },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "Puede responder que sí o que no.",
+        "en": "You can answer yes or no.",
+        "pt": "Pode responder que sim ou que não.",
+        "fr": "Vous pouvez répondre oui ou non.",
+        "ca": "Pot respondre que sí o que no."
+      },
+      "explanation": {
+        "es": "Se pregunta su opinión personal: si cree que su empresa destaca de forma sobresaliente en materia de conciliación.",
+        "en": "We are asking for your personal opinion: whether you think your company stands out as outstanding in work-life balance.",
+        "pt": "Pergunta-se a sua opinião pessoal: se acha que a sua empresa se destaca de forma excecional em matéria de conciliação.",
+        "fr": "On vous demande votre avis personnel : pensez-vous que votre entreprise se distingue de manière remarquable en matière de conciliation ?",
+        "ca": "Es pregunta la seva opinió personal: si creu que la seva empresa destaca de manera excel·lent en matèria de conciliació."
       },
       "options": [
         {
@@ -757,7 +953,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P9"
     },
     {
@@ -772,6 +968,21 @@
         "pt": "A saúde e o bem-estar das pessoas são um valor importante nesta organização?",
         "fr": "La santé et le bien-être des personnes sont-ils une valeur importante dans cette organisation ?"
       },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "¿Está de acuerdo, en desacuerdo, o ni de acuerdo ni en desacuerdo?",
+        "en": "Do you agree, disagree, or neither agree nor disagree?",
+        "pt": "Concorda, discorda, ou nem concorda nem discorda?",
+        "fr": "Êtes-vous d'accord, pas d'accord, ou ni d'accord ni pas d'accord ?",
+        "ca": "Hi està d'acord, en desacord, o ni d'acord ni en desacord?"
+      },
+      "explanation": {
+        "es": "Se pregunta si en esta organización se da importancia a la salud y al bienestar de las personas que trabajan en ella.",
+        "en": "The question is whether this organization gives importance to the health and well-being of the people who work in it.",
+        "pt": "Pergunta-se se nesta organização se dá importância à saúde e ao bem-estar das pessoas que nela trabalham.",
+        "fr": "La question est de savoir si cette organisation accorde de l’importance à la santé et au bien-être des personnes qui y travaillent.",
+        "ca": "Es pregunta si en aquesta organització es dona importància a la salut i al benestar de les persones que hi treballen."
+      },
       "options": [
         {
           "code": "EN_DESACUERDO",
@@ -813,7 +1024,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P11"
     },
     {
@@ -828,6 +1039,21 @@
         "pt": "Os líderes atuam de forma coerente com os valores de bem-estar que a organização promove?",
         "fr": "Les responsables agissent-ils de manière cohérente avec les valeurs de bien-être que promeut l'organisation ?"
       },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "¿Está de acuerdo, en desacuerdo, o ni de acuerdo ni en desacuerdo?",
+        "en": "Do you agree, disagree, or neither agree nor disagree?",
+        "pt": "Concorda, discorda, ou nem concorda nem discorda?",
+        "fr": "Êtes-vous d'accord, pas d'accord, ou ni d'accord ni pas d'accord ?",
+        "ca": "Hi està d'acord, en desacord, o ni d'acord ni en desacord?"
+      },
+      "explanation": {
+        "es": "Se refiere a si las personas que dirigen la organización actúan de acuerdo con los valores de bienestar que la propia organización promueve.",
+        "en": "It refers to whether the people who lead the organization act in line with the well-being values the organization itself promotes.",
+        "pt": "Refere-se a se as pessoas que dirigem a organização agem de acordo com os valores de bem-estar que a própria organização promove.",
+        "fr": "Il s’agit de savoir si les personnes qui dirigent l’organisation agissent conformément aux valeurs de bien-être que l’organisation elle-même promeut.",
+        "ca": "Es refereix a si les persones que dirigeixen l'organització actuen d'acord amb els valors de benestar que la mateixa organització promou."
+      },
       "options": [
         {
           "code": "EN_DESACUERDO",
@@ -869,7 +1095,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P12"
     },
     {
@@ -884,6 +1110,21 @@
         "pt": "Sinto que o meu bem-estar é importante para o meu responsável direto?",
         "fr": "Est-ce que je sens que mon bien-être compte pour mon responsable direct ?"
       },
+      "answerMode": "text",
+      "answerHint": {
+        "es": "¿Está de acuerdo, en desacuerdo, o ni de acuerdo ni en desacuerdo?",
+        "en": "Do you agree, disagree, or neither agree nor disagree?",
+        "pt": "Concorda, discorda, ou nem concorda nem discorda?",
+        "fr": "Êtes-vous d'accord, pas d'accord, ou ni d'accord ni pas d'accord ?",
+        "ca": "Hi està d'acord, en desacord, o ni d'acord ni en desacord?"
+      },
+      "explanation": {
+        "es": "Se refiere a si su responsable directo/a muestra interés por su bienestar.",
+        "en": "It refers to whether your direct manager shows interest in your well-being.",
+        "pt": "Refere-se a se o/a seu/sua responsável direto/a mostra interesse pelo seu bem-estar.",
+        "fr": "Il s’agit de savoir si votre responsable direct(e) s’intéresse à votre bien-être.",
+        "ca": "Es refereix a si el seu responsable directe/a mostra interès pel seu benestar."
+      },
       "options": [
         {
           "code": "EN_DESACUERDO",
@@ -925,7 +1166,7 @@
       },
       "mandatory": true,
       "allowAbstain": true,
-      "maxClarifications": 1,
+      "maxClarifications": 2,
       "reportMapping": "7.2.P13"
     },
     {

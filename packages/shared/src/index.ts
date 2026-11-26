@@ -16,3 +16,4 @@ export * from './participant';
 export * from './search';
 export * from './interview';
 export * from './schedule';
+export * from './results';

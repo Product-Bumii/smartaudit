@@ -73,6 +73,7 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
       status: 'published',
       publishedAt: new Date(),
       notes: questionnaire.source,
+      seedRevision: questionnaire.revision,
       languages: questionnaire.languages.map((l) => ({ ...l, approvedAt: l.status === 'approved' ? new Date() : null })),
       questions: questionnaire.questions,
     });
@@ -121,10 +122,21 @@ export async function runSeed(crypto: FieldCrypto, log: (m: string) => void = co
 }
 
 /**
- * Existing databases: if the latest published M1 questionnaire lacks languages (e.g. pt, fr) or questions
- * (e.g. P11–P15 Bienestar, change group 3) present in the seed file, publish a NEW version with them merged by
- * question/option code; new languages are pending approval. Published versions are never edited; campaigns
- * keep their own snapshot.
+ * Question fields taken from the seed file when its revision is newer than the published questionnaire:
+ * revision 2 = conversational interview (decisions 90–92); revision 3 = results base (P8, decision 95).
+ */
+const REVISED_FIELDS = ['answerMode', 'answerHint', 'explanation', 'maxClarifications', 'results'] as const;
+const REVISION_NOTES: Record<number, string> = { 2: 'entrevista conversada', 3: 'cálculo de resultados' };
+
+/**
+ * Existing databases: publish a NEW version of the latest published M1 questionnaire when the seed file brings
+ * - languages it lacks (e.g. pt, fr; pending approval),
+ * - questions it lacks (e.g. P11–P15 Bienestar, change group 3),
+ * - a newer seed revision (2 = conversational interview: answer mode, answer hints, explanations, 2 follow-ups
+ *   and option P2 «No he recibido información»; 3 = results base of P8; texts and labels already published are
+ *   kept).
+ * Everything is merged by question/option code. Published versions are never edited; campaigns keep their own
+ * snapshot. Nothing is done while a draft exists.
  */
 async function syncQuestionnaireWithSeed(log: (m: string) => void): Promise<void> {
   const latest = await Questionnaire.findOne({ module: 'M1', status: 'published' }).sort({ version: -1 }).lean();
@@ -133,10 +145,20 @@ async function syncQuestionnaireWithSeed(log: (m: string) => void): Promise<void
   const missing = (questionnaire.languages as QuestionnaireLanguage[]).map((l) => l.lang).filter((l) => !present.has(l));
   const presentCodes = new Set((latest.questions as Question[]).map((q) => q.code));
   const newQuestions = (questionnaire.questions as Question[]).filter((q) => !presentCodes.has(q.code));
-  if (missing.length === 0 && newQuestions.length === 0) return;
-  const what = [missing.length ? `languages ${missing.join(', ')}` : '', newQuestions.length ? `questions ${newQuestions.map((q) => q.code).join(', ')}` : ''].filter(Boolean).join(' and ');
+  const revised = (latest.seedRevision ?? 1) < questionnaire.revision;
+  if (missing.length === 0 && newQuestions.length === 0 && !revised) return;
+  const changes = [
+    missing.length ? `idiomas añadidos: ${missing.join(', ')}` : '',
+    newQuestions.length ? `preguntas añadidas: ${newQuestions.map((q) => q.code).join(', ')}` : '',
+    revised
+      ? `revisión ${questionnaire.revision} de la semilla (${Object.entries(REVISION_NOTES)
+          .filter(([r]) => Number(r) > (latest.seedRevision ?? 1) && Number(r) <= questionnaire.revision)
+          .map(([, note]) => note)
+          .join(', ')})`
+      : '',
+  ].filter(Boolean);
   if (await Questionnaire.exists({ module: 'M1', status: 'draft' })) {
-    log(`questionnaire: ${what} not added (a draft exists)`);
+    log(`questionnaire: ${changes.join('; ')} not applied (a draft exists)`);
     return;
   }
   const seedByCode = new Map((questionnaire.questions as Question[]).map((q) => [q.code, q]));
@@ -155,6 +177,12 @@ async function syncQuestionnaireWithSeed(log: (m: string) => void): Promise<void
       merge(o.label as Record<string, string>, so?.label as Record<string, string>);
       if (o.freeText && so?.freeText) merge(o.freeText.label as Record<string, string>, so.freeText.label as Record<string, string>);
     }
+    if (revised) {
+      const target = q as unknown as Record<string, unknown>;
+      for (const field of REVISED_FIELDS) if (src[field] !== undefined) target[field] = structuredClone(src[field]);
+      const codes = new Set(q.options.map((o) => o.code));
+      q.options.push(...structuredClone(src.options.filter((o) => !codes.has(o.code))));
+    }
     return q;
   });
   questions.push(...structuredClone(newQuestions));
@@ -166,9 +194,10 @@ async function syncQuestionnaireWithSeed(log: (m: string) => void): Promise<void
     title: latest.title,
     status: 'published',
     publishedAt: new Date(),
-    notes: `Copia de la versión ${latest.version} con ${[missing.length ? `idiomas añadidos: ${missing.join(', ')}` : '', newQuestions.length ? `preguntas añadidas: ${newQuestions.map((q) => q.code).join(', ')}` : ''].filter(Boolean).join('; ')}`,
+    seedRevision: Math.max(latest.seedRevision ?? 1, questionnaire.revision),
+    notes: `Copia de la versión ${latest.version} con ${changes.join('; ')}`,
     languages: [...(latest.languages as QuestionnaireLanguage[]), ...missing.map((lang: Language) => ({ lang, status: 'pending_approval' }))],
     questions,
   });
-  log(`questionnaire M1 v${version} published with ${what}`);
+  log(`questionnaire M1 v${version} published with ${changes.join('; ')}`);
 }

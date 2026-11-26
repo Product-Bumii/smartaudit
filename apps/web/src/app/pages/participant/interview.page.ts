@@ -15,8 +15,9 @@ type Input =
   | { kind: 'text'; text: string };
 
 /**
- * Written interview (section 5.5), mobile first and keyboard accessible. Options are buttons (checkboxes for
- * multiple choice); the participant may also answer in their own words or tap «Prefiero no responder».
+ * Written interview (section 5.5), mobile first and keyboard accessible. Conversational questionnaire
+ * (`answerMode: 'text'`, decision 90): answers are always written, only «Prefiero no responder» is a button.
+ * Older questionnaires (`buttons`): options are buttons (checkboxes for multiple choice) or own words.
  * Everything is decided by the server; this page only shows the state and sends the input.
  */
 @Component({
@@ -51,7 +52,9 @@ type Input =
             <section class="answer" #answerArea [attr.aria-label]="'interview.answerArea' | translate" [attr.data-question]="q.code" data-testid="chat-answer">
               @if (q.help) { <p class="help">{{ q.help }}</p> }
 
-              @if (q.type === 'multi') {
+              @if (q.answerMode === 'text') {
+                @if (q.type !== 'free_text') { <p class="help" data-testid="chat-conversation-hint">{{ 'interview.conversationHint' | translate }}</p> }
+              } @else if (q.type === 'multi') {
                 <p class="help">{{ 'interview.multiHint' | translate }}</p>
                 <div class="options" role="group" [attr.aria-label]="q.text">
                   @for (o of q.options; track o.code) {
@@ -72,14 +75,14 @@ type Input =
                   <input matInput [(ngModel)]="optionText" name="optionText" data-testid="chat-option-text" />
                 </mat-form-field>
               }
-              @if (q.type === 'multi' || freeTextOption()) {
+              @if (q.answerMode !== 'text' && (q.type === 'multi' || freeTextOption())) {
                 <button mat-flat-button type="button" [disabled]="busy() || !canSendOptions()" (click)="sendOptions()" data-testid="chat-send-options">{{ 'interview.send' | translate }}</button>
               }
 
               <form class="free" (ngSubmit)="sendText()">
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="full">
-                  <mat-label>{{ (q.type === 'free_text' ? 'interview.comment' : 'interview.ownWords') | translate }}</mat-label>
-                  <textarea matInput rows="2" [(ngModel)]="text" name="text" maxlength="2000" data-testid="chat-text"></textarea>
+                  <mat-label>{{ (q.type === 'free_text' ? 'interview.comment' : q.answerMode === 'text' ? 'interview.writeAnswer' : 'interview.ownWords') | translate }}</mat-label>
+                  <textarea matInput [rows]="q.answerMode === 'text' ? 3 : 2" [(ngModel)]="text" name="text" maxlength="2000" data-testid="chat-text"></textarea>
                 </mat-form-field>
                 <div class="row">
                   <button mat-flat-button type="submit" [disabled]="busy() || !text.trim()" data-testid="chat-send">{{ 'interview.send' | translate }}</button>
