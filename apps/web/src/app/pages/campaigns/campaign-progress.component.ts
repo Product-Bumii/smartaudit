@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { TranslatePipe } from '@ngx-translate/core';
 import { ApiService } from '../../core/api.service';
-import type { CampaignDto, CampaignProgressDto } from '../../core/models';
+import type { CampaignDto, CampaignProgressDto, ParticipantTestLinkDto } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
 import { TzDatePipe } from '../../shared/tz-date.pipe';
 
@@ -41,6 +41,9 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
         @if (p.people; as people) {
           <h3>{{ 'progress.people' | translate }}</h3>
           <p class="muted small">{{ 'progress.peopleHint' | translate }}</p>
+          @if (p.testLinks) {
+            <div class="alert warn" role="note" data-testid="test-links-notice">{{ 'progress.testLinksNotice' | translate }}</div>
+          }
           <div class="table-wrap">
             <table class="simple-table" data-testid="progress-people">
               <thead>
@@ -50,6 +53,7 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
                   <th>{{ 'progress.status' | translate }}</th>
                   <th>{{ 'progress.invitedAt' | translate }}</th>
                   <th>{{ 'progress.reminders' | translate }}</th>
+                  @if (p.testLinks) { <th>{{ 'progress.testAccess' | translate }}</th> }
                 </tr>
               </thead>
               <tbody>
@@ -60,6 +64,17 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
                     <td><span class="chip" [class.neutral]="r.status !== 'completed'">{{ 'respondentStatus.' + r.status | translate }}</span></td>
                     <td>{{ r.invitedAt ? (r.invitedAt | tzDate: timeZone()) : '—' }}</td>
                     <td>{{ r.remindersSent }}</td>
+                    @if (p.testLinks && r.ref) {
+                      <td class="test-cell">
+                        @if (links()[r.ref]; as l) {
+                          <a [href]="l.url" target="_blank" rel="noopener" data-testid="test-link-open">{{ 'progress.openInterview' | translate }}</a>
+                          @if (l.kind === 'code') { <span class="code" data-testid="test-link-code">{{ 'progress.code' | translate }}: <strong>{{ l.code }}</strong></span> }
+                          <button mat-button type="button" (click)="copy(l.kind === 'code' ? l.url + ' · ' + l.code : l.url)">{{ 'progress.copy' | translate }}</button>
+                        } @else {
+                          <button mat-stroked-button type="button" [disabled]="busy()" (click)="showLink(r.ref)" [attr.data-testid]="'test-link-' + r.sourceRow">{{ 'progress.showLink' | translate }}</button>
+                        }
+                      </td>
+                    }
                   </tr>
                 }
               </tbody>
@@ -93,6 +108,8 @@ import { TzDatePipe } from '../../shared/tz-date.pipe';
     h3 { margin: 28px 0 8px; }
     .small { font-size: 13px; margin: 0 0 12px; }
     .extend { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
+    .test-cell { white-space: nowrap; }
+    .test-cell a, .test-cell .code { margin-right: 12px; font-size: 14px; }
   `,
 })
 export class CampaignProgressComponent {
@@ -102,6 +119,8 @@ export class CampaignProgressComponent {
   private readonly notify = inject(NotifyService);
   readonly progress = signal<CampaignProgressDto | null>(null);
   readonly busy = signal(false);
+  /** TEMPORARY test aid (decision 98): links already asked for, by person. */
+  readonly links = signal<Record<string, ParticipantTestLinkDto>>({});
   closeDate = '';
   reason = '';
 
@@ -122,6 +141,28 @@ export class CampaignProgressComponent {
   private async load(id: string): Promise<void> {
     try {
       this.progress.set(await this.api.get<CampaignProgressDto>(`/campaigns/${id}/progress`));
+    } catch (e) {
+      this.notify.error(e);
+    }
+  }
+
+  /** TEMPORARY test aid (decision 98): the person's invitation link or paper code, while there is no email. */
+  async showLink(ref: string): Promise<void> {
+    this.busy.set(true);
+    try {
+      const link = await this.api.post<ParticipantTestLinkDto>(`/campaigns/${this.campaign().id}/people/${ref}/test-link`);
+      this.links.update((l) => ({ ...l, [ref]: link }));
+    } catch (e) {
+      this.notify.error(e);
+    } finally {
+      this.busy.set(false);
+    }
+  }
+
+  async copy(text: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(text);
+      this.notify.ok('progress.copied');
     } catch (e) {
       this.notify.error(e);
     }

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  bandFromExcelDate,
   isForbiddenHeader,
   normalizeHeader,
   sampleAlerts,
@@ -188,3 +189,14 @@ describe('access codes and slugs', () => {
     expect(isWellFormedAccessCode('ABC')).toBe(false);
   });
 });
+
+describe('bands that Excel turned into dates (templates downloaded before the fix)', () => {
+  it('recovers the band from a day-month or month-day date, only when unambiguous', () => {
+    expect(bandFromExcelDate(new Date(Date.UTC(2026, 9, 6)))).toBe('6-10'); // 6-oct
+    expect(bandFromExcelDate(new Date(Date.UTC(2026, 5, 10)))).toBe('6-10'); // Jun 10 (month first)
+    expect(bandFromExcelDate(new Date(Date.UTC(2026, 4, 2)))).toBe('2-5'); // 2-may
+    expect(bandFromExcelDate(new Date(Date.UTC(2026, 1, 5)))).toBe('2-5'); // Feb 5 (month first)
+    expect(bandFromExcelDate(new Date(Date.UTC(2026, 2, 3)))).toBeNull(); // 3-3 is no band
+  });
+});
+

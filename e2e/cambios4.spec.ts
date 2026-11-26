@@ -82,4 +82,17 @@ test('cambios 4: results, review of a doubtful answer and individual answers', a
   await expect(page.getByTestId('responses-comments')).toContainText('Todo bien, gracias.');
   await expect(page.getByTestId('responses-small-groups')).toBeVisible();
   await page.screenshot({ path: 'test-results/cambios4-responses.png', fullPage: true });
+
+  // TEMPORARY test aid (decision 98): open a person's interview from the per-person progress table.
+  await page.goto(`/campaigns/${id}`);
+  await expect(page.getByTestId('test-links-notice')).toBeVisible();
+  await page.getByTestId('test-link-5').click();
+  const open = page.getByTestId('test-link-open');
+  await expect(open).toHaveAttribute('href', /\/i\/[A-Za-z0-9_-]{20,}$/);
+  await open.scrollIntoViewIfNeeded();
+  await page.screenshot({ path: 'test-results/cambios4-test-link.png' });
+  const [tab] = await Promise.all([page.context().waitForEvent('page'), open.click()]);
+  await expect(tab.getByTestId('start-interview')).toBeVisible();
+  await tab.getByTestId('start-interview').click();
+  await expect(tab.getByTestId('chat-answer')).toHaveAttribute('data-question', 'P1');
 });

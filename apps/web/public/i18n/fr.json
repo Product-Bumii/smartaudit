@@ -387,7 +387,8 @@
     "ABSTAIN_NOT_ALLOWED": "Cette question nécessite une réponse.",
     "TEXT_ANSWER_REQUIRED": "Répondez avec vos propres mots.",
     "NOT_REVIEWABLE": "Cette réponse n’est pas en attente de révision.",
-    "REPORT_ALREADY_GENERATED": "Le rapport est déjà généré : les décisions ne peuvent plus être modifiées."
+    "REPORT_ALREADY_GENERATED": "Le rapport est déjà généré : les décisions ne peuvent plus être modifiées.",
+    "ACCESS_REVOKED": "L’accès de cette personne a été révoqué."
   },
   "brand": {
     "sideNote": "Pour les organisations titulaires d'un certificat efr en vigueur."
@@ -504,7 +505,14 @@
     "newCloseDate": "Nouvelle date de clôture",
     "reason": "Motif (facultatif)",
     "extend": "Prolonger",
-    "extended": "Période prolongée"
+    "extended": "Période prolongée",
+    "testLinksNotice": "Pour les tests uniquement, en l’absence d’e-mail : « voir le lien » affiche le lien d’invitation (ou le code papier) de chaque personne pour ouvrir son entretien. Chaque utilisation est enregistrée. Cette option n’existe pas en production.",
+    "testAccess": "Accès (tests)",
+    "showLink": "voir le lien",
+    "openInterview": "ouvrir l’entretien",
+    "code": "Code",
+    "copy": "copier",
+    "copied": "Copié"
   },
   "respondentStatus": {
     "pending": "En attente",

@@ -28,6 +28,7 @@ import {
   objectIdSchema,
   reviewInputError,
   reviewListQuerySchema,
+  type ParticipantTestLinkDto,
   type Question,
 } from '@smartaudit/shared';
 import type { AppContext } from '../context';
@@ -51,6 +52,8 @@ import { accessCodesFile, MAX_SAMPLE_FILE_BYTES, sampleSummary, sampleTemplateFi
 
 /** Results, review and individual answers: lead auditor and superadmins. */
 const RESULTS_ACCESS: readonly CampaignAccess[] = ['manage', 'supervise'];
+/** Statuses in which a participant can still enter (test links, decision 98). */
+const TEST_LINK_STATUSES: readonly string[] = ['envios_activos', 'en_curso'];
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: MAX_SAMPLE_FILE_BYTES, files: 1 } });
 
@@ -240,6 +243,8 @@ export function campaignsRouter(ctx: AppContext): Router {
       now: ctx.now(),
     });
     let people: ProgressPersonRow[] | null = null;
+    // TEMPORARY test aid (decision 98): never true in production (DEV_SHOW_MAGIC_LINK cannot be set there).
+    const testLinks = ctx.config.devShowMagicLink && RESULTS_ACCESS.includes(access) && TEST_LINK_STATUSES.includes(campaign.status);
     if (access !== 'aggregate' && can(user.role, 'respondent.viewStatus')) {
       const byId = new Map(respondents.map((r) => [String(r._id), r]));
       const contacts = await ParticipantContact.find({ campaignId: campaign._id }, { respondentId: 1, sourceRow: 1, noEmail: 1, sends: 1 }).sort({ sourceRow: 1 }).lean();
@@ -253,10 +258,32 @@ export function campaignsRouter(ctx: AppContext): Router {
           invitedAt: invitation?.at ? new Date(invitation.at).toISOString() : null,
           remindersSent: c.sends.filter((s) => s.kind?.startsWith('reminder')).length,
           completedAt: r?.completedAt ? new Date(r.completedAt).toISOString() : null,
+          ...(testLinks ? { ref: String(c._id) } : {}),
         };
       });
     }
-    res.json({ ...progress, people } satisfies CampaignProgressDto);
+    res.json({ ...progress, people, testLinks } satisfies CampaignProgressDto);
+  });
+
+  /**
+   * TEMPORARY, test environments only (decision 98): the invitation link (or the paper code) of one person, so the
+   * auditor can open the interview while there is no real email. 404 when DEV_SHOW_MAGIC_LINK is off (always in
+   * production). Every use is recorded.
+   */
+  r.post('/:id/people/:ref/test-link', requireAction('respondent.viewStatus'), async (req, res) => {
+    if (!ctx.config.devShowMagicLink) throw notFound();
+    const { campaign } = await findCampaignForUser(req.user as AuthUser, String(req.params.id), RESULTS_ACCESS);
+    if (!TEST_LINK_STATUSES.includes(campaign.status)) throw conflict('CAMPAIGN_NOT_RUNNING');
+    const ref = objectIdSchema.safeParse(req.params.ref);
+    if (!ref.success) throw notFound();
+    const contact = await ParticipantContact.findOne({ _id: ref.data, campaignId: campaign._id }).lean();
+    if (!contact) throw notFound();
+    if (contact.revokedAt) throw conflict('ACCESS_REVOKED');
+    const link: ParticipantTestLinkDto = contact.noEmail
+      ? { kind: 'code', url: `${ctx.config.appUrl}/c/${campaign.slug}`, code: ctx.crypto.decrypt(contact.accessCodeEncrypted!) }
+      : { kind: 'link', url: `${ctx.config.appUrl}/i/${ctx.crypto.decrypt(contact.invitationTokenEncrypted!)}` };
+    await audit(req, { action: 'participant.testLink', resourceType: 'campaign', resourceId: String(campaign._id), organizationId: String(campaign.organizationId), meta: { sourceRow: contact.sourceRow, kind: link.kind } });
+    res.json(link);
   });
 
   /** The auditor may extend the window (recorded in the campaign and the audit log). */

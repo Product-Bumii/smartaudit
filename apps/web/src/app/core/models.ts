@@ -17,6 +17,7 @@ export type {
   InterviewQuestionView,
   InterviewStateDto,
   ParticipantSessionDto,
+  ParticipantTestLinkDto,
   CampaignDto,
   CampaignStatus,
   EntityStatus,

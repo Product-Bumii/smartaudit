@@ -387,7 +387,8 @@
     "ABSTAIN_NOT_ALLOWED": "This question needs an answer.",
     "TEXT_ANSWER_REQUIRED": "Please answer in your own words.",
     "NOT_REVIEWABLE": "This answer is not waiting for review.",
-    "REPORT_ALREADY_GENERATED": "The report has already been generated: decisions can no longer change."
+    "REPORT_ALREADY_GENERATED": "The report has already been generated: decisions can no longer change.",
+    "ACCESS_REVOKED": "This person’s access has been revoked."
   },
   "brand": {
     "sideNote": "For organizations with a valid efr certificate."
@@ -504,7 +505,14 @@
     "newCloseDate": "New closing date",
     "reason": "Reason (optional)",
     "extend": "Extend",
-    "extended": "Window extended"
+    "extended": "Window extended",
+    "testLinksNotice": "Testing only, while there is no email: «show link» displays each person’s invitation link (or paper code) to open their interview. Every use is recorded. This option does not exist in production.",
+    "testAccess": "Access (testing)",
+    "showLink": "show link",
+    "openInterview": "open the interview",
+    "code": "Code",
+    "copy": "copy",
+    "copied": "Copied"
   },
   "respondentStatus": {
     "pending": "Pending",

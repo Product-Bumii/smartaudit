@@ -8,6 +8,7 @@ import {
   BOOL_VALUES,
   generateAccessCode,
   isValidEmail,
+  bandFromExcelDate,
   NO_EMAIL_MARKER,
   normalizeEmail,
   normalizeHeader,
@@ -70,7 +71,11 @@ export async function parseSampleFile(buffer: Buffer, filename: string): Promise
     for (let i = 1; i <= ws.rowCount; i++) {
       const row = ws.getRow(i);
       const cells: string[] = [];
-      for (let j = 1; j <= cols; j++) cells.push(String(row.getCell(j).text ?? ''));
+      for (let j = 1; j <= cols; j++) {
+        const value = row.getCell(j).value;
+        // A band that Excel turned into a date («6-10» → 6 Oct) in templates downloaded before the fix.
+        cells.push(value instanceof Date ? (bandFromExcelDate(value) ?? value.toISOString().slice(0, 10)) : String(row.getCell(j).text ?? ''));
+      }
       matrix.push(cells);
     }
   } else {
@@ -103,11 +108,16 @@ export async function sampleTemplateFile(format: 'xlsx' | 'csv'): Promise<{ body
     hijos_o_dependientes: BOOL_VALUES,
     rlpt: BOOL_VALUES,
   };
+  // Every column is text: otherwise Excel turns bands such as «6-10» or «2-5» into dates (6 Oct, 2 May).
   t.headers.forEach((h, i) => {
+    ws.getColumn(i + 1).numFmt = '@';
     const values = lists[h];
-    if (!values) return;
     const col = String.fromCharCode(65 + i);
-    for (let row = 2; row <= 5001; row++) ws.getCell(`${col}${row}`).dataValidation = list(values);
+    for (let row = 2; row <= 5001; row++) {
+      const cell = ws.getCell(`${col}${row}`);
+      cell.numFmt = '@';
+      if (values) cell.dataValidation = list(values);
+    }
   });
   const help = wb.addWorksheet('instrucciones');
   brandHeader(help.addRow(['columna', 'obligatoria', 'valores']));

@@ -158,11 +158,21 @@ export interface ProgressPersonRow {
   invitedAt: string | null;
   remindersSent: number;
   completedAt: string | null;
+  /** Opaque reference to ask for the test link (only when `testLinks`). */
+  ref?: string;
 }
 
 export interface CampaignProgressDto extends Progress {
   people: ProgressPersonRow[] | null;
+  /**
+   * TEMPORARY, test environments only (decision 98): while there is no real email, the auditor can open each
+   * person's invitation link (or code) from the per-person table. Never in production.
+   */
+  testLinks: boolean;
 }
+
+/** TEMPORARY test aid (decision 98): how a person enters the interview. */
+export type ParticipantTestLinkDto = { kind: 'link'; url: string } | { kind: 'code'; url: string; code: string };
 
 export interface WindowExtensionView {
   /** Previous and new closing dates (local). */

@@ -6,7 +6,7 @@ import { MockLlmProvider } from '@smartaudit/llm';
 import request from 'supertest';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { SEED_USERS } from '../../../seed/seed-lib';
-import { AuditLog, Campaign, Interview } from '../src/models';
+import { AuditLog, Campaign, Interview, ParticipantContact } from '../src/models';
 import { sessionFor, startTestEnv, type TestEnv } from './helpers';
 import { firstOption, invitationTokens, openWindow, participant, runInterview, sampleCsv, scheduledCampaign, type Persona } from './phase2-helpers';
 
@@ -125,6 +125,53 @@ describe('review (bloque 2)', () => {
     const first = (await Interview.find({ campaignId: id, state: 'completed' }).lean()).find((x) => x.answers.every((a) => a.status !== 'pending_review'))!;
     const conflict = await request(env.app).put(`/api/campaigns/${id}/review/${first._id}/P2`).set('Cookie', auditor).send({ decision: 'abstention' }).expect(409);
     expect(conflict.body.error.code).toBe('NOT_REVIEWABLE');
+  });
+});
+
+describe('TEMPORARY test links in the per-person progress (decision 98)', () => {
+  const config = () => env.ctx.config as { devShowMagicLink: boolean };
+  afterAll(() => {
+    config().devShowMagicLink = false;
+  });
+
+  it('off (always in production): no references in the progress and the route does not exist', async () => {
+    config().devShowMagicLink = false;
+    const p = (await request(env.app).get(`/api/campaigns/${id}/progress`).set('Cookie', auditor).expect(200)).body;
+    expect(p.testLinks).toBe(false);
+    expect(p.people[0].ref).toBeUndefined();
+    await request(env.app).post(`/api/campaigns/${id}/people/${'a'.repeat(24)}/test-link`).set('Cookie', auditor).expect(404);
+  });
+
+  it('on: the auditor gets the invitation link of a person, it opens the interview, and the use is logged', async () => {
+    config().devShowMagicLink = true;
+    const p = (await request(env.app).get(`/api/campaigns/${id}/progress`).set('Cookie', auditor).expect(200)).body;
+    expect(p.testLinks).toBe(true);
+    const row = p.people.find((x: { status: string }) => x.status !== 'completed');
+    const link = (await request(env.app).post(`/api/campaigns/${id}/people/${row.ref}/test-link`).set('Cookie', auditor).expect(200)).body;
+    expect(link).toMatchObject({ kind: 'link', url: expect.stringMatching(/^http:\/\/localhost:4200\/i\/[A-Za-z0-9_-]{20,}$/) });
+    await request(env.app).post(`/api/participant/i/${link.url.split('/i/')[1]}`).expect(200);
+    expect(await AuditLog.exists({ action: 'participant.testLink', resourceId: id, 'meta.sourceRow': row.sourceRow })).toBeTruthy();
+    // Coordinator: aggregate only; another audit entity: not found; unknown reference: not found.
+    expect((await request(env.app).get(`/api/campaigns/${id}/progress`).set('Cookie', coordinator).expect(200)).body).toMatchObject({ testLinks: false, people: null });
+    await request(env.app).post(`/api/campaigns/${id}/people/${row.ref}/test-link`).set('Cookie', coordinator).expect(403);
+    await request(env.app).post(`/api/campaigns/${id}/people/${row.ref}/test-link`).set('Cookie', otherEntityAuditor).expect(404);
+    await request(env.app).post(`/api/campaigns/${id}/people/${'a'.repeat(24)}/test-link`).set('Cookie', auditor).expect(404);
+    await request(env.app).post(`/api/campaigns/${id}/people/not-an-id/test-link`).set('Cookie', auditor).expect(404);
+  });
+
+  it('people without email: the landing and their paper code; not before the audit opens', async () => {
+    config().devShowMagicLink = true;
+    const paper = await scheduledCampaign(env, auditor, sampleCsv(2, 'paper', 1), { interviewStartDate: '2026-11-16' });
+    const before = (await request(env.app).get(`/api/campaigns/${paper}/progress`).set('Cookie', auditor).expect(200)).body;
+    expect(before.testLinks).toBe(false);
+    const contactId = String((await ParticipantContact.findOne({ campaignId: paper }).lean())!._id);
+    await request(env.app).post(`/api/campaigns/${paper}/people/${contactId}/test-link`).set('Cookie', auditor).expect(409);
+    await openWindow(env, paper);
+    const link = (await request(env.app).post(`/api/campaigns/${paper}/people/${contactId}/test-link`).set('Cookie', auditor).expect(200)).body;
+    expect(link).toMatchObject({ kind: 'code', url: expect.stringMatching(/\/c\/[a-z2-9]{10}$/), code: expect.stringMatching(/^[A-HJKMNP-Z2-9]{4}-?[A-HJKMNP-Z2-9]{4}$/) });
+    await request(env.app).post(`/api/participant/c/${link.url.split('/c/')[1]}/access`).send({ code: link.code }).expect(200);
+    // Superadmins may use it too.
+    await request(env.app).post(`/api/campaigns/${paper}/people/${contactId}/test-link`).set('Cookie', superadmin).expect(200);
   });
 });
 

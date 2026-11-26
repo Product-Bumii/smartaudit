@@ -161,6 +161,10 @@ Se regeneran con `npx tsx seed/generate-samples.ts`.
   - **Respuestas individuales**: tras un aviso de confidencialidad, demográficos y respuestas codificadas (sin
     identidad, fila ni fechas), con aviso de grupos pequeños; las respuestas abiertas, aparte y sin demográficos.
 
+- **Ayuda temporal de pruebas** (decisión 98, se retira en producción): con `DEV_SHOW_MAGIC_LINK=true`, la tabla
+  «Estado por persona» del avance tiene un botón «ver enlace» con el enlace de invitación (o el código en papel) de cada
+  persona, para entrar en su entrevista sin correo real. La API no arranca en producción con esa variable activada.
+
 ### Lo que todavía no existe (fases siguientes)
 
 La anonimización de comentarios, la síntesis con IA y la exportación del informe (Word/Excel/PDF), en la Fase 3

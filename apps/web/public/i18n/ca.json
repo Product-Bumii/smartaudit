@@ -387,7 +387,8 @@
     "ABSTAIN_NOT_ALLOWED": "Aquesta pregunta necessita una resposta.",
     "TEXT_ANSWER_REQUIRED": "Respon amb les teves paraules.",
     "NOT_REVIEWABLE": "Aquesta resposta no està pendent de revisió.",
-    "REPORT_ALREADY_GENERATED": "L’informe ja s’ha generat: les decisions no es poden canviar."
+    "REPORT_ALREADY_GENERATED": "L’informe ja s’ha generat: les decisions no es poden canviar.",
+    "ACCESS_REVOKED": "L’accés d’aquesta persona està revocat."
   },
   "brand": {
     "sideNote": "Per a organitzacions amb certificat efr vigent."
@@ -504,7 +505,14 @@
     "newCloseDate": "Nova data de tancament",
     "reason": "Motiu (opcional)",
     "extend": "Ampliar",
-    "extended": "Finestra ampliada"
+    "extended": "Finestra ampliada",
+    "testLinksNotice": "Només per a proves, mentre no hi ha correu: «veure enllaç» mostra l’enllaç de la invitació (o el codi en paper) de cada persona per obrir la seva entrevista. Cada ús queda registrat. Aquesta opció no existeix en producció.",
+    "testAccess": "Accés (proves)",
+    "showLink": "veure enllaç",
+    "openInterview": "obrir l’entrevista",
+    "code": "Codi",
+    "copy": "copiar",
+    "copied": "Copiat"
   },
   "respondentStatus": {
     "pending": "Pendent",

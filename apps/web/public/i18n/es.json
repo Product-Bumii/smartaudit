@@ -387,7 +387,8 @@
     "ABSTAIN_NOT_ALLOWED": "Esta pregunta necesita una respuesta.",
     "TEXT_ANSWER_REQUIRED": "Responde escribiendo con tus palabras.",
     "NOT_REVIEWABLE": "Esta respuesta no está pendiente de revisión.",
-    "REPORT_ALREADY_GENERATED": "El informe ya está generado: las decisiones no se pueden cambiar."
+    "REPORT_ALREADY_GENERATED": "El informe ya está generado: las decisiones no se pueden cambiar.",
+    "ACCESS_REVOKED": "El acceso de esta persona está revocado."
   },
   "brand": {
     "sideNote": "Para organizaciones con certificado efr en vigor."
@@ -504,7 +505,14 @@
     "newCloseDate": "Nueva fecha de cierre",
     "reason": "Motivo (opcional)",
     "extend": "Ampliar",
-    "extended": "Ventana ampliada"
+    "extended": "Ventana ampliada",
+    "testLinksNotice": "Solo para pruebas, mientras no hay correo: «ver enlace» muestra el enlace de la invitación (o el código en papel) de cada persona para abrir su entrevista. Cada uso queda registrado. Esta opción no existe en producción.",
+    "testAccess": "Acceso (pruebas)",
+    "showLink": "ver enlace",
+    "openInterview": "abrir la entrevista",
+    "code": "Código",
+    "copy": "copiar",
+    "copied": "Copiado"
   },
   "respondentStatus": {
     "pending": "Pendiente",

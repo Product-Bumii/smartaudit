@@ -73,6 +73,20 @@ export function looseKey(value: string): string {
     .trim();
 }
 
+/**
+ * Bands that Excel turns into dates when they are typed in a cell without text format («6-10» → 6 Oct,
+ * «2-5» → 2 May, or 10 Jun / 5 Feb with a month-first locale). Templates downloaded before the fix may hold
+ * such dates: the band is recovered when exactly one reading (day-month or month-day) is a valid band.
+ * Returns `null` when the date cannot be one of them (the row then fails validation as usual).
+ */
+export function bandFromExcelDate(date: Date): string | null {
+  const day = date.getUTCDate();
+  const month = date.getUTCMonth() + 1;
+  const bands: readonly string[] = [...SENIORITY_BANDS, ...AGE_BANDS];
+  const matches = [...new Set([`${day}-${month}`, `${month}-${day}`])].filter((b) => bands.includes(b));
+  return matches.length === 1 ? matches[0] : null;
+}
+
 export function normalizeHeader(header: string): string {
   return looseKey(header).replace(/[\s-]+/g, '_');
 }

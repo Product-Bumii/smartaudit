@@ -115,6 +115,11 @@ describe('sample template, upload and validation', () => {
     await wb.xlsx.load(x.body);
     expect(wb.worksheets.map((w) => w.name)).toEqual(['muestra', 'instrucciones']);
     expect(wb.worksheets[0].getRow(1).getCell(1).text).toBe('correo');
+    // Text format everywhere: Excel must not turn «6-10» or «2-5» into dates.
+    const ws = wb.worksheets[0];
+    expect(ws.getCell('F2').text).toBe('2-5');
+    for (const ref of ['A3', 'C3', 'F3', 'F5001', 'K40']) expect(ws.getCell(ref).numFmt).toBe('@');
+    expect(ws.getCell('F3').dataValidation).toMatchObject({ type: 'list' });
     const c = await request(env.app).get('/api/campaigns/sample-template?format=csv').set('Cookie', auditor).expect(200);
     expect(c.text.replace('﻿', '').split('\r\n')[0]).toBe('correo,sexo,tramo_edad,centro_trabajo,tipo_puesto,tramo_antiguedad,area,turnos,teletrabajo,hijos_o_dependientes,rlpt');
   });
@@ -189,6 +194,31 @@ describe('sample template, upload and validation', () => {
     expect(await ParticipantContact.countDocuments({ campaignId })).toBe(12);
 
     // Back to the 30-person sample for the next tests.
+    await request(env.app).post(`/api/campaigns/${campaignId}/sample`).set('Cookie', auditor).attach('file', sample('muestra-valida-30.csv'), 'm.csv').expect(200);
+  });
+
+  it('recovers bands that Excel turned into dates in templates downloaded before the fix', async () => {
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('muestra');
+    ws.addRow(['correo', 'sexo', 'tramo_edad', 'centro_trabajo', 'tipo_puesto', 'tramo_antiguedad']);
+    ws.addRow(['fecha1@demo.example', 'Mujer', '30-40', 'Sede', 'Técnico/a', new Date(Date.UTC(2026, 9, 6))]); // 6-oct
+    ws.addRow(['fecha2@demo.example', 'Hombre', '41-50', 'Sede', 'Técnico/a', new Date(Date.UTC(2026, 4, 2))]); // 2-may
+    ws.addRow(['fecha3@demo.example', 'Mujer', '<30', 'Sede', 'Técnico/a', '>10']);
+    const ok = await request(env.app)
+      .post(`/api/campaigns/${campaignId}/sample?mode=replace`)
+      .set('Cookie', auditor)
+      .attach('file', Buffer.from(await wb.xlsx.writeBuffer()), 'antigua.xlsx')
+      .expect(200);
+    expect(ok.body.campaign.sampleSize).toBe(3);
+    expect((await Respondent.find({ campaignId }).lean()).map((r) => r.demographics?.seniorityBand).sort()).toEqual(['2-5', '6-10', '>10']);
+    // A date that cannot be a band is reported as a value out of category.
+    ws.getCell('F4').value = new Date(Date.UTC(2026, 2, 3));
+    const bad = await request(env.app)
+      .post(`/api/campaigns/${campaignId}/sample?mode=replace`)
+      .set('Cookie', auditor)
+      .attach('file', Buffer.from(await wb.xlsx.writeBuffer()), 'antigua.xlsx')
+      .expect(422);
+    expect(bad.body.error.details.errors).toEqual([expect.objectContaining({ row: 4, column: 'tramo_antiguedad', code: 'INVALID_VALUE' })]);
     await request(env.app).post(`/api/campaigns/${campaignId}/sample`).set('Cookie', auditor).attach('file', sample('muestra-valida-30.csv'), 'm.csv').expect(200);
   });
 
