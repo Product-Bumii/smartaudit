@@ -558,7 +558,8 @@
     "pendingN": "{{n}} pendentes de revisão",
     "outsideCondition": "{{n}} fora da condição da pergunta",
     "multiNote": "Resposta múltipla: percentagem de pessoas que mencionam cada opção; a soma pode ultrapassar 100 %.",
-    "optionTexts": "Textos de «{{option}}» ({{n}})"
+    "optionTexts": "Textos de «{{option}}» ({{n}})",
+    "denied": "Os resultados, a revisão e as respostas individuais só são visíveis para o/a auditor/a responsável e para a Fundação. Como coordenação, vê o progresso agregado na ficha da auditoria."
   },
   "review": {
     "title": "Revisão de respostas",

@@ -2,7 +2,7 @@ import { Component, inject, input, OnInit, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { ApiService } from '../../core/api.service';
+import { ApiService, toApiFailure } from '../../core/api.service';
 import { I18nService } from '../../core/i18n.service';
 import type { CampaignResultsDto, LocalizedText } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
@@ -25,11 +25,14 @@ const AGES = ['<30', '30-40', '41-50', '51-60', '>60'] as const;
         <div class="eyebrow">{{ 'results.eyebrow' | translate }}</div>
         <h1>{{ 'results.title' | translate }}</h1>
       </div>
-      <div class="row-actions">
-        <a mat-stroked-button [routerLink]="['/campaigns', id(), 'review']" data-testid="go-review">{{ 'results.goReview' | translate }}</a>
-        <a mat-stroked-button [routerLink]="['/campaigns', id(), 'responses']">{{ 'results.goResponses' | translate }}</a>
-      </div>
+      @if (!denied()) {
+        <div class="row-actions">
+          <a mat-stroked-button [routerLink]="['/campaigns', id(), 'review']" data-testid="go-review">{{ 'results.goReview' | translate }}</a>
+          <a mat-stroked-button [routerLink]="['/campaigns', id(), 'responses']">{{ 'results.goResponses' | translate }}</a>
+        </div>
+      }
     </div>
+    @if (denied()) { <div class="alert info" role="status" data-testid="results-denied">{{ 'results.denied' | translate }}</div> }
 
     @if (results(); as r) {
       @if (r.pendingReview > 0) {
@@ -149,6 +152,8 @@ export class CampaignResultsPage implements OnInit {
   private readonly notify = inject(NotifyService);
   private readonly i18n = inject(I18nService);
   readonly results = signal<CampaignResultsDto | null>(null);
+  /** The coordinator (aggregate access) does not see results, review or individual answers. */
+  readonly denied = signal(false);
   readonly sexes = SEXES;
   readonly ages = AGES;
 
@@ -156,7 +161,8 @@ export class CampaignResultsPage implements OnInit {
     try {
       this.results.set(await this.api.get<CampaignResultsDto>(`/campaigns/${this.id()}/results`));
     } catch (e) {
-      this.notify.error(e);
+      if (toApiFailure(e).status === 403) this.denied.set(true);
+      else this.notify.error(e);
     }
   }
 

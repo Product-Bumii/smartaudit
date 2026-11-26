@@ -558,7 +558,8 @@
     "pendingN": "{{n}} en attente de révision",
     "outsideCondition": "{{n}} hors de la condition de la question",
     "multiNote": "Choix multiple : pourcentage de personnes qui citent chaque option ; la somme peut dépasser 100 %.",
-    "optionTexts": "Textes de « {{option}} » ({{n}})"
+    "optionTexts": "Textes de « {{option}} » ({{n}})",
+    "denied": "Les résultats, la révision et les réponses individuelles ne sont visibles que par l’auditeur responsable et la Fondation. En tant que coordination, vous voyez l’avancement global sur la fiche de l’audit."
   },
   "review": {
     "title": "Révision des réponses",

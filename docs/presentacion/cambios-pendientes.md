@@ -14,6 +14,7 @@ como hecho; no se borra ni se renumera nada.
 | 3 | 19/11/2026 | Fase 2: lanzar la auditoría, avance y ampliación de ventana, enlace personal, entrevista en el chat (móvil), invitación y recordatorio por correo (decisiones 70–82) | Hecho (20/11/2026) |
 | 4 | 25/11/2026 | Grupo de cambios 3 de F+f: tipos de auditoría inicial/renovación, componente de Bienestar (P11–P15), máximo sin tope por la muestra, sin lanzar/suspender/cancelar (decisiones 85–89) | Capturas nuevas hechas (25/11/2026, [informe-cambios-3.md](informe-cambios-3.md)); falta rehacer las antiguas de Fase 1 y Fase 2 |
 | 5 | 25/11/2026 | Entrevista conversada: respuesta escrita, frase que propone las respuestas, hasta 2 interacciones, explicaciones aprobadas, opción P2 «No he recibido información» (decisiones 90–93) | Capturas nuevas hechas (25/11/2026, [informe-cambios-3.md](informe-cambios-3.md)); falta rehacer las antiguas de Fase 2 |
+| 6 | 25/11/2026 | Cambios 4 (Fase 3), bloques 1 y 2: resultados, revisión del auditor, respuestas individuales y comentarios disociados (decisiones 94–97) | Hecho (25/11/2026): 17 capturas en `img/cambios4/` e [informe-cambios-4.md](informe-cambios-4.md) |
 
 ---
 
@@ -180,5 +181,5 @@ conversada (decisiones 90–93).
 | Revisión de respuestas | Una respuesta pendiente con su conversación, la propuesta de la IA, la decisión (opciones, abstención, «sin respuesta válida») y la nota; filtro pendientes / revisadas / todas |
 | Respuestas individuales | Aviso de confidencialidad antes de cargar; tabla con demográficos y respuestas (las decididas en la revisión, en negrita); aviso de grupos de menos de 3 personas; respuestas abiertas aparte |
 
-**Textos:** informe de cambios 4 (por crear) explicando el cálculo (decisiones 94–97).
+**Hecho (25/11/2026):** capturas en `img/cambios4/` (guion `e2e/presentation/cambios4.spec.ts`, servidor de pruebas con Gemini) y [informe-cambios-4.md](informe-cambios-4.md).
 

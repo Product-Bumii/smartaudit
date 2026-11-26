@@ -9,6 +9,7 @@ código adelantada de la Fase 2.
 **Fase 2 (invitaciones y entrevista con IA):** [presentación de la Fase 2](fase-2.md), con 17 capturas más.
 **Cambios #3 (grupo de cambios 3 y entrevista conversada):** [informe de cambios #3](informe-cambios-3.md), con 20 capturas
 hechas en el servidor de pruebas con la IA real.
+**Cambios 4 (Fase 3, resultados y revisión):** [informe de cambios 4](informe-cambios-4.md), con 17 capturas.
 
 Las imágenes están en [`img/`](img/) y muestran la plataforma real con **datos sintéticos**: las organizaciones, las
 personas y los correos son ficticios. Las **entidades de auditoría** sí son las reales (AENOR, APCER, AUDELCO, CMD, DNV,

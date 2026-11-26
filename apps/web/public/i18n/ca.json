@@ -558,7 +558,8 @@
     "pendingN": "{{n}} pendents de revisió",
     "outsideCondition": "{{n}} fora de la condició de la pregunta",
     "multiNote": "Resposta múltiple: percentatge de persones que esmenten cada opció; la suma pot passar del 100 %.",
-    "optionTexts": "Textos de «{{option}}» ({{n}})"
+    "optionTexts": "Textos de «{{option}}» ({{n}})",
+    "denied": "Els resultats, la revisió i les respostes individuals només els veuen l’auditor/a responsable i la Fundació. Com a coordinació veus l’avenç agregat a la fitxa de l’auditoria."
   },
   "review": {
     "title": "Revisió de respostes",

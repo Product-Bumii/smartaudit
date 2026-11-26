@@ -5,7 +5,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { RouterLink } from '@angular/router';
 import { TranslatePipe } from '@ngx-translate/core';
-import { ApiService } from '../../core/api.service';
+import { ApiService, toApiFailure } from '../../core/api.service';
 import { I18nService } from '../../core/i18n.service';
 import type { LocalizedText, ReviewDecision, ReviewItemDto, ReviewListDto } from '../../core/models';
 import { NotifyService } from '../../core/notify.service';
@@ -36,6 +36,9 @@ interface Draft {
         <a mat-stroked-button [routerLink]="['/campaigns', id(), 'results']">{{ 'review.goResults' | translate }}</a>
       </div>
     </div>
+    @if (denied()) {
+      <div class="alert info" role="status" data-testid="review-denied">{{ 'results.denied' | translate }}</div>
+    } @else {
     <div class="alert info" role="note">{{ 'review.confidentiality' | translate }}</div>
 
     <div class="toolbar">
@@ -113,6 +116,7 @@ interface Draft {
         </section>
       }
     }
+    }
   `,
   styles: `
     .toolbar { margin: 8px 0 24px; }
@@ -143,6 +147,7 @@ export class CampaignReviewPage implements OnInit {
   readonly filter = signal<Filter>('pending');
   readonly list = signal<ReviewListDto | null>(null);
   readonly busy = signal(false);
+  readonly denied = signal(false);
   private readonly drafts = signal<Record<string, Draft>>({});
 
   /** Items grouped by question, in questionnaire order (the API already sorts them). */
@@ -177,7 +182,8 @@ export class CampaignReviewPage implements OnInit {
       }
       this.drafts.set(drafts);
     } catch (e) {
-      this.notify.error(e);
+      if (toApiFailure(e).status === 403) this.denied.set(true);
+      else this.notify.error(e);
     }
   }
 

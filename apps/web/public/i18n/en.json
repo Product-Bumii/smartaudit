@@ -558,7 +558,8 @@
     "pendingN": "{{n}} waiting for review",
     "outsideCondition": "{{n}} outside the condition of the question",
     "multiNote": "Multiple choice: percentage of people mentioning each option; the sum may exceed 100%.",
-    "optionTexts": "Texts of \"{{option}}\" ({{n}})"
+    "optionTexts": "Texts of \"{{option}}\" ({{n}})",
+    "denied": "Results, review and individual answers are only visible to the lead auditor and the Foundation. As coordinator you see the aggregate progress on the audit page."
   },
   "review": {
     "title": "Answer review",
